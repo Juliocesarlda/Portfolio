@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogo de Xadrez com IA</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+    .titulo {
+      margin-top: 20px;
+    }
+    #tabuleiro {
+      display: grid;
+      grid-template-columns: repeat(8, 60px);
+      grid-template-rows: repeat(8, 60px);
+      margin: 20px auto;
+      border: 3px solid #fff;
+    }
+    .casa {
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+    }
+    .branca {
+      background-color: #febe7e;
+    }
+    .preta {
+      background-color: #713303;
+    }
+    .selecionado {
+      outline: 3px solid yellow;
+    }
+    .container-xadrez {
+      display: flex;
+      flex-direction: row;      /* Alinha lado a lado */
+      align-items: flex-start;  /* Alinha pelo topo */
+      justify-content: center;
+      gap: 40px;                /* Espaço entre tabuleiro e texto */
+    }
+    .explicacao-ia {
+      margin-top: 20px;
+      background-color: #222;
+      padding: 15px;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 600px;
+      text-align: justify;
+    }
+    .explicacao-ia h2 {
+      margin-top: 0;
+    }
+    .btn-voltar {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn-voltar:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="titulo">
+    <h1>♟ JOGO DE XADREZ COM IA ♟</h1>
+  </div>
+  <div class="container-xadrez">
+    <div id="tabuleiro"></div>
+    <div class="explicacao-ia">
+      <h2>Como funciona a IA</h2>
+      <p>
+        Este é um jogo de xadrez desenvolvido em Java Script, ele permite que você jogue com as peças brancas contra uma inteligência artificial simples.<br>
+        Após cada movimento seu, a IA (jogando com as peças pretas) escolhe aleatoriamente um dos movimentos válidos disponíveis e realiza a jogada.<br>
+        O objetivo é demonstrar a lógica básica de movimentação automática das peças pelo computador.
+      </p>
+      <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+    </div>
+  </div>
+
+  <script>
+    let pecas = [
+      ["&#9814;","&#9816;","&#9815;","&#9813;","&#9812;","&#9815;","&#9816;","&#9814;"], // brancas
+      ["&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;"],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;"],
+      ["&#9820;","&#9822;","&#9821;","&#9819;","&#9818;","&#9821;","&#9822;","&#9820;"]  // pretas
+    ];
+
+    const tabuleiro = document.getElementById("tabuleiro");
+    let selecionado = null;
+    let vez = "branca";
+
+    function corDaPeca(simbolo) {
+      const code = Number(simbolo.replace(/[^\d]/g, ""));
+      if (code >= 9812 && code <= 9817) return "branca";
+      if (code >= 9818 && code <= 9823) return "preta";
+      return null;
+    }
+
+    function caminhoLivre(orig, dest) {
+      let dLinha = Math.sign(dest.linha - orig.linha);
+      let dCol = Math.sign(dest.coluna - orig.coluna);
+      let l = orig.linha + dLinha;
+      let c = orig.coluna + dCol;
+      while (l !== dest.linha || c !== dest.coluna) {
+        if (pecas[l][c] !== "") return false;
+        l += dLinha;
+        c += dCol;
+      }
+      return true;
+    }
+
+    function movimentoValido(orig, dest) {
+      const peca = pecas[orig.linha][orig.coluna];
+      if (!peca) return false;
+      const tipo = Number(peca.replace(/[^\d]/g, ""));
+      const cor = corDaPeca(peca);
+      const dLinha = dest.linha - orig.linha;
+      const dCol = dest.coluna - orig.coluna;
+
+      if (pecas[dest.linha][dest.coluna] !== "" && corDaPeca(pecas[dest.linha][dest.coluna]) === cor) return false;
+
+      if (tipo === 9817 || tipo === 9823) { // peão
+        let dir = cor === "branca" ? 1 : -1;
+        let linhaInicial = cor === "branca" ? 1 : 6;
+        if (dCol === 0 && pecas[dest.linha][dest.coluna] === "") {
+          if (dLinha === dir) return true;
+          if (orig.linha === linhaInicial && dLinha === 2 * dir && pecas[orig.linha + dir][orig.coluna] === "") return true;
+        }
+        if (Math.abs(dCol) === 1 && dLinha === dir && pecas[dest.linha][dest.coluna] !== "" && corDaPeca(pecas[dest.linha][dest.coluna]) !== cor) {
+          return true;
+        }
+        return false;
+      }
+
+      if (tipo === 9814 || tipo === 9820) return (dLinha === 0 || dCol === 0) && caminhoLivre(orig, dest); // torre
+      if (tipo === 9816 || tipo === 9822) return (Math.abs(dLinha) === 2 && Math.abs(dCol) === 1) || (Math.abs(dLinha) === 1 && Math.abs(dCol) === 2); // cavalo
+      if (tipo === 9815 || tipo === 9821) return Math.abs(dLinha) === Math.abs(dCol) && caminhoLivre(orig, dest); // bispo
+      if (tipo === 9813 || tipo === 9819) return (dLinha === 0 || dCol === 0 || Math.abs(dLinha) === Math.abs(dCol)) && caminhoLivre(orig, dest); // rainha
+      if (tipo === 9812 || tipo === 9818) return Math.abs(dLinha) <= 1 && Math.abs(dCol) <= 1; // rei
+
+      return false;
+    }
+
+    function desenharTabuleiro() {
+      tabuleiro.innerHTML = "";
+      for (let linha = 0; linha < 8; linha++) {
+        for (let coluna = 0; coluna < 8; coluna++) {
+          const casa = document.createElement("div");
+          casa.classList.add("casa", (linha + coluna) % 2 === 0 ? "branca" : "preta");
+          casa.dataset.linha = linha;
+          casa.dataset.coluna = coluna;
+          casa.innerHTML = pecas[linha][coluna];
+          casa.addEventListener("click", selecionarOuMover);
+          tabuleiro.appendChild(casa);
+        }
+      }
+    }
+
+    function selecionarOuMover(event) {
+      const casa = event.currentTarget;
+      const linha = parseInt(casa.dataset.linha);
+      const coluna = parseInt(casa.dataset.coluna);
+
+      if (vez !== "branca") return;
+
+      if (selecionado) {
+        const destino = { linha, coluna };
+        if (movimentoValido(selecionado, destino)) {
+          pecas[linha][coluna] = pecas[selecionado.linha][selecionado.coluna];
+          pecas[selecionado.linha][selecionado.coluna] = "";
+          vez = "preta";
+          desenharTabuleiro();
+          setTimeout(jogadaDaIA, 500);
+        }
+        selecionado = null;
+      } else if (pecas[linha][coluna] !== "" && corDaPeca(pecas[linha][coluna]) === "branca") {
+        selecionado = { linha, coluna };
+        casa.classList.add("selecionado");
+      }
+    }
+
+    function jogadaDaIA() {
+      let movimentos = [];
+
+      for (let linha = 0; linha < 8; linha++) {
+        for (let coluna = 0; coluna < 8; coluna++) {
+          const peca = pecas[linha][coluna];
+          if (peca !== "" && corDaPeca(peca) === "preta") {
+            for (let l2 = 0; l2 < 8; l2++) {
+              for (let c2 = 0; c2 < 8; c2++) {
+                if (movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
+                  movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 } });
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (movimentos.length === 0) {
+        alert("Fim do jogo! As pretas não têm mais movimentos.");
+        return;
+      }
+
+      const jogada = movimentos[Math.floor(Math.random() * movimentos.length)];
+      pecas[jogada.para.linha][jogada.para.coluna] = pecas[jogada.de.linha][jogada.de.coluna];
+      pecas[jogada.de.linha][jogada.de.coluna] = "";
+      vez = "branca";
+      desenharTabuleiro();
+    }
+
+    desenharTabuleiro();
+  </script>
+</body>
+</html>
