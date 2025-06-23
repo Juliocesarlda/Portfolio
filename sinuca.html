@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>sinucatroN</title>
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #camera-container {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        #video, #canvas {
+            width: 95vw;
+            max-width: 480px;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px #000a;
+        }
+        #canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+        }
+        .info {
+            margin-top: 18px;
+            font-size: 1.1rem;
+            color: #ff9800;
+        }
+        .btn {
+            margin-top: 12px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            background: #0ff;
+            color: #111;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        .btn:hover {
+            background: #00bcd4;
+        }
+    </style>
+</head>
+<body>
+    <h2>sinucatroN - Visualização de Tabelas</h2>
+    <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+    </div>
+    <div>
+        <button class="btn" onclick="capturarBolas()">Marcar Bolas</button>
+        <button class="btn" onclick="limparBolas()">Limpar</button>
+    </div>
+    <div class="info">
+        Toque nas bolas na tela para marcar. As linhas de tabela possíveis aparecerão automaticamente.
+    </div>
+    <script>
+        // Acessa a câmera do celular
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let bolas = [];
+
+        // Solicita acesso à câmera traseira
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(stream => {
+                video.srcObject = stream;
+                video.onloadedmetadata = () => {
+                    ajustarCanvas();
+                };
+            })
+            .catch(err => {
+                alert("Não foi possível acessar a câmera: " + err);
+            });
+
+        // Ajusta o tamanho do canvas para cobrir o vídeo
+        function ajustarCanvas() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            desenhar();
+        }
+
+        // Atualiza o canvas quando o vídeo muda de tamanho
+        video.addEventListener('loadeddata', ajustarCanvas);
+        window.addEventListener('resize', ajustarCanvas);
+
+        // Permite marcar bolas tocando/clicando na tela
+        canvas.addEventListener('click', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            bolas.push({x, y});
+            desenhar();
+        });
+
+        function capturarBolas() {
+            alert("Toque nas bolas na tela para marcar suas posições.");
+        }
+
+        function limparBolas() {
+            bolas = [];
+            desenhar();
+        }
+
+        // Desenha bolas e linhas de tabela possíveis
+        function desenhar() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Desenha bolas
+            for (const bola of bolas) {
+                ctx.beginPath();
+                ctx.arc(bola.x, bola.y, 18, 0, 2 * Math.PI);
+                ctx.fillStyle = "#ff0";
+                ctx.globalAlpha = 0.7;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+
+            // Desenha linhas de tabela possíveis (simples: bola para borda e para outra bola)
+            for (let i = 0; i < bolas.length; i++) {
+                for (let j = 0; j < bolas.length; j++) {
+                    if (i !== j) {
+                        // Linha direta entre bolas
+                        ctx.beginPath();
+                        ctx.moveTo(bolas[i].x, bolas[i].y);
+                        ctx.lineTo(bolas[j].x, bolas[j].y);
+                        ctx.strokeStyle = "#0ff";
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([8, 8]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+                // Linhas para as bordas (tabela simples)
+                desenharLinhasTabela(bolas[i]);
+            }
+        }
+
+        // Desenha linhas de tabela (rebate simples nas 4 bordas)
+        function desenharLinhasTabela(bola) {
+            // Bordas: cima, baixo, esquerda, direita
+            const bordas = [
+                {x: bola.x, y: 0}, // cima
+                {x: bola.x, y: canvas.height}, // baixo
+                {x: 0, y: bola.y}, // esquerda
+                {x: canvas.width, y: bola.y} // direita
+            ];
+            for (const b of bordas) {
+                ctx.beginPath();
+                ctx.moveTo(bola.x, bola.y);
+                ctx.lineTo(b.x, b.y);
+                ctx.strokeStyle = "#ff4800";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 8]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        // Redesenha sempre que necessário
+        setInterval(() => {
+            desenhar();
+        }, 100);
+
+    </script>
+    <button class="btn" style="margin-top:24px;" onclick="window.location.href='index.html'">Voltar ao Início</button>
+</body>
+</html>

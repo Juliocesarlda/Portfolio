@@ -122,6 +122,41 @@
             visibility: visible;
             opacity: 0.8;
         }
+        /* RESPONSIVIDADE */
+        @media (max-width: 1200px){
+            .grid-container {
+                max-width: 80%;
+                margin-left: 10%;
+            }
+        }
+        @media (max-width: 900px){
+            .grid-container {
+                max-width: 95%;
+                margin-left: 2.5%;
+                height: auto;
+                min-height: 18rem;
+            }
+            p {
+                font-size: 2.5rem;
+            }
+        }
+        @media (max-width: 700px){
+            .grid-container {
+                max-width: 99%;
+                margin-left: 0.5%;
+                margin-top: 18%;
+                height: auto;
+                min-height: 12rem;
+                padding: 10px 0;
+            }
+            p {
+                font-size: 1.5rem;
+            }
+            .navbar {
+                height: auto;
+                min-height: 48px;
+            }
+        }
         @media (max-width: 600px){
             .navbar {
                 display: none;
@@ -203,6 +238,23 @@
                 width: auto;
                 background-color: black;
             }
+            footer {
+                font-size: 0.95rem !important;
+                padding: 7px 0 !important;
+            }
+        }
+        @media (max-width: 400px){
+            .grid-container {
+                min-height: 8rem;
+                padding: 4px 0;
+            }
+            p {
+                font-size: 1rem;
+            }
+            footer {
+                font-size: 0.8rem !important;
+                padding: 5px 0 !important;
+            }
         }
         .grid-container p:hover {
             color: #ff4800; /* azul, ou escolha a cor desejada */
@@ -226,6 +278,7 @@
                     <li><a href="xadrezcompleto.html">Xadrez</a></li>
                     <li><a href="slotmachine.html">Jogo do Gatinho</a></li>
                     <li><a href="robozinho.html">Dr. Ajuda</a></li>
+                    <li><a href="sinuca.html">SinucatroN</a></li>
                 </ul>
             </li>
             <li><a href="#">Contato </a></li>
