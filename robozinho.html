@@ -19,20 +19,42 @@
         <span style="margin: 0 12px;">_.-={[ Dr. Ajuda ]}=-._</span>
     </div>
     
-    <div class="personagem-container">
-        <div class="personagem-avatar">
-            <span style="font-size:3.5rem;">🧑‍⚕️</span>
+    <div class="ajuda-flex">
+        <div class="personagem-container">
+            <div class="personagem-avatar">
+                <span style="font-size:3.5rem;">🧑‍⚕️</span>
+            </div>
+            <div class="personagem-fala" id="fala-personagem">
+                Olá! Eu sou o Dr. Ajuda. Como você está se sentindo hoje?
+            </div>
+            <input type="text" id="entrada-usuario" class="entrada-usuario" placeholder="Digite sua mensagem..." autocomplete="off">
+            <button onclick="responderPersonagem()" class="btn-enviar">Enviar</button>
         </div>
-        <div class="personagem-fala" id="fala-personagem">
-            Olá! Eu sou o Dr. Ajuda. Como você está se sentindo hoje?
+
+        <div class="explica-aprendizado">
+            <strong>Como ensinar o Dr. Ajuda:</strong><br>
+            Para ensinar uma nova resposta, digite:<br>
+            <span style="color:#0ff;">aprenda: sua pergunta | sua resposta</span><br>
+            <br>
+            <em>Exemplo:</em><br>
+            <span style="color:#ff9800;">aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!</span><br>
+            <br>
+            Depois disso, sempre que você fizer essa pergunta, o Dr. Ajuda responderá o que aprendeu!
         </div>
-        <input type="text" id="entrada-usuario" class="entrada-usuario" placeholder="Digite sua mensagem..." autocomplete="off">
-        <button onclick="responderPersonagem()" class="btn-enviar">Enviar</button>
     </div>
 
+    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+
     <style>
+    .ajuda-flex {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 32px;
+        margin-top: 32px;
+        flex-wrap: wrap;
+    }
     .personagem-container {
-        margin: 40px auto 0 auto;
         max-width: 400px;
         background: #222;
         border-radius: 16px;
@@ -41,6 +63,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        margin-bottom: 24px;
     }
     .personagem-avatar {
         margin-bottom: 12px;
@@ -94,20 +117,26 @@
         background: #0ff;
         color: #111;
     }
+    .explica-aprendizado {
+        max-width: 340px;
+        background: #222;
+        color: #fff;
+        padding: 16px 18px;
+        border-radius: 12px;
+        text-align: left;
+        font-size: 1rem;
+        margin-bottom: 24px;
+    }
+    @media (max-width: 900px) {
+        .ajuda-flex {
+            flex-direction: column;
+            align-items: center;
+        }
+        .explica-aprendizado {
+            margin-top: 24px;
+        }
+    }
     </style>
-
-    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
-
-    <div class="explica-aprendizado" style="max-width:400px;margin:24px auto 0 auto;background:#222;color:#fff;padding:16px 18px;border-radius:12px;text-align:left;">
-        <strong>Como ensinar o Dr. Ajuda:</strong><br>
-        Para ensinar uma nova resposta, digite:<br>
-        <span style="color:#0ff;">aprenda: sua pergunta | sua resposta</span><br>
-        <br>
-        <em>Exemplo:</em><br>
-        <span style="color:#ff9800;">aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!</span><br>
-        <br>
-        Depois disso, sempre que você fizer essa pergunta, o Dr. Ajuda responderá o que aprendeu!
-    </div>
 
     <script>
 let memoriaIA = JSON.parse(localStorage.getItem('memoriaIA')) || [];
