@@ -68,6 +68,22 @@
         .btn-voltar:hover {
             background: #777;
         }
+        .aposta-container {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+        .aposta-container span, .aposta-container label {
+            margin-right: 15px;
+        }
+        #valorAposta {
+            background: #222;
+            color: #fff;
+            border: 2px solid #ff9800;
+            border-radius: 4px;
+            padding: 5px;
+            width: 60px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -79,15 +95,39 @@
         <div class="slot" id="slot2">🍋</div>
         <div class="slot" id="slot3">🍉</div>
     </div>
+    
+    <div class="aposta-container">
+        <span>Saldo: R$ <span id="saldo">100</span></span>
+        <label>
+            Aposta: R$ 
+            <input type="number" id="valorAposta" min="1" value="10">
+        </label>
+    </div>
     <button class="btn-girar" onclick="girar()">Girar</button>
     <div class="resultado" id="resultado"></div>
     <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
     <script>
         const simbolos = ["🍒", "🍋", "🍉", "🍇", "🔔", "⭐", "7️⃣"];
         let animando = false;
+        let saldo = 100;
+
+        function atualizarSaldo() {
+            document.getElementById('saldo').textContent = saldo;
+        }
 
         function girar() {
             if (animando) return; // Evita múltiplos giros ao mesmo tempo
+            const valorAposta = parseInt(document.getElementById('valorAposta').value, 10);
+            if (isNaN(valorAposta) || valorAposta <= 0) {
+                document.getElementById('resultado').textContent = "Digite um valor de aposta válido!";
+                return;
+            }
+            if (valorAposta > saldo) {
+                document.getElementById('resultado').textContent = "Saldo insuficiente!";
+                return;
+            }
+            saldo -= valorAposta; // Desconta a aposta ao girar
+            atualizarSaldo();
             animando = true;
             document.getElementById('resultado').textContent = "";
             let count = 0;
@@ -107,18 +147,25 @@
                     document.getElementById('slot2').textContent = s2;
                     document.getElementById('slot3').textContent = s3;
                     let res = "";
+                    let ganho = 0;
                     if (s1 === s2 && s2 === s3) {
-                        res = "🎉 Parabéns! Você ganhou! 🎉";
+                        ganho = valorAposta * 10;
+                        res = `🎉 Parabéns! Você ganhou R$ ${ganho}! 🎉`;
                     } else if (s1 === s2 || s2 === s3 || s1 === s3) {
-                        res = "Quase! Dois símbolos iguais!";
+                        ganho = valorAposta * 2;
+                        res = `Quase! Você ganhou R$ ${ganho}.`;
                     } else {
                         res = "Tente novamente!";
                     }
+                    saldo += ganho;
+                    atualizarSaldo();
                     document.getElementById('resultado').textContent = res;
                     animando = false;
                 }
             }, 60); // Troca os símbolos a cada 60ms
         }
+
+        atualizarSaldo();
     </script>
 </body>
 </html>
