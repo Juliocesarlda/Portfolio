@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo do Gatinho</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+        }
+        .tit1 {
+            margin-top: 30px;
+            font-size: 2rem;
+            letter-spacing: 2px;
+        }
+        .slot-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 40px 0;
+            gap: 20px;
+        }
+        .slot {
+            background: #222;
+            border: 4px solid #ff9800;
+            border-radius: 18px;
+            width: 70px;
+            height: 70px;
+            font-size: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 16px #000a;
+        }
+        .btn-girar {
+            background: #ff9800;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 38px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .btn-girar:hover {
+            background: #ff5722;
+        }
+        .resultado {
+            margin-top: 25px;
+            font-size: 1.2rem;
+            min-height: 1.5em;
+        }
+        .btn-voltar {
+            background: #555;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .btn-voltar:hover {
+            background: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="tit1">
+        <p>_.-={[ Máquina de Slot ]}=-._</p>
+    </div>
+    <div class="slot-container">
+        <div class="slot" id="slot1">🍒</div>
+        <div class="slot" id="slot2">🍋</div>
+        <div class="slot" id="slot3">🍉</div>
+    </div>
+    <button class="btn-girar" onclick="girar()">Girar</button>
+    <div class="resultado" id="resultado"></div>
+    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+    <script>
+        const simbolos = ["🍒", "🍋", "🍉", "🍇", "🔔", "⭐", "7️⃣"];
+        function girar() {
+            const s1 = simbolos[Math.floor(Math.random() * simbolos.length)];
+            const s2 = simbolos[Math.floor(Math.random() * simbolos.length)];
+            const s3 = simbolos[Math.floor(Math.random() * simbolos.length)];
+            document.getElementById('slot1').textContent = s1;
+            document.getElementById('slot2').textContent = s2;
+            document.getElementById('slot3').textContent = s3;
+            let res = "";
+            if (s1 === s2 && s2 === s3) {
+                res = "🎉 Parabéns! Você ganhou! 🎉";
+            } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+                res = "Quase! Dois símbolos iguais!";
+            } else {
+                res = "Tente novamente!";
+            }
+            document.getElementById('resultado').textContent = res;
+        }
+    </script>
+</body>
+</html>
