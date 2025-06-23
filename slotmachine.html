@@ -84,22 +84,40 @@
     <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
     <script>
         const simbolos = ["🍒", "🍋", "🍉", "🍇", "🔔", "⭐", "7️⃣"];
+        let animando = false;
+
         function girar() {
-            const s1 = simbolos[Math.floor(Math.random() * simbolos.length)];
-            const s2 = simbolos[Math.floor(Math.random() * simbolos.length)];
-            const s3 = simbolos[Math.floor(Math.random() * simbolos.length)];
-            document.getElementById('slot1').textContent = s1;
-            document.getElementById('slot2').textContent = s2;
-            document.getElementById('slot3').textContent = s3;
-            let res = "";
-            if (s1 === s2 && s2 === s3) {
-                res = "🎉 Parabéns! Você ganhou! 🎉";
-            } else if (s1 === s2 || s2 === s3 || s1 === s3) {
-                res = "Quase! Dois símbolos iguais!";
-            } else {
-                res = "Tente novamente!";
-            }
-            document.getElementById('resultado').textContent = res;
+            if (animando) return; // Evita múltiplos giros ao mesmo tempo
+            animando = true;
+            document.getElementById('resultado').textContent = "";
+            let count = 0;
+            const maxCount = 20; // Quantidade de trocas (duração da animação)
+            const interval = setInterval(() => {
+                document.getElementById('slot1').textContent = simbolos[Math.floor(Math.random() * simbolos.length)];
+                document.getElementById('slot2').textContent = simbolos[Math.floor(Math.random() * simbolos.length)];
+                document.getElementById('slot3').textContent = simbolos[Math.floor(Math.random() * simbolos.length)];
+                count++;
+                if (count >= maxCount) {
+                    clearInterval(interval);
+                    // Sorteio final
+                    const s1 = simbolos[Math.floor(Math.random() * simbolos.length)];
+                    const s2 = simbolos[Math.floor(Math.random() * simbolos.length)];
+                    const s3 = simbolos[Math.floor(Math.random() * simbolos.length)];
+                    document.getElementById('slot1').textContent = s1;
+                    document.getElementById('slot2').textContent = s2;
+                    document.getElementById('slot3').textContent = s3;
+                    let res = "";
+                    if (s1 === s2 && s2 === s3) {
+                        res = "🎉 Parabéns! Você ganhou! 🎉";
+                    } else if (s1 === s2 || s2 === s3 || s1 === s3) {
+                        res = "Quase! Dois símbolos iguais!";
+                    } else {
+                        res = "Tente novamente!";
+                    }
+                    document.getElementById('resultado').textContent = res;
+                    animando = false;
+                }
+            }, 60); // Troca os símbolos a cada 60ms
         }
     </script>
 </body>
