@@ -179,9 +179,9 @@
                 <div class="slot" id="slot3">🍉</div>
             </div>
             <div class="aposta-container">
-                <span>Saldo: R$ <span id="saldo">100</span></span>
+                <span>Saldo: <span id="saldo">100 pontos</span></span>
                 <label>
-                    Aposta: R$
+                    Aposta: 
                     <input type="number" id="valorAposta" min="1" value="10">
                 </label>
             </div>
@@ -300,9 +300,9 @@
             placar.forEach((j, i) => {
                 const li = document.createElement('li');
                 if (i === 0) {
-                    li.innerHTML = `<strong>🥇 ${j.nome}: R$ ${j.saldo}</strong>`;
+                    li.innerHTML = `<strong>🥇 ${j.nome}: ${j.saldo} Pontos</strong>`;
                 } else {
-                    li.textContent = `${j.nome}: R$ ${j.saldo}`;
+                    li.textContent = `${j.nome}: ${j.saldo} Pontos`;
                 }
                 ul.appendChild(li);
             });
