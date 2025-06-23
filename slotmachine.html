@@ -11,6 +11,9 @@
             font-family: Arial, Helvetica, sans-serif;
             text-align: center;
         }
+        p {
+            font-size: x-large;
+        }
         .tit1 {
             margin-top: 30px;
             font-size: 2rem;
@@ -34,6 +37,7 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0 4px 16px #000a;
+            transition: transform 0.2s;
         }
         .btn-girar {
             background: #ff9800;
@@ -71,9 +75,14 @@
         .aposta-container {
             margin-top: 20px;
             font-size: 1.2rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
         .aposta-container span, .aposta-container label {
-            margin-right: 15px;
+            margin-right: 10px;
         }
         #valorAposta {
             background: #222;
@@ -84,10 +93,58 @@
             width: 60px;
             text-align: center;
         }
+        .slot-gato-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+        }
+        @media (max-width: 900px) {
+            .slot-gato-container {
+                gap: 10px;
+            }
+            .slot-container {
+                gap: 10px;
+            }
+        }
         @media (max-width: 700px) {
             .slot-gato-container {
                 flex-direction: column;
                 align-items: center;
+                gap: 0;
+            }
+            .slot-container {
+                gap: 8px;
+                margin: 24px 0;
+            }
+            .aposta-container {
+                flex-direction: column;
+                gap: 6px;
+                font-size: 1rem;
+            }
+            .btn-girar, .btn-voltar {
+                width: 90vw;
+                max-width: 320px;
+                font-size: 1.1rem;
+            }
+            .slot {
+                width: 54px;
+                height: 54px;
+                font-size: 2rem;
+            }
+            .tit1 {
+                font-size: 1.3rem;
+            }
+        }
+        @media (max-width: 400px) {
+            .slot {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            .btn-girar, .btn-voltar {
+                font-size: 0.95rem;
+                padding: 10px 8px;
             }
         }
     </style>
@@ -100,6 +157,22 @@
     </div>
     <div class="slot-gato-container">
         <div>
+            <!-- Adicione o campo de nome acima do saldo/aposta -->
+            <div class="nome-jogador-container" style="margin-bottom: 10px;">
+                <label for="nomeJogador" style="font-size:1.1rem;">Nome do Jogador:</label>
+                <input type="text" id="nomeJogador" value="" placeholder="Digite seu nome" style="padding:4px 10px; border-radius:6px; border:1px solid #888; margin-left:8px; font-size:1rem;">
+                <button onclick="salvarNomeJogador()" style="padding:4px 14px; border-radius:6px; border:none; background:#ff9800; color:#fff; margin-left:8px; cursor:pointer;">OK</button>
+            </div>
+
+            <!-- Exiba o nome do jogador acima do saldo -->
+            <div id="exibeNomeJogador" style="font-size:1.2rem; margin-bottom:8px; color:#ff9800; display:none;"></div>
+
+            <!-- Adicione este bloco após o campo do nome do jogador, antes da slot-container -->
+            <div class="placar-jogadores" style="margin-bottom: 14px;">
+                <strong>Placar dos Jogadores:</strong>
+                <ul id="lista-placar" style="list-style:none; padding:0; margin:6px 0 0 0; color:#fff; font-size:1rem;"></ul>
+            </div>
+
             <div class="slot-container">
                 <div class="slot" id="slot1">🍒</div>
                 <div class="slot" id="slot2">🍋</div>
@@ -108,7 +181,7 @@
             <div class="aposta-container">
                 <span>Saldo: R$ <span id="saldo">100</span></span>
                 <label>
-                    Aposta: R$ 
+                    Aposta: R$
                     <input type="number" id="valorAposta" min="1" value="10">
                 </label>
             </div>
@@ -128,6 +201,10 @@
 
         function atualizarSaldo() {
             document.getElementById('saldo').textContent = saldo;
+            const nome = localStorage.getItem('nomeJogador');
+            if (nome) {
+                atualizarPlacar(nome, saldo);
+            }
         }
 
         function girar() {
@@ -189,6 +266,58 @@
                 }
             }, 60); // Troca os símbolos a cada 60ms
         }
+
+        // Função para salvar e exibir o nome do jogador
+        function salvarNomeJogador() {
+            const nome = document.getElementById('nomeJogador').value.trim();
+            if (nome) {
+                localStorage.setItem('nomeJogador', nome);
+                document.getElementById('exibeNomeJogador').textContent = "Jogador: " + nome;
+                document.getElementById('exibeNomeJogador').style.display = "block";
+                document.getElementById('nomeJogador').value = "";
+                atualizarPlacar(nome, saldo);
+            }
+        }
+
+        // Função para atualizar o placar dos jogadores
+        function atualizarPlacar(nome, saldo) {
+            let placar = JSON.parse(localStorage.getItem('placarJogadores')) || [];
+            if (nome) {
+                // Atualiza ou adiciona o jogador
+                const idx = placar.findIndex(j => j.nome === nome);
+                if (idx >= 0) {
+                    placar[idx].saldo = saldo;
+                } else {
+                    placar.push({ nome, saldo });
+                }
+                localStorage.setItem('placarJogadores', JSON.stringify(placar));
+            }
+            // Ordena por saldo decrescente
+            placar.sort((a, b) => b.saldo - a.saldo);
+            // Atualiza a lista na tela
+            const ul = document.getElementById('lista-placar');
+            ul.innerHTML = "";
+            placar.forEach((j, i) => {
+                const li = document.createElement('li');
+                if (i === 0) {
+                    li.innerHTML = `<strong>🥇 ${j.nome}: R$ ${j.saldo}</strong>`;
+                } else {
+                    li.textContent = `${j.nome}: R$ ${j.saldo}`;
+                }
+                ul.appendChild(li);
+            });
+        }
+
+        // Ao carregar a página, exibe o nome salvo e o placar
+        window.onload = function() {
+            atualizarSaldo();
+            const nomeSalvo = localStorage.getItem('nomeJogador');
+            if (nomeSalvo) {
+                document.getElementById('exibeNomeJogador').textContent = "Jogador: " + nomeSalvo;
+                document.getElementById('exibeNomeJogador').style.display = "block";
+            }
+            atualizarPlacar(nomeSalvo, saldo);
+        };
 
         atualizarSaldo();
     </script>
