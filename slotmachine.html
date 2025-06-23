@@ -248,12 +248,12 @@
                         document.getElementById('vitoria').currentTime = 0;
                         document.getElementById('vitoria').play();
                         ganho = valorAposta * 10;
-                        res = `🎉 Parabéns! Você ganhou R$ ${ganho}! 🎉`;
+                        res = `🎉 Parabéns! Você ganhou ${ganho} Pontos! 🎉`;
                     } else if (s1 === s2 || s2 === s3 || s1 === s3) {
                         document.getElementById('meioacerto').currentTime = 0;
                         document.getElementById('meioacerto').play();
                         ganho = valorAposta * 2;
-                        res = `Quase! Você ganhou R$ ${ganho}.`;
+                        res = `Quase! Você ganhou ${ganho} Pontos.`;
                     } else {
                         document.getElementById('perdeu').currentTime = 0;
                         document.getElementById('perdeu').play();
