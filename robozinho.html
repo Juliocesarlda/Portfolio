@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CiclotroN</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+        }
+      
+    </style>
+</head>
+<body>
+    <div class="tit1">
+        <span style="margin: 0 12px;">_.-={[ SinucatroN ]}=-._</span>
+    </div>
+    
+    <div class="personagem-container">
+        <div class="personagem-avatar">
+            <span style="font-size:3.5rem;">🧑‍⚕️</span>
+        </div>
+        <div class="personagem-fala" id="fala-personagem">
+            Olá! Eu sou o Dr. Ajuda. Como você está se sentindo hoje?
+        </div>
+        <input type="text" id="entrada-usuario" class="entrada-usuario" placeholder="Digite sua mensagem..." autocomplete="off">
+        <button onclick="responderPersonagem()" class="btn-enviar">Enviar</button>
+    </div>
+
+    <style>
+    .personagem-container {
+        margin: 40px auto 0 auto;
+        max-width: 400px;
+        background: #222;
+        border-radius: 16px;
+        padding: 24px 18px 18px 18px;
+        box-shadow: 0 4px 24px #000a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .personagem-avatar {
+        margin-bottom: 12px;
+    }
+    .personagem-fala {
+        background: #333;
+        color: #fff;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+        min-height: 48px;
+        width: 100%;
+        text-align: left;
+        font-size: 1.1rem;
+    }
+    .entrada-usuario {
+        width: 80%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        margin-bottom: 10px;
+        background: #181818;
+        color: #fff;
+        font-size: 1rem;
+    }
+    .btn-enviar {
+        background: #0ff;
+        color: #111;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 18px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-enviar:hover {
+        background: #00bcd4;
+    }
+    </style>
+
+    <script>
+function responderPersonagem() {
+    const entrada = document.getElementById('entrada-usuario').value.trim();
+    const fala = document.getElementById('fala-personagem');
+    if (!entrada) {
+        fala.textContent = "Pode me contar como está se sentindo ou o que está passando.";
+        return;
+    }
+    const texto = entrada.toLowerCase();
+
+    // Respostas de autoajuda simples
+    if (texto.includes("triste") || texto.includes("deprimido") || texto.includes("mal")) {
+        fala.textContent = "Sinto muito que esteja se sentindo assim. Lembre-se: tudo passa e você não está sozinho. Que tal respirar fundo e pensar em algo que te faz bem?";
+    } else if (texto.includes("ansioso") || texto.includes("ansiedade")) {
+        fala.textContent = "A ansiedade pode ser difícil, mas tente focar no presente. Inspire e expire devagar algumas vezes. Se precisar, procure conversar com alguém de confiança.";
+    } else if (texto.includes("feliz") || texto.includes("bem")) {
+        fala.textContent = "Que ótimo saber disso! Aproveite esse momento e compartilhe sua alegria com alguém.";
+    } else if (texto.includes("sozinho") || texto.includes("solidão")) {
+        fala.textContent = "A solidão pode ser desafiadora. Lembre-se de que sempre há pessoas dispostas a ouvir. Que tal mandar uma mensagem para um amigo?";
+    } else if (texto.includes("ajuda") || texto.includes("preciso de ajuda")) {
+        fala.textContent = "Reconhecer que precisa de ajuda é um grande passo. Se quiser conversar mais, estou aqui. Se for algo sério, procure um profissional de saúde mental.";
+    } else if (texto.includes("obrigado") || texto.includes("valeu")) {
+        fala.textContent = "De nada! Sempre que precisar, estarei por aqui para conversar.";
+    } else if (texto.includes("tchau") || texto.includes("até")) {
+        fala.textContent = "Até logo! Cuide-se bem e lembre-se: você é importante.";
+    } else {
+        fala.textContent = "Obrigado por compartilhar. Se quiser, pode me contar mais ou perguntar algo. Estou aqui para ouvir você!";
+    }
+    document.getElementById('entrada-usuario').value = "";
+}
+</script>
+</body>
+</html>

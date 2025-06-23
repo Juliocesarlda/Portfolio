@@ -225,7 +225,7 @@
                     <li><a href="calculadora.html">Calculadora</a></li>
                     <li><a href="xadrezcompleto.html">Xadrez</a></li>
                     <li><a href="slotmachine.html">Jogo do Gatinho</a></li>
-                    <li><a href="#">Assembler</a></li>
+                    <li><a href="robozinho.html">Dr. Ajuda</a></li>
                 </ul>
             </li>
             <li><a href="#">Contato </a></li>
@@ -239,6 +239,22 @@
             const navBut = document.getElementById("menuopc");
             navBut.classList.toggle("showbar");
         }
+
+        // Contador de visitas: só soma para um novo usuário (por navegador)
+        window.onload = function() {
+            let visitas = localStorage.getItem('contador_visitas');
+            let jaContou = localStorage.getItem('visitante_contado');
+            if (!visitas) visitas = 0;
+            if (!jaContou) {
+                visitas++;
+                localStorage.setItem('contador_visitas', visitas);
+                localStorage.setItem('visitante_contado', 'sim');
+            }
+            document.getElementById('contador-visitas').textContent = visitas;
+        }
     </script>
+    <footer style="width:100%;position:fixed;bottom:0;left:0;z-index:999;background:rgba(20,20,20,0.95);color:#ff4800;text-align:center;padding:10px 0;font-size:1.1rem;letter-spacing:2px;box-shadow:0 -2px 12px #000a;">
+        <span>👁️‍🗨️ Visitas: <span id="contador-visitas">0</span></span>
+    </footer>
 </body>
 </html>
