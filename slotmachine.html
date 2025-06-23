@@ -84,28 +84,39 @@
             width: 60px;
             text-align: center;
         }
+        @media (max-width: 700px) {
+            .slot-gato-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="tit1">
-        <p>_.-={[ Jogo do Gatinho ]}=-._</p>
+        <span style="font-size:2.5rem; vertical-align: middle;">🐱</span>
+        <span style="margin: 0 12px;">_.-={[ Jogo do Gatinho ]}=-._</span>
+        <span style="font-size:2.5rem; vertical-align: middle;">🐱</span>
     </div>
-    <div class="slot-container">
-        <div class="slot" id="slot1">🍒</div>
-        <div class="slot" id="slot2">🍋</div>
-        <div class="slot" id="slot3">🍉</div>
+    <div class="slot-gato-container">
+        <div>
+            <div class="slot-container">
+                <div class="slot" id="slot1">🍒</div>
+                <div class="slot" id="slot2">🍋</div>
+                <div class="slot" id="slot3">🍉</div>
+            </div>
+            <div class="aposta-container">
+                <span>Saldo: R$ <span id="saldo">100</span></span>
+                <label>
+                    Aposta: R$ 
+                    <input type="number" id="valorAposta" min="1" value="10">
+                </label>
+            </div>
+            <button class="btn-girar" onclick="girar()">Girar</button>
+            <div class="resultado" id="resultado"></div>
+            <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+        </div>
     </div>
-    
-    <div class="aposta-container">
-        <span>Saldo: R$ <span id="saldo">100</span></span>
-        <label>
-            Aposta: R$ 
-            <input type="number" id="valorAposta" min="1" value="10">
-        </label>
-    </div>
-    <button class="btn-girar" onclick="girar()">Girar</button>
-    <div class="resultado" id="resultado"></div>
-    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
     <audio id="slot-audio" src="giro.mp3"></audio>
     <audio id="perdeu" src="perdeu.mp3"></audio>
     <audio id="vitoria" src="vitoria.mp3"></audio>
