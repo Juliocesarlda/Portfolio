@@ -173,6 +173,68 @@
       }
     }
 
+    // Função para encontrar o rei de uma cor
+    function encontrarRei(cor) {
+      for (let linha = 0; linha < 8; linha++) {
+        for (let coluna = 0; coluna < 8; coluna++) {
+          const peca = pecas[linha][coluna];
+          if (peca && corDaPeca(peca) === cor) {
+            const tipo = Number(peca.replace(/[^\d]/g, ""));
+            if ((cor === "branca" && tipo === 9812) || (cor === "preta" && tipo === 9818)) {
+              return { linha, coluna };
+            }
+          }
+        }
+      }
+      return null;
+    }
+
+    // Função para verificar se o rei de uma cor está em xeque
+    function estaEmXeque(cor) {
+      const rei = encontrarRei(cor);
+      if (!rei) return false;
+      const corOponente = cor === "branca" ? "preta" : "branca";
+      for (let linha = 0; linha < 8; linha++) {
+        for (let coluna = 0; coluna < 8; coluna++) {
+          const peca = pecas[linha][coluna];
+          if (peca && corDaPeca(peca) === corOponente) {
+            if (movimentoValido({ linha, coluna }, rei)) {
+              return true;
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    // Função para verificar se há algum movimento possível para a cor
+    function temMovimentosPossiveis(cor) {
+      for (let linha = 0; linha < 8; linha++) {
+        for (let coluna = 0; coluna < 8; coluna++) {
+          const peca = pecas[linha][coluna];
+          if (peca && corDaPeca(peca) === cor) {
+            for (let l2 = 0; l2 < 8; l2++) {
+              for (let c2 = 0; c2 < 8; c2++) {
+                if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
+                  // Simula o movimento
+                  const backup = pecas[l2][c2];
+                  pecas[l2][c2] = peca;
+                  pecas[linha][coluna] = "";
+                  const emXeque = estaEmXeque(cor);
+                  // Desfaz o movimento
+                  pecas[linha][coluna] = peca;
+                  pecas[l2][c2] = backup;
+                  if (!emXeque) return true;
+                }
+              }
+            }
+          }
+        }
+      }
+      return false;
+    }
+
+    // Modifique a função selecionarOuMover para detectar xeque-mate após o movimento do jogador
     function selecionarOuMover(event) {
       const casa = event.currentTarget;
       const linha = parseInt(casa.dataset.linha);
@@ -183,11 +245,35 @@
       if (selecionado) {
         const destino = { linha, coluna };
         if (movimentoValido(selecionado, destino)) {
-          pecas[linha][coluna] = pecas[selecionado.linha][selecionado.coluna];
+          const pecaMovida = pecas[selecionado.linha][selecionado.coluna];
+          const backup = pecas[linha][coluna];
+          pecas[linha][coluna] = pecaMovida;
           pecas[selecionado.linha][selecionado.coluna] = "";
+          // Verifica se o movimento deixa o próprio rei em xeque
+          if (estaEmXeque("branca")) {
+            // Movimento ilegal, desfaz
+            pecas[selecionado.linha][selecionado.coluna] = pecaMovida;
+            pecas[linha][coluna] = backup;
+            alert("Movimento ilegal: seu rei ficaria em xeque!");
+            selecionado = null;
+            desenharTabuleiro();
+            return;
+          }
           vez = "preta";
           desenharTabuleiro();
-          setTimeout(jogadaDaIA, 500);
+
+          // Verifica xeque-mate nas pretas
+          setTimeout(() => {
+            if (estaEmXeque("preta") && !temMovimentosPossiveis("preta")) {
+              alert("Xeque-mate! Você venceu!");
+              vez = "fim";
+            } else if (!temMovimentosPossiveis("preta")) {
+              alert("Empate! As pretas não têm movimentos possíveis.");
+              vez = "fim";
+            } else {
+              jogadaDaIA();
+            }
+          }, 500);
         }
         selecionado = null;
       } else if (pecas[linha][coluna] !== "" && corDaPeca(pecas[linha][coluna]) === "branca") {
@@ -196,7 +282,9 @@
       }
     }
 
+    // Modifique a função jogadaDaIA para detectar xeque-mate após a jogada da IA
     function jogadaDaIA() {
+      if (vez !== "preta") return;
       let movimentos = [];
 
       for (let linha = 0; linha < 8; linha++) {
@@ -205,8 +293,16 @@
           if (peca !== "" && corDaPeca(peca) === "preta") {
             for (let l2 = 0; l2 < 8; l2++) {
               for (let c2 = 0; c2 < 8; c2++) {
-                if (movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
-                  movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 } });
+                if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
+                  // Simula o movimento
+                  const backup = pecas[l2][c2];
+                  pecas[l2][c2] = peca;
+                  pecas[linha][coluna] = "";
+                  const emXeque = estaEmXeque("preta");
+                  // Desfaz o movimento
+                  pecas[linha][coluna] = peca;
+                  pecas[l2][c2] = backup;
+                  if (!emXeque) movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 } });
                 }
               }
             }
@@ -215,15 +311,35 @@
       }
 
       if (movimentos.length === 0) {
-        alert("Fim do jogo! As pretas não têm mais movimentos.");
+        if (estaEmXeque("preta")) {
+          alert("Xeque-mate! Você venceu!");
+        } else {
+          alert("Empate! As pretas não têm movimentos possíveis.");
+        }
+        vez = "fim";
         return;
       }
 
+      // Escolhe um movimento aleatório válido
       const jogada = movimentos[Math.floor(Math.random() * movimentos.length)];
-      pecas[jogada.para.linha][jogada.para.coluna] = pecas[jogada.de.linha][jogada.de.coluna];
+      const pecaMovida = pecas[jogada.de.linha][jogada.de.coluna];
+      pecas[jogada.para.linha][jogada.para.coluna] = pecaMovida;
       pecas[jogada.de.linha][jogada.de.coluna] = "";
-      vez = "branca";
+
       desenharTabuleiro();
+
+      // Verifica xeque-mate nas brancas
+      setTimeout(() => {
+        if (estaEmXeque("branca") && !temMovimentosPossiveis("branca")) {
+          alert("Xeque-mate! A IA venceu!");
+          vez = "fim";
+        } else if (!temMovimentosPossiveis("branca")) {
+          alert("Empate! As brancas não têm movimentos possíveis.");
+          vez = "fim";
+        } else {
+          vez = "branca";
+        }
+      }, 500);
     }
 
     desenharTabuleiro();
