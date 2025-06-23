@@ -16,7 +16,7 @@
 </head>
 <body>
     <div class="tit1">
-        <span style="margin: 0 12px;">_.-={[ SinucatroN ]}=-._</span>
+        <span style="margin: 0 12px;">_.-={[ Dr. Ajuda ]}=-._</span>
     </div>
     
     <div class="personagem-container">
@@ -79,9 +79,39 @@
     .btn-enviar:hover {
         background: #00bcd4;
     }
+    .btn-voltar {
+        background: #444;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 28px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 18px;
+        transition: background 0.3s;
+    }
+    .btn-voltar:hover {
+        background: #0ff;
+        color: #111;
+    }
     </style>
 
+    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+
+    <div class="explica-aprendizado" style="max-width:400px;margin:24px auto 0 auto;background:#222;color:#fff;padding:16px 18px;border-radius:12px;text-align:left;">
+        <strong>Como ensinar o Dr. Ajuda:</strong><br>
+        Para ensinar uma nova resposta, digite:<br>
+        <span style="color:#0ff;">aprenda: sua pergunta | sua resposta</span><br>
+        <br>
+        <em>Exemplo:</em><br>
+        <span style="color:#ff9800;">aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!</span><br>
+        <br>
+        Depois disso, sempre que você fizer essa pergunta, o Dr. Ajuda responderá o que aprendeu!
+    </div>
+
     <script>
+let memoriaIA = JSON.parse(localStorage.getItem('memoriaIA')) || [];
+
 function responderPersonagem() {
     const entrada = document.getElementById('entrada-usuario').value.trim();
     const fala = document.getElementById('fala-personagem');
@@ -90,6 +120,14 @@ function responderPersonagem() {
         return;
     }
     const texto = entrada.toLowerCase();
+
+    // Verifica se a IA já aprendeu uma resposta para esta entrada
+    const respostaAprendida = memoriaIA.find(item => texto.includes(item.pergunta));
+    if (respostaAprendida) {
+        fala.textContent = respostaAprendida.resposta;
+        document.getElementById('entrada-usuario').value = "";
+        return;
+    }
 
     // Respostas de autoajuda simples
     if (texto.includes("triste") || texto.includes("deprimido") || texto.includes("mal")) {
@@ -106,8 +144,21 @@ function responderPersonagem() {
         fala.textContent = "De nada! Sempre que precisar, estarei por aqui para conversar.";
     } else if (texto.includes("tchau") || texto.includes("até")) {
         fala.textContent = "Até logo! Cuide-se bem e lembre-se: você é importante.";
+    } else if (texto.startsWith("aprenda:")) {
+        // Permite ao usuário ensinar a IA: "aprenda: pergunta | resposta"
+        // Exemplo: aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!
+        const partes = entrada.substring(8).split("|");
+        if (partes.length === 2) {
+            const pergunta = partes[0].trim().toLowerCase();
+            const resposta = partes[1].trim();
+            memoriaIA.push({ pergunta, resposta });
+            localStorage.setItem('memoriaIA', JSON.stringify(memoriaIA));
+            fala.textContent = "Aprendi uma nova resposta! Pode testar agora.";
+        } else {
+            fala.textContent = "Para me ensinar, use: aprenda: pergunta | resposta";
+        }
     } else {
-        fala.textContent = "Obrigado por compartilhar. Se quiser, pode me contar mais ou perguntar algo. Estou aqui para ouvir você!";
+        fala.textContent = "Obrigado por compartilhar. Se quiser, pode me contar mais ou perguntar algo. Estou aqui para ouvir você! Se quiser me ensinar uma resposta, digite: aprenda: pergunta | resposta";
     }
     document.getElementById('entrada-usuario').value = "";
 }
