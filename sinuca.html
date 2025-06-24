@@ -35,12 +35,12 @@
         }
         .btn {
             margin-top: 12px;
-            padding: 10px 24px;
+            padding: 14px 28px;
             border-radius: 8px;
             border: none;
             background: #0ff;
             color: #111;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             cursor: pointer;
             margin-right: 8px;
         }
@@ -74,42 +74,36 @@
         Toque nas bolas na tela para marcar. As linhas de tabela possíveis aparecerão automaticamente.
     </div>
     <script>
-        // Acessa a câmera do celular
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         let bolas = [];
 
-        // Solicita acesso à câmera traseira
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
             .then(stream => {
                 video.srcObject = stream;
-                video.onloadedmetadata = () => {
-                    ajustarCanvas();
-                };
             })
             .catch(err => {
                 alert("Não foi possível acessar a câmera: " + err);
             });
 
-        // Ajusta o tamanho do canvas para cobrir o vídeo
+        video.addEventListener('loadedmetadata', ajustarCanvas);
+        window.addEventListener('resize', ajustarCanvas);
+
         function ajustarCanvas() {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             desenhar();
         }
 
-        // Atualiza o canvas quando o vídeo muda de tamanho
-        video.addEventListener('loadeddata', ajustarCanvas);
-        window.addEventListener('resize', ajustarCanvas);
-
-        // Permite marcar bolas tocando/clicando na tela
-        canvas.addEventListener('click', function(e) {
+        // Usa pointerdown para garantir funcionamento em toque e clique
+        canvas.addEventListener('pointerdown', function(e) {
             const rect = canvas.getBoundingClientRect();
             const x = (e.clientX - rect.left) * (canvas.width / rect.width);
             const y = (e.clientY - rect.top) * (canvas.height / rect.height);
             bolas.push({x, y});
             desenhar();
+            efeitoClique(x, y);
         });
 
         function capturarBolas() {
@@ -121,7 +115,6 @@
             desenhar();
         }
 
-        // Desenha bolas e linhas de tabela possíveis
         function desenhar() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -138,11 +131,10 @@
                 ctx.stroke();
             }
 
-            // Desenha linhas de tabela possíveis (simples: bola para borda e para outra bola)
+            // Desenha linhas de tabela possíveis
             for (let i = 0; i < bolas.length; i++) {
                 for (let j = 0; j < bolas.length; j++) {
                     if (i !== j) {
-                        // Linha direta entre bolas
                         ctx.beginPath();
                         ctx.moveTo(bolas[i].x, bolas[i].y);
                         ctx.lineTo(bolas[j].x, bolas[j].y);
@@ -153,19 +145,16 @@
                         ctx.setLineDash([]);
                     }
                 }
-                // Linhas para as bordas (tabela simples)
                 desenharLinhasTabela(bolas[i]);
             }
         }
 
-        // Desenha linhas de tabela (rebate simples nas 4 bordas)
         function desenharLinhasTabela(bola) {
-            // Bordas: cima, baixo, esquerda, direita
             const bordas = [
-                {x: bola.x, y: 0}, // cima
-                {x: bola.x, y: canvas.height}, // baixo
-                {x: 0, y: bola.y}, // esquerda
-                {x: canvas.width, y: bola.y} // direita
+                {x: bola.x, y: 0},
+                {x: bola.x, y: canvas.height},
+                {x: 0, y: bola.y},
+                {x: canvas.width, y: bola.y}
             ];
             for (const b of bordas) {
                 ctx.beginPath();
@@ -179,11 +168,32 @@
             }
         }
 
-        // Redesenha sempre que necessário
-        setInterval(() => {
-            desenhar();
-        }, 100);
+        // Efeito visual rápido no clique
+        function efeitoClique(x, y) {
+            const raioInicial = 10;
+            const raioFinal = 30;
+            const duracao = 300;
+            const inicio = performance.now();
 
+            function animar(tempoAtual) {
+                const progresso = Math.min((tempoAtual - inicio) / duracao, 1);
+                const raio = raioInicial + (raioFinal - raioInicial) * progresso;
+
+                desenhar();
+                ctx.beginPath();
+                ctx.arc(x, y, raio, 0, 2 * Math.PI);
+                ctx.strokeStyle = "#0ff";
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 1 - progresso;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                if (progresso < 1) {
+                    requestAnimationFrame(animar);
+                }
+            }
+            requestAnimationFrame(animar);
+        }
     </script>
     <button class="btn" style="margin-top:24px;" onclick="window.location.href='index.html'">Voltar ao Início</button>
 </body>
