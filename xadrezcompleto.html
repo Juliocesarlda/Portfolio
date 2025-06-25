@@ -205,13 +205,9 @@ function movimentoValido(orig, dest) {
 
 function desenharTabuleiro() {
   tabuleiro.innerHTML = "";
-  // Se o jogador escolheu pretas, inverter a ordem das linhas para mostrar as pretas embaixo
+  // Sempre mostra as brancas em cima e pretas embaixo
   let linhas = [...Array(8).keys()];
   let colunas = [...Array(8).keys()];
-  if (ladoJogador === "preta") {
-    linhas = linhas.reverse();
-    colunas = colunas.reverse();
-  }
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
       const linha = linhas[i];
@@ -364,7 +360,7 @@ function selecionarOuMover(event) {
         }
         alert("Movimento ilegal: seu rei ficaria em xeque!");
       } else {
-        vez = ladoJogador === "branca" ? "preta" : "branca";
+        vez = vez === "branca" ? "preta" : "branca";
         desenharTabuleiro();
         setTimeout(() => {
           if (estaEmXeque(vez) && !temMovimentosPossiveis(vez)) {
@@ -373,7 +369,7 @@ function selecionarOuMover(event) {
           } else if (!temMovimentosPossiveis(vez)) {
             alert("Empate! Nenhum movimento possível.");
             vez = "fim";
-          } else {
+          } else if (vez !== ladoJogador) {
             jogadaDaIA();
           }
         }, 500);
@@ -471,7 +467,7 @@ function jogadaDaIA() {
     }
   }
 
-  // Atualiza en passant
+  // Atualiza enPassant
   enPassant = null;
   const tipo = Number(pecaMovida.replace(/[^\d]/g, ""));
   if (tipo === 9817 || tipo === 9823) {
@@ -486,11 +482,14 @@ function jogadaDaIA() {
   desenharTabuleiro();
 
   setTimeout(() => {
-    vez = ladoJogador;
-    if (estaEmXeque(ladoJogador) && !temMovimentosPossiveis(ladoJogador)) {
-      alert(ladoJogador === "branca" ? "Xeque-mate! A IA venceu!" : "Xeque-mate! Você venceu!");
+    // Alterna a vez para o outro lado após a jogada da IA
+    vez = vez === "branca" ? "preta" : "branca";
+    // Removido o chamado recursivo da IA aqui!
+    // Não chame jogadaDaIA novamente aqui!
+    if (estaEmXeque(vez) && !temMovimentosPossiveis(vez)) {
+      alert(vez === "preta" ? "Xeque-mate! Você venceu!" : "Xeque-mate! A IA venceu!");
       vez = "fim";
-    } else if (!temMovimentosPossiveis(ladoJogador)) {
+    } else if (!temMovimentosPossiveis(vez)) {
       alert("Empate! Nenhum movimento possível.");
       vez = "fim";
     }
@@ -503,10 +502,11 @@ function reiniciarJogo() {
   vez = "branca"; // Sempre começa com as brancas
   enPassant = null;
   desenharTabuleiro();
-  // Se o jogador escolher pretas, a IA joga primeiro com as brancas
+  // Se o jogador escolher pretas, a IA joga primeiro com as brancas e depois alterna normalmente
   if (ladoJogador === "preta") {
     setTimeout(() => {
       jogadaDaIA();
+            
     }, 600);
   }
 }
@@ -520,10 +520,17 @@ function trocarLado() {
 
 // Inicialização
 desenharTabuleiro();
-// Se o jogador escolher pretas ao carregar, a IA joga primeiro com as brancas
-if (ladoJogador === "preta") {
-  setTimeout(jogadaDaIA, 600);
-}
+
+// Sincroniza ladoJogador com o select ao carregar a página
+window.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("lado-jogador");
+  ladoJogador = select.value;
+  if (ladoJogador === "preta") {
+    setTimeout(() => {
+      jogadaDaIA();
+    }, 600);
+  }
+});
 </script>
 </body>
 </html>
