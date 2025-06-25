@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Desenho e Modelo 3D da Peça</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #111;
+            color: white;
+        }
+        video, canvas {
+            width: 90%;
+            max-width: 400px;
+            margin: 10px 0;
+        }
+        #threeD {
+            width: 100%;
+            height: 300px;
+            background: #222;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Apontar a câmera para a peça</h2>
+<video id="video" autoplay playsinline></video>
+<br>
+<button id="capturar">Capturar</button>
+
+<h3>Desenho da Peça (Contorno)</h3>
+<canvas id="desenho2D"></canvas>
+
+<h3>Modelo 3D Simples</h3>
+<div id="threeD"></div>
+
+<!-- OpenCV.js -->
+<script async src="https://docs.opencv.org/4.7.0/opencv.js" onload="cvReady()"></script>
+<!-- Three.js -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+
+<script>
+let streaming = false;
+
+function startCamera() {
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream;
+        streaming = true;
+    })
+    .catch(err => alert('Erro ao acessar a câmera: ' + err));
+}
+
+function cvReady() {
+    if (cv.getBuildInformation) {
+        startCamera();
+    } else {
+        alert("Erro ao carregar OpenCV.js");
+    }
+}
+
+document.getElementById('capturar').onclick = () => {
+    if (!streaming) return;
+
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+
+    const src = cv.imread(canvas);
+    const dst = new cv.Mat();
+
+    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
+    cv.Canny(dst, dst, 50, 150);
+
+    cv.imshow('desenho2D', dst);
+
+    gerar3D();
+
+    src.delete();
+    dst.delete();
+};
+
+function gerar3D() {
+    const container = document.getElementById('threeD');
+    container.innerHTML = '';
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    const geometry = new THREE.BoxGeometry(1, 1, 0.2); // Exemplo simples de extrusão
+    const material = new THREE.MeshNormalMaterial();
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    camera.position.z = 3;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mesh.rotation.x += 0.01;
+        mesh.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+</script>
+
+</body>
+</html>
