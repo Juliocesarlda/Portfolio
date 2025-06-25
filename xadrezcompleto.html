@@ -28,7 +28,6 @@
       align-items: center;
       justify-content: center;
       font-size: 2rem;
-      cursor: pointer;
     }
     .branca {
       background-color: #febe7e;
@@ -36,15 +35,20 @@
     .preta {
       background-color: #713303;
     }
-    .selecionado {
+    .casa.selecionado {
       outline: 3px solid yellow;
+    }
+    .casa:hover {
+      filter: brightness(1.2);
+      cursor: pointer;
     }
     .container-xadrez {
       display: flex;
-      flex-direction: row;      /* Alinha lado a lado */
-      align-items: flex-start;  /* Alinha pelo topo */
+      flex-direction: row;
+      align-items: flex-start;
       justify-content: center;
-      gap: 40px;                /* Espaço entre tabuleiro e texto */
+      gap: 40px;
+      flex-wrap: wrap;
     }
     .explicacao-ia {
       margin-top: 20px;
@@ -58,7 +62,7 @@
     .explicacao-ia h2 {
       margin-top: 0;
     }
-    .btn-voltar {
+    .btn-voltar, .btn-reiniciar {
       margin-top: 10px;
       padding: 10px 20px;
       font-size: 1rem;
@@ -67,8 +71,9 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      margin-right: 10px;
     }
-    .btn-voltar:hover {
+    .btn-voltar:hover, .btn-reiniciar:hover {
       background-color: #0056b3;
     }
   </style>
@@ -77,272 +82,270 @@
   <div class="titulo">
     <h1>♟ JOGO DE XADREZ COM IA ♟</h1>
   </div>
+  <div class="explicacao-ia" style="margin: 0 auto 24px auto; background:#222; color:#fff; border-radius:8px; max-width:600px; padding:18px; text-align:justify;">
+    <h2 style="margin-top:0;">Como funciona a IA</h2>
+    <p>
+      Neste jogo, você joga com as peças brancas e enfrenta uma inteligência artificial simples, que controla as peças pretas.<br><br>
+      Após cada movimento seu, a IA analisa todos os movimentos válidos disponíveis para as peças pretas e escolhe um deles aleatoriamente para jogar.<br><br>
+      O sistema detecta automaticamente situações de xeque, xeque-mate e empate, exibindo mensagens quando o jogo termina.<br><br>
+      Para jogar, clique em uma peça branca e depois na casa de destino. O jogo não permite movimentos ilegais ou que deixem seu rei em xeque.<br><br>
+      Use o botão "Reiniciar Jogo" para começar uma nova partida a qualquer momento.<br><br>
+      Divirta-se e tente vencer a IA!
+    </p>
+  </div>
   <div class="container-xadrez">
-    <div id="tabuleiro"></div>
-    <div class="explicacao-ia">
-      <h2>Como funciona a IA</h2>
-      <p>
-        Este é um jogo de xadrez desenvolvido em Java Script, ele permite que você jogue com as peças brancas contra uma inteligência artificial simples.<br>
-        Após cada movimento seu, a IA (jogando com as peças pretas) escolhe aleatoriamente um dos movimentos válidos disponíveis e realiza a jogada.<br>
-        O objetivo é demonstrar a lógica básica de movimentação automática das peças pelo computador.
-      </p>
-      <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+    <div>
+      <div id="tabuleiro"></div>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+        <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+        <button class="btn-reiniciar" onclick="reiniciarJogo()">Reiniciar Jogo</button>
+      </div>
     </div>
+   
   </div>
 
-  <script>
-    let pecas = [
-      ["&#9814;","&#9816;","&#9815;","&#9813;","&#9812;","&#9815;","&#9816;","&#9814;"], // brancas
-      ["&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;"],
-      ["","","","","","","",""],
-      ["","","","","","","",""],
-      ["","","","","","","",""],
-      ["","","","","","","",""],
-      ["&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;"],
-      ["&#9820;","&#9822;","&#9821;","&#9819;","&#9818;","&#9821;","&#9822;","&#9820;"]  // pretas
-    ];
+<script>
+let pecasIniciais = [
+  ["&#9814;","&#9816;","&#9815;","&#9813;","&#9812;","&#9815;","&#9816;","&#9814;"],
+  ["&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;"],
+  ["","","","","","","",""],
+  ["","","","","","","",""],
+  ["","","","","","","",""],
+  ["","","","","","","",""],
+  ["&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;"],
+  ["&#9820;","&#9822;","&#9821;","&#9819;","&#9818;","&#9821;","&#9822;","&#9820;"]
+];
 
-    const tabuleiro = document.getElementById("tabuleiro");
-    let selecionado = null;
-    let vez = "branca";
+let pecas = JSON.parse(JSON.stringify(pecasIniciais));
+const tabuleiro = document.getElementById("tabuleiro");
+let selecionado = null;
+let vez = "branca";
 
-    function corDaPeca(simbolo) {
-      const code = Number(simbolo.replace(/[^\d]/g, ""));
-      if (code >= 9812 && code <= 9817) return "branca";
-      if (code >= 9818 && code <= 9823) return "preta";
-      return null;
+function corDaPeca(simbolo) {
+  const code = Number(simbolo.replace(/[^\d]/g, ""));
+  if (code >= 9812 && code <= 9817) return "branca";
+  if (code >= 9818 && code <= 9823) return "preta";
+  return null;
+}
+
+function caminhoLivre(orig, dest) {
+  let dLinha = Math.sign(dest.linha - orig.linha);
+  let dCol = Math.sign(dest.coluna - orig.coluna);
+  let l = orig.linha + dLinha;
+  let c = orig.coluna + dCol;
+  while (l !== dest.linha || c !== dest.coluna) {
+    if (pecas[l][c] !== "") return false;
+    l += dLinha;
+    c += dCol;
+  }
+  return true;
+}
+
+function movimentoValido(orig, dest) {
+  const peca = pecas[orig.linha][orig.coluna];
+  if (!peca) return false;
+  const tipo = Number(peca.replace(/[^\d]/g, ""));
+  const cor = corDaPeca(peca);
+  const dLinha = dest.linha - orig.linha;
+  const dCol = dest.coluna - orig.coluna;
+
+  if (pecas[dest.linha][dest.coluna] !== "" && corDaPeca(pecas[dest.linha][dest.coluna]) === cor) return false;
+
+  if (tipo === 9817 || tipo === 9823) {
+    let dir = cor === "branca" ? 1 : -1;
+    let linhaInicial = cor === "branca" ? 1 : 6;
+    if (dCol === 0 && pecas[dest.linha][dest.coluna] === "") {
+      if (dLinha === dir) return true;
+      if (orig.linha === linhaInicial && dLinha === 2 * dir && pecas[orig.linha + dir][orig.coluna] === "") return true;
     }
-
-    function caminhoLivre(orig, dest) {
-      let dLinha = Math.sign(dest.linha - orig.linha);
-      let dCol = Math.sign(dest.coluna - orig.coluna);
-      let l = orig.linha + dLinha;
-      let c = orig.coluna + dCol;
-      while (l !== dest.linha || c !== dest.coluna) {
-        if (pecas[l][c] !== "") return false;
-        l += dLinha;
-        c += dCol;
-      }
+    if (Math.abs(dCol) === 1 && dLinha === dir && pecas[dest.linha][dest.coluna] !== "" && corDaPeca(pecas[dest.linha][dest.coluna]) !== cor) {
       return true;
     }
+    return false;
+  }
 
-    function movimentoValido(orig, dest) {
-      const peca = pecas[orig.linha][orig.coluna];
-      if (!peca) return false;
-      const tipo = Number(peca.replace(/[^\d]/g, ""));
-      const cor = corDaPeca(peca);
-      const dLinha = dest.linha - orig.linha;
-      const dCol = dest.coluna - orig.coluna;
+  if (tipo === 9814 || tipo === 9820) return (dLinha === 0 || dCol === 0) && caminhoLivre(orig, dest);
+  if (tipo === 9816 || tipo === 9822) return (Math.abs(dLinha) === 2 && Math.abs(dCol) === 1) || (Math.abs(dLinha) === 1 && Math.abs(dCol) === 2);
+  if (tipo === 9815 || tipo === 9821) return Math.abs(dLinha) === Math.abs(dCol) && caminhoLivre(orig, dest);
+  if (tipo === 9813 || tipo === 9819) return (dLinha === 0 || dCol === 0 || Math.abs(dLinha) === Math.abs(dCol)) && caminhoLivre(orig, dest);
+  if (tipo === 9812 || tipo === 9818) return Math.abs(dLinha) <= 1 && Math.abs(dCol) <= 1;
 
-      if (pecas[dest.linha][dest.coluna] !== "" && corDaPeca(pecas[dest.linha][dest.coluna]) === cor) return false;
+  return false;
+}
 
-      if (tipo === 9817 || tipo === 9823) { // peão
-        let dir = cor === "branca" ? 1 : -1;
-        let linhaInicial = cor === "branca" ? 1 : 6;
-        if (dCol === 0 && pecas[dest.linha][dest.coluna] === "") {
-          if (dLinha === dir) return true;
-          if (orig.linha === linhaInicial && dLinha === 2 * dir && pecas[orig.linha + dir][orig.coluna] === "") return true;
+function desenharTabuleiro() {
+  tabuleiro.innerHTML = "";
+  for (let linha = 0; linha < 8; linha++) {
+    for (let coluna = 0; coluna < 8; coluna++) {
+      const casa = document.createElement("div");
+      casa.classList.add("casa", (linha + coluna) % 2 === 0 ? "branca" : "preta");
+      casa.dataset.linha = linha;
+      casa.dataset.coluna = coluna;
+      casa.innerHTML = pecas[linha][coluna];
+      casa.addEventListener("click", selecionarOuMover);
+      tabuleiro.appendChild(casa);
+    }
+  }
+}
+
+function encontrarRei(cor) {
+  for (let linha = 0; linha < 8; linha++) {
+    for (let coluna = 0; coluna < 8; coluna++) {
+      const peca = pecas[linha][coluna];
+      if (peca && corDaPeca(peca) === cor) {
+        const tipo = Number(peca.replace(/[^\d]/g, ""));
+        if ((cor === "branca" && tipo === 9812) || (cor === "preta" && tipo === 9818)) {
+          return { linha, coluna };
         }
-        if (Math.abs(dCol) === 1 && dLinha === dir && pecas[dest.linha][dest.coluna] !== "" && corDaPeca(pecas[dest.linha][dest.coluna]) !== cor) {
+      }
+    }
+  }
+  return null;
+}
+
+function estaEmXeque(cor) {
+  const rei = encontrarRei(cor);
+  if (!rei) return false;
+  const corOponente = cor === "branca" ? "preta" : "branca";
+  for (let linha = 0; linha < 8; linha++) {
+    for (let coluna = 0; coluna < 8; coluna++) {
+      const peca = pecas[linha][coluna];
+      if (peca && corDaPeca(peca) === corOponente) {
+        if (movimentoValido({ linha, coluna }, rei)) {
           return true;
         }
-        return false;
-      }
-
-      if (tipo === 9814 || tipo === 9820) return (dLinha === 0 || dCol === 0) && caminhoLivre(orig, dest); // torre
-      if (tipo === 9816 || tipo === 9822) return (Math.abs(dLinha) === 2 && Math.abs(dCol) === 1) || (Math.abs(dLinha) === 1 && Math.abs(dCol) === 2); // cavalo
-      if (tipo === 9815 || tipo === 9821) return Math.abs(dLinha) === Math.abs(dCol) && caminhoLivre(orig, dest); // bispo
-      if (tipo === 9813 || tipo === 9819) return (dLinha === 0 || dCol === 0 || Math.abs(dLinha) === Math.abs(dCol)) && caminhoLivre(orig, dest); // rainha
-      if (tipo === 9812 || tipo === 9818) return Math.abs(dLinha) <= 1 && Math.abs(dCol) <= 1; // rei
-
-      return false;
-    }
-
-    function desenharTabuleiro() {
-      tabuleiro.innerHTML = "";
-      for (let linha = 0; linha < 8; linha++) {
-        for (let coluna = 0; coluna < 8; coluna++) {
-          const casa = document.createElement("div");
-          casa.classList.add("casa", (linha + coluna) % 2 === 0 ? "branca" : "preta");
-          casa.dataset.linha = linha;
-          casa.dataset.coluna = coluna;
-          casa.innerHTML = pecas[linha][coluna];
-          casa.addEventListener("click", selecionarOuMover);
-          tabuleiro.appendChild(casa);
-        }
       }
     }
+  }
+  return false;
+}
 
-    // Função para encontrar o rei de uma cor
-    function encontrarRei(cor) {
-      for (let linha = 0; linha < 8; linha++) {
-        for (let coluna = 0; coluna < 8; coluna++) {
-          const peca = pecas[linha][coluna];
-          if (peca && corDaPeca(peca) === cor) {
-            const tipo = Number(peca.replace(/[^\d]/g, ""));
-            if ((cor === "branca" && tipo === 9812) || (cor === "preta" && tipo === 9818)) {
-              return { linha, coluna };
+function temMovimentosPossiveis(cor) {
+  for (let linha = 0; linha < 8; linha++) {
+    for (let coluna = 0; coluna < 8; coluna++) {
+      const peca = pecas[linha][coluna];
+      if (peca && corDaPeca(peca) === cor) {
+        for (let l2 = 0; l2 < 8; l2++) {
+          for (let c2 = 0; c2 < 8; c2++) {
+            if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
+              const backup = pecas[l2][c2];
+              pecas[l2][c2] = peca;
+              pecas[linha][coluna] = "";
+              const emXeque = estaEmXeque(cor);
+              pecas[linha][coluna] = peca;
+              pecas[l2][c2] = backup;
+              if (!emXeque) return true;
             }
           }
         }
       }
-      return null;
     }
+  }
+  return false;
+}
 
-    // Função para verificar se o rei de uma cor está em xeque
-    function estaEmXeque(cor) {
-      const rei = encontrarRei(cor);
-      if (!rei) return false;
-      const corOponente = cor === "branca" ? "preta" : "branca";
-      for (let linha = 0; linha < 8; linha++) {
-        for (let coluna = 0; coluna < 8; coluna++) {
-          const peca = pecas[linha][coluna];
-          if (peca && corDaPeca(peca) === corOponente) {
-            if (movimentoValido({ linha, coluna }, rei)) {
-              return true;
-            }
+function selecionarOuMover(event) {
+  if (vez !== "branca") return;
+
+  const casa = event.currentTarget;
+  const linha = parseInt(casa.dataset.linha);
+  const coluna = parseInt(casa.dataset.coluna);
+
+  if (selecionado) {
+    const destino = { linha, coluna };
+    if (movimentoValido(selecionado, destino)) {
+      const pecaMovida = pecas[selecionado.linha][selecionado.coluna];
+      const backup = pecas[linha][coluna];
+      pecas[linha][coluna] = pecaMovida;
+      pecas[selecionado.linha][selecionado.coluna] = "";
+
+      if (estaEmXeque("branca")) {
+        pecas[selecionado.linha][selecionado.coluna] = pecaMovida;
+        pecas[linha][coluna] = backup;
+        alert("Movimento ilegal: seu rei ficaria em xeque!");
+      } else {
+        vez = "preta";
+        desenharTabuleiro();
+        setTimeout(() => {
+          if (estaEmXeque("preta") && !temMovimentosPossiveis("preta")) {
+            alert("Xeque-mate! Você venceu!");
+            vez = "fim";
+          } else if (!temMovimentosPossiveis("preta")) {
+            alert("Empate! As pretas não têm movimentos possíveis.");
+            vez = "fim";
+          } else {
+            jogadaDaIA();
           }
-        }
-      }
-      return false;
-    }
-
-    // Função para verificar se há algum movimento possível para a cor
-    function temMovimentosPossiveis(cor) {
-      for (let linha = 0; linha < 8; linha++) {
-        for (let coluna = 0; coluna < 8; coluna++) {
-          const peca = pecas[linha][coluna];
-          if (peca && corDaPeca(peca) === cor) {
-            for (let l2 = 0; l2 < 8; l2++) {
-              for (let c2 = 0; c2 < 8; c2++) {
-                if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
-                  // Simula o movimento
-                  const backup = pecas[l2][c2];
-                  pecas[l2][c2] = peca;
-                  pecas[linha][coluna] = "";
-                  const emXeque = estaEmXeque(cor);
-                  // Desfaz o movimento
-                  pecas[linha][coluna] = peca;
-                  pecas[l2][c2] = backup;
-                  if (!emXeque) return true;
-                }
-              }
-            }
-          }
-        }
-      }
-      return false;
-    }
-
-    // Modifique a função selecionarOuMover para detectar xeque-mate após o movimento do jogador
-    function selecionarOuMover(event) {
-      const casa = event.currentTarget;
-      const linha = parseInt(casa.dataset.linha);
-      const coluna = parseInt(casa.dataset.coluna);
-
-      if (vez !== "branca") return;
-
-      if (selecionado) {
-        const destino = { linha, coluna };
-        if (movimentoValido(selecionado, destino)) {
-          const pecaMovida = pecas[selecionado.linha][selecionado.coluna];
-          const backup = pecas[linha][coluna];
-          pecas[linha][coluna] = pecaMovida;
-          pecas[selecionado.linha][selecionado.coluna] = "";
-          // Verifica se o movimento deixa o próprio rei em xeque
-          if (estaEmXeque("branca")) {
-            // Movimento ilegal, desfaz
-            pecas[selecionado.linha][selecionado.coluna] = pecaMovida;
-            pecas[linha][coluna] = backup;
-            alert("Movimento ilegal: seu rei ficaria em xeque!");
-            selecionado = null;
-            desenharTabuleiro();
-            return;
-          }
-          vez = "preta";
-          desenharTabuleiro();
-
-          // Verifica xeque-mate nas pretas
-          setTimeout(() => {
-            if (estaEmXeque("preta") && !temMovimentosPossiveis("preta")) {
-              alert("Xeque-mate! Você venceu!");
-              vez = "fim";
-            } else if (!temMovimentosPossiveis("preta")) {
-              alert("Empate! As pretas não têm movimentos possíveis.");
-              vez = "fim";
-            } else {
-              jogadaDaIA();
-            }
-          }, 500);
-        }
-        selecionado = null;
-      } else if (pecas[linha][coluna] !== "" && corDaPeca(pecas[linha][coluna]) === "branca") {
-        selecionado = { linha, coluna };
-        casa.classList.add("selecionado");
+        }, 500);
       }
     }
-
-    // Modifique a função jogadaDaIA para detectar xeque-mate após a jogada da IA
-    function jogadaDaIA() {
-      if (vez !== "preta") return;
-      let movimentos = [];
-
-      for (let linha = 0; linha < 8; linha++) {
-        for (let coluna = 0; coluna < 8; coluna++) {
-          const peca = pecas[linha][coluna];
-          if (peca !== "" && corDaPeca(peca) === "preta") {
-            for (let l2 = 0; l2 < 8; l2++) {
-              for (let c2 = 0; c2 < 8; c2++) {
-                if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
-                  // Simula o movimento
-                  const backup = pecas[l2][c2];
-                  pecas[l2][c2] = peca;
-                  pecas[linha][coluna] = "";
-                  const emXeque = estaEmXeque("preta");
-                  // Desfaz o movimento
-                  pecas[linha][coluna] = peca;
-                  pecas[l2][c2] = backup;
-                  if (!emXeque) movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 } });
-                }
-              }
-            }
-          }
-        }
-      }
-
-      if (movimentos.length === 0) {
-        if (estaEmXeque("preta")) {
-          alert("Xeque-mate! Você venceu!");
-        } else {
-          alert("Empate! As pretas não têm movimentos possíveis.");
-        }
-        vez = "fim";
-        return;
-      }
-
-      // Escolhe um movimento aleatório válido
-      const jogada = movimentos[Math.floor(Math.random() * movimentos.length)];
-      const pecaMovida = pecas[jogada.de.linha][jogada.de.coluna];
-      pecas[jogada.para.linha][jogada.para.coluna] = pecaMovida;
-      pecas[jogada.de.linha][jogada.de.coluna] = "";
-
-      desenharTabuleiro();
-
-      // Verifica xeque-mate nas brancas
-      setTimeout(() => {
-        if (estaEmXeque("branca") && !temMovimentosPossiveis("branca")) {
-          alert("Xeque-mate! A IA venceu!");
-          vez = "fim";
-        } else if (!temMovimentosPossiveis("branca")) {
-          alert("Empate! As brancas não têm movimentos possíveis.");
-          vez = "fim";
-        } else {
-          vez = "branca";
-        }
-      }, 500);
-    }
-
+    selecionado = null;
     desenharTabuleiro();
-  </script>
+  } else if (pecas[linha][coluna] !== "" && corDaPeca(pecas[linha][coluna]) === "branca") {
+    selecionado = { linha, coluna };
+    desenharTabuleiro();
+    casa.classList.add("selecionado");
+  }
+}
+
+function jogadaDaIA() {
+  if (vez !== "preta") return;
+
+  let movimentos = [];
+  for (let linha = 0; linha < 8; linha++) {
+    for (let coluna = 0; coluna < 8; coluna++) {
+      const peca = pecas[linha][coluna];
+      if (peca && corDaPeca(peca) === "preta") {
+        for (let l2 = 0; l2 < 8; l2++) {
+          for (let c2 = 0; c2 < 8; c2++) {
+            if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
+              const backup = pecas[l2][c2];
+              pecas[l2][c2] = peca;
+              pecas[linha][coluna] = "";
+              const emXeque = estaEmXeque("preta");
+              pecas[linha][coluna] = peca;
+              pecas[l2][c2] = backup;
+              if (!emXeque) movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 } });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (movimentos.length === 0) {
+    alert(estaEmXeque("preta") ? "Xeque-mate! Você venceu!" : "Empate! As pretas não têm movimentos possíveis.");
+    vez = "fim";
+    return;
+  }
+
+  const jogada = movimentos[Math.floor(Math.random() * movimentos.length)];
+  pecas[jogada.para.linha][jogada.para.coluna] = pecas[jogada.de.linha][jogada.de.coluna];
+  pecas[jogada.de.linha][jogada.de.coluna] = "";
+
+  desenharTabuleiro();
+
+  setTimeout(() => {
+    if (estaEmXeque("branca") && !temMovimentosPossiveis("branca")) {
+      alert("Xeque-mate! A IA venceu!");
+      vez = "fim";
+    } else if (!temMovimentosPossiveis("branca")) {
+      alert("Empate! As brancas não têm movimentos possíveis.");
+      vez = "fim";
+    } else {
+      vez = "branca";
+    }
+  }, 500);
+}
+
+function reiniciarJogo() {
+  pecas = JSON.parse(JSON.stringify(pecasIniciais));
+  vez = "branca";
+  selecionado = null;
+  desenharTabuleiro();
+}
+
+desenharTabuleiro();
+</script>
 </body>
 </html>
