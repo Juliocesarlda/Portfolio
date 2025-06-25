@@ -2,13 +2,13 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Desenho e Modelo 3D da Peça</title>
+    <title>Peça 3D por Contorno</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
             background: #111;
-            color: white;
+            color: #fff;
+            text-align: center;
+            font-family: Arial, sans-serif;
         }
         video, canvas {
             width: 90%;
@@ -29,20 +29,18 @@
 </head>
 <body>
 
-<h2>Apontar a câmera para a peça</h2>
+<h2>Captura da Peça e Modelo 3D</h2>
 <video id="video" autoplay playsinline></video>
 <br>
 <button id="capturar">Capturar</button>
 
-<h3>Desenho da Peça (Contorno)</h3>
+<h3>Contorno Detectado</h3>
 <canvas id="desenho2D"></canvas>
 
-<h3>Modelo 3D Simples</h3>
+<h3>Modelo 3D Aproximado</h3>
 <div id="threeD"></div>
 
-<!-- OpenCV.js -->
 <script async src="https://docs.opencv.org/4.7.0/opencv.js" onload="cvReady()"></script>
-<!-- Three.js -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
 
 <script>
@@ -77,20 +75,46 @@ document.getElementById('capturar').onclick = () => {
     ctx.drawImage(video, 0, 0);
 
     const src = cv.imread(canvas);
-    const dst = new cv.Mat();
+    const gray = new cv.Mat();
+    const edges = new cv.Mat();
+    const contours = new cv.MatVector();
+    const hierarchy = new cv.Mat();
 
-    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-    cv.Canny(dst, dst, 50, 150);
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.Canny(gray, edges, 50, 150);
+    cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    const dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+
+    if (contours.size() > 0) {
+        let maxContour = contours.get(0);
+        let maxArea = cv.contourArea(maxContour);
+
+        for (let i = 1; i < contours.size(); i++) {
+            let cnt = contours.get(i);
+            let area = cv.contourArea(cnt);
+            if (area > maxArea) {
+                maxArea = area;
+                maxContour = cnt;
+            }
+        }
+
+        cv.drawContours(dst, new cv.MatVector(maxContour), -1, new cv.Scalar(255, 255, 255), 2);
+
+        gerar3DDoContorno(maxContour, src.cols, src.rows);
+    }
 
     cv.imshow('desenho2D', dst);
 
-    gerar3D();
-
     src.delete();
+    gray.delete();
+    edges.delete();
+    contours.delete();
+    hierarchy.delete();
     dst.delete();
 };
 
-function gerar3D() {
+function gerar3DDoContorno(contorno, largura, altura) {
     const container = document.getElementById('threeD');
     container.innerHTML = '';
 
@@ -100,12 +124,25 @@ function gerar3D() {
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    const geometry = new THREE.BoxGeometry(1, 1, 0.2); // Exemplo simples de extrusão
+    // Converter pontos do contorno para o formato do Three.js
+    const shape = new THREE.Shape();
+    for (let i = 0; i < contorno.data32S.length; i += 2) {
+        const x = contorno.data32S[i] / largura * 2 - 1;
+        const y = -(contorno.data32S[i + 1] / altura * 2 - 1);
+        if (i === 0) {
+            shape.moveTo(x, y);
+        } else {
+            shape.lineTo(x, y);
+        }
+    }
+
+    const extrudeSettings = { depth: 0.2, bevelEnabled: false };
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
     const material = new THREE.MeshNormalMaterial();
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    camera.position.z = 3;
+    camera.position.z = 2;
 
     function animate() {
         requestAnimationFrame(animate);
