@@ -1,0 +1,130 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #28a745; /* Verde Truco! */
+    color: #fff;
+    margin: 0;
+}
+
+.container {
+    background-color: #343a40;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    width: 90%;
+    max-width: 800px;
+}
+
+h1, h3 {
+    color: #ffc107; /* Amarelo ouro */
+}
+
+.placar {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    border: 1px solid #ffc107;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.virada-container, .mesa {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mesa {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+    min-height: 120px; /* Garante espaço para as cartas */
+    border: 1px dashed #6c757d;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.mao-jogador {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    min-height: 120px; /* Garante espaço para as cartas */
+    border: 1px dashed #6c757d;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.carta {
+    width: 80px;
+    height: 110px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #212529;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer; /* Indica que a carta é clicável */
+    transition: transform 0.2s ease-in-out;
+}
+
+.carta:hover {
+    transform: translateY(-5px);
+}
+
+.carta.selecionada {
+    border: 2px solid #007bff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+}
+
+/* Cores dos naipes - exemplo */
+.carta.copas, .carta.ouros {
+    color: #dc3545; /* Vermelho */
+}
+.carta.paus, .carta.espadas {
+    color: #212529; /* Preto */
+}
+
+.controles button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.controles button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.controles button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.mensagens {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #17a2b8;
+    border-radius: 5px;
+    color: #fff;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

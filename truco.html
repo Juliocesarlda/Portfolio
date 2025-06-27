@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truco em JavaScript</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Truco!</h1>
+
+        <div class="placar">
+            <span id="jogador1-nome">Jogador 1</span>: <span id="jogador1-pontos">0</span>
+            <br>
+            <span id="jogador2-nome">Jogador 2</span>: <span id="jogador2-pontos">0</span>
+        </div>
+
+        <div class="virada-container">
+            <h3>Carta Virada:</h3>
+            <div id="carta-virada" class="carta"></div>
+        </div>
+
+        <div class="mesa">
+            <h3>Mesa:</h3>
+            <div id="carta-jogada-jogador1" class="carta"></div>
+            <div id="carta-jogada-jogador2" class="carta"></div>
+        </div>
+
+        <div class="mao-jogador" id="mao-jogador1">
+            <h3>Sua Mão:</h3>
+            </div>
+
+        <div class="controles">
+            <button id="btn-nova-rodada">Nova Rodada</button>
+            <button id="btn-truco" disabled>Pedir Truco</button>
+            <button id="btn-aceitar" disabled>Aceitar Truco</button>
+            <button id="btn-correr" disabled>Correr</button>
+        </div>
+
+        <div class="mensagens" id="mensagens-jogo">
+            </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
