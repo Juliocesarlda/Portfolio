@@ -1,76 +1,82 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tradutor de Cachorro</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f0f0;
-            padding: 20px;
-        }
-        .comportamento {
-            margin: 10px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .comportamento:hover {
-            background-color: #45a049;
-        }
-        #traducao {
-            margin-top: 20px;
-            font-size: 20px;
-            color: #333;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tradutor de Cachorro - IA</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #222;
+        color: white;
+        padding: 20px;
+    }
+    video {
+        border: 2px solid #4CAF50;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 400px;
+        margin: 20px 0;
+    }
+    #traducao {
+        margin-top: 20px;
+        font-size: 22px;
+        color: #FFD700;
+    }
+    button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
 </head>
 <body>
 
-    <h1>🐾 Tradutor de Cachorro</h1>
-    <p>Clique no comportamento para ver a tradução:</p>
+<h1>🐾 Tradutor de Cachorro - IA</h1>
+<video id="video" autoplay playsinline></video>
+<div id="traducao">Analisando...</div>
+<button onclick="simularIA()">Simular Análise</button>
 
-    <button class="comportamento" onclick="traduzir('abanar')">Abanando o rabo</button>
-    <button class="comportamento" onclick="traduzir('rosnar')">Rosnando</button>
-    <button class="comportamento" onclick="traduzir('latir')">Latindo</button>
-    <button class="comportamento" onclick="traduzir('orelhasBaixas')">Orelhas para baixo</button>
-    <button class="comportamento" onclick="traduzir('deitarDeBarriga')">Deitando de barriga para cima</button>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.14.0/dist/tf.min.js"></script>
+<script>
+const video = document.getElementById('video');
+const traducao = document.getElementById('traducao');
 
-    <div id="traducao"></div>
+// Inicia a câmera
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream;
+    })
+    .catch(err => {
+        console.error("Erro ao acessar a câmera:", err);
+        traducao.innerText = "Não foi possível acessar a câmera.";
+    });
 
-    <script>
-        function traduzir(comportamento) {
-            let mensagem = "";
+// Aqui futuramente você carregaria o modelo real do TensorFlow.js
+// Exemplo: const modelo = await tf.loadLayersModel('modelo-cachorro/model.json');
 
-            switch (comportamento) {
-                case "abanar":
-                    mensagem = "Estou feliz e animado!";
-                    break;
-                case "rosnar":
-                    mensagem = "Cuidado! Estou desconfiado ou irritado.";
-                    break;
-                case "latir":
-                    mensagem = "Quero chamar sua atenção ou estou alertando!";
-                    break;
-                case "orelhasBaixas":
-                    mensagem = "Estou com medo ou me sentindo inseguro.";
-                    break;
-                case "deitarDeBarriga":
-                    mensagem = "Confio em você ou quero carinho.";
-                    break;
-                default:
-                    mensagem = "Comportamento desconhecido.";
-            }
+// Função simulada para testar o fluxo
+function simularIA() {
+    // Simulação aleatória de comportamentos detectados
+    const comportamentos = [
+        {label: "Abanando o rabo", mensagem: "Estou feliz e animado!"},
+        {label: "Rosnando", mensagem: "Cuidado! Estou irritado ou desconfiado."},
+        {label: "Latindo", mensagem: "Estou alertando ou chamando atenção!"},
+        {label: "Orelhas para baixo", mensagem: "Estou com medo ou inseguro."},
+        {label: "Deitando de barriga para cima", mensagem: "Confio em você ou quero carinho."}
+    ];
 
-            document.getElementById('traducao').innerText = mensagem;
-        }
-    </script>
+    const comportamento = comportamentos[Math.floor(Math.random() * comportamentos.length)];
+    traducao.innerText = `Detectado: ${comportamento.label}\n${comportamento.mensagem}`;
+}
+
+</script>
 
 </body>
 </html>
