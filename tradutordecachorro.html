@@ -15,24 +15,31 @@
     video {
         border: 2px solid #4CAF50;
         border-radius: 10px;
-        width: 90%;
+        width: 90vmin;
+        height: 90vmin;
         max-width: 400px;
+        max-height: 400px;
         margin: 20px 0;
+        object-fit: cover;
     }
     #traducao {
         margin-top: 20px;
         font-size: 22px;
         color: #FFD700;
+        white-space: pre-line;
     }
     button {
         margin-top: 20px;
         padding: 10px 20px;
-        background-color: #4CAF50;
+        background-color: #2196F3;
         border: none;
         border-radius: 8px;
         color: white;
         font-size: 16px;
         cursor: pointer;
+    }
+    button:hover {
+        background-color: #0b7dda;
     }
 </style>
 </head>
@@ -58,24 +65,23 @@ navigator.mediaDevices.getUserMedia({ video: true })
         traducao.innerText = "Não foi possível acessar a câmera.";
     });
 
-// Aqui futuramente você carregaria o modelo real do TensorFlow.js
-// Exemplo: const modelo = await tf.loadLayersModel('modelo-cachorro/model.json');
-
 // Função simulada para testar o fluxo
 function simularIA() {
-    // Simulação aleatória de comportamentos detectados
-    const comportamentos = [
-        {label: "Abanando o rabo", mensagem: "Estou feliz e animado!"},
-        {label: "Rosnando", mensagem: "Cuidado! Estou irritado ou desconfiado."},
-        {label: "Latindo", mensagem: "Estou alertando ou chamando atenção!"},
-        {label: "Orelhas para baixo", mensagem: "Estou com medo ou inseguro."},
-        {label: "Deitando de barriga para cima", mensagem: "Confio em você ou quero carinho."}
-    ];
+    traducao.innerText = "Analisando comportamento...";
+    
+    setTimeout(() => {
+        const comportamentos = [
+            {label: "Abanando o rabo", mensagem: "Estou feliz e animado!"},
+            {label: "Rosnando", mensagem: "Cuidado! Estou irritado ou desconfiado."},
+            {label: "Latindo", mensagem: "Estou alertando ou chamando atenção!"},
+            {label: "Orelhas para baixo", mensagem: "Estou com medo ou inseguro."},
+            {label: "Deitando de barriga para cima", mensagem: "Confio em você ou quero carinho."}
+        ];
 
-    const comportamento = comportamentos[Math.floor(Math.random() * comportamentos.length)];
-    traducao.innerText = `Detectado: ${comportamento.label}\n${comportamento.mensagem}`;
+        const comportamento = comportamentos[Math.floor(Math.random() * comportamentos.length)];
+        traducao.innerText = `🐶 Detectado: ${comportamento.label}\n${comportamento.mensagem}`;
+    }, 1500);
 }
-
 </script>
 
 </body>
