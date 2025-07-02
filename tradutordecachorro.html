@@ -56,6 +56,15 @@ const video = document.getElementById('video');
 const traducao = document.getElementById('traducao');
 
 // Inicia a câmera
+navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+    .then(stream => {
+        video.srcObject = stream;
+    })
+    .catch(err => {
+        console.error("Erro ao acessar a câmera:", err);
+        traducao.innerText = "Não foi possível acessar a câmera traseira.";
+    });
+/*
 navigator.mediaDevices.getUserMedia({ video: true })
     .then(stream => {
         video.srcObject = stream;
@@ -64,7 +73,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
         console.error("Erro ao acessar a câmera:", err);
         traducao.innerText = "Não foi possível acessar a câmera.";
     });
-
+*/
 // Função simulada para testar o fluxo
 function simularIA() {
     traducao.innerText = "Analisando comportamento...";
