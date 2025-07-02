@@ -19,6 +19,8 @@
         #video, #canvas {
             width: 95vw;
             max-width: 480px;
+            height: auto;
+            aspect-ratio: 4 / 3;
             border-radius: 16px;
             box-shadow: 0 4px 24px #000a;
         }
@@ -67,12 +69,13 @@
         <canvas id="canvas"></canvas>
     </div>
     <div>
-        <button class="btn" onclick="capturarBolas()">Marcar Bolas</button>
         <button class="btn" onclick="limparBolas()">Limpar</button>
     </div>
     <div class="info">
         Toque nas bolas na tela para marcar. As linhas de tabela possíveis aparecerão automaticamente.
     </div>
+    <button class="btn" style="margin-top:24px;" onclick="window.location.href='index.html'">Voltar ao Início</button>
+
     <script>
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -87,10 +90,11 @@
                 alert("Não foi possível acessar a câmera: " + err);
             });
 
-        video.addEventListener('loadedmetadata', ajustarCanvas);
+        video.addEventListener('loadeddata', ajustarCanvas);
         window.addEventListener('resize', ajustarCanvas);
 
         function ajustarCanvas() {
+            if (video.videoWidth === 0 || video.videoHeight === 0) return;
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             desenhar();
@@ -105,10 +109,6 @@
             desenhar();
             efeitoClique(x, y);
         });
-
-        function capturarBolas() {
-            alert("Toque nas bolas na tela para marcar suas posições.");
-        }
 
         function limparBolas() {
             bolas = [];
@@ -168,7 +168,7 @@
             }
         }
 
-        // Efeito visual rápido no clique
+        // Efeito visual rápido no clique com sombra
         function efeitoClique(x, y) {
             const raioInicial = 10;
             const raioFinal = 30;
@@ -184,9 +184,12 @@
                 ctx.arc(x, y, raio, 0, 2 * Math.PI);
                 ctx.strokeStyle = "#0ff";
                 ctx.lineWidth = 2;
+                ctx.shadowColor = "#0ff";
+                ctx.shadowBlur = 8;
                 ctx.globalAlpha = 1 - progresso;
                 ctx.stroke();
                 ctx.globalAlpha = 1;
+                ctx.shadowBlur = 0;
 
                 if (progresso < 1) {
                     requestAnimationFrame(animar);
@@ -195,6 +198,5 @@
             requestAnimationFrame(animar);
         }
     </script>
-    <button class="btn" style="margin-top:24px;" onclick="window.location.href='index.html'">Voltar ao Início</button>
 </body>
 </html>
