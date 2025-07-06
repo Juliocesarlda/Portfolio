@@ -11,7 +11,105 @@
             font-family: Arial, Helvetica, sans-serif;
             text-align: center;
         }
-      
+        .ajuda-flex {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 32px;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+        .personagem-container {
+            max-width: 400px;
+            background: #222;
+            border-radius: 16px;
+            padding: 24px 18px 18px 18px;
+            box-shadow: 0 4px 24px #000a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .personagem-avatar {
+            margin-bottom: 12px;
+        }
+        .personagem-fala {
+            background: #333;
+            color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            min-height: 48px;
+            width: 100%;
+            text-align: left;
+            font-size: 1.1rem;
+        }
+        .entrada-usuario {
+            width: 80%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            margin-bottom: 10px;
+            background: #181818;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .btn-enviar {
+            background: #0ff;
+            color: #111;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-enviar:hover {
+            background: #00bcd4;
+        }
+        .btn-voltar {
+            background: #444;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 28px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 18px;
+            transition: background 0.3s;
+        }
+        .btn-voltar:hover {
+            background: #0ff;
+            color: #111;
+        }
+        .explica-aprendizado {
+            max-width: 340px;
+            background: #222;
+            color: #fff;
+            padding: 16px 18px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 1rem;
+            margin-bottom: 24px;
+        }
+        .lista-ensinados {
+            max-width: 340px;
+            background: #222;
+            color: #fff;
+            padding: 16px 18px;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 1rem;
+        }
+        @media (max-width: 900px) {
+            .ajuda-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+            .explica-aprendizado {
+                margin-top: 24px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -31,166 +129,96 @@
             <button onclick="responderPersonagem()" class="btn-enviar">Enviar</button>
         </div>
 
-        <div class="explica-aprendizado">
-            <strong>Como ensinar o Dr. Ajuda:</strong><br>
-            Para ensinar uma nova resposta, digite:<br>
-            <span style="color:#0ff;">aprenda: sua pergunta | sua resposta</span><br>
-            <br>
-            <em>Exemplo:</em><br>
-            <span style="color:#ff9800;">aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!</span><br>
-            <br>
-            Depois disso, sempre que você fizer essa pergunta, o Dr. Ajuda responderá o que aprendeu!
+        <div style="display:flex; flex-direction:column; gap:24px;">
+            <div class="explica-aprendizado">
+                <strong>Como ensinar o Dr. Ajuda:</strong><br>
+                Para ensinar uma nova resposta, digite:<br>
+                <span style="color:#0ff;">aprenda: sua pergunta | sua resposta</span><br><br>
+                <em>Exemplo:</em><br>
+                <span style="color:#ff9800;">aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!</span><br><br>
+                Depois disso, sempre que você fizer essa pergunta, o Dr. Ajuda responderá o que aprendeu!
+            </div>
+            <div class="lista-ensinados">
+                <strong>Perguntas já ensinadas:</strong>
+                <ul id="lista-ensinados" style="margin:10px 0 0 0; padding-left:18px;"></ul>
+            </div>
         </div>
     </div>
 
-    <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar ao Início</button>
+    <button class="btn-voltar" onclick="window.location.href='principal.html'">Voltar ao Início</button>
 
-    <style>
-    .ajuda-flex {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 32px;
-        margin-top: 32px;
-        flex-wrap: wrap;
-    }
-    .personagem-container {
-        max-width: 400px;
-        background: #222;
-        border-radius: 16px;
-        padding: 24px 18px 18px 18px;
-        box-shadow: 0 4px 24px #000a;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-    .personagem-avatar {
-        margin-bottom: 12px;
-    }
-    .personagem-fala {
-        background: #333;
-        color: #fff;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 16px;
-        min-height: 48px;
-        width: 100%;
-        text-align: left;
-        font-size: 1.1rem;
-    }
-    .entrada-usuario {
-        width: 80%;
-        padding: 8px;
-        border-radius: 6px;
-        border: 1px solid #444;
-        margin-bottom: 10px;
-        background: #181818;
-        color: #fff;
-        font-size: 1rem;
-    }
-    .btn-enviar {
-        background: #0ff;
-        color: #111;
-        border: none;
-        border-radius: 6px;
-        padding: 8px 18px;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: background 0.3s;
-    }
-    .btn-enviar:hover {
-        background: #00bcd4;
-    }
-    .btn-voltar {
-        background: #444;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: 10px 28px;
-        font-size: 1rem;
-        cursor: pointer;
-        margin-top: 18px;
-        transition: background 0.3s;
-    }
-    .btn-voltar:hover {
-        background: #0ff;
-        color: #111;
-    }
-    .explica-aprendizado {
-        max-width: 340px;
-        background: #222;
-        color: #fff;
-        padding: 16px 18px;
-        border-radius: 12px;
-        text-align: left;
-        font-size: 1rem;
-        margin-bottom: 24px;
-    }
-    @media (max-width: 900px) {
-        .ajuda-flex {
-            flex-direction: column;
-            align-items: center;
-        }
-        .explica-aprendizado {
-            margin-top: 24px;
-        }
-    }
-    </style>
-
-    <script>
+<script>
 let memoriaIA = JSON.parse(localStorage.getItem('memoriaIA')) || [];
 
+function atualizarListaEnsinados() {
+    const ul = document.getElementById('lista-ensinados');
+    ul.innerHTML = "";
+    if (memoriaIA.length === 0) {
+        ul.innerHTML = "<li style='color:#888;'>Nenhuma pergunta ensinada ainda.</li>";
+        return;
+    }
+    memoriaIA.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.pergunta;
+        ul.appendChild(li);
+    });
+}
+
 function responderPersonagem() {
-    const entrada = document.getElementById('entrada-usuario').value.trim();
+    const entradaInput = document.getElementById('entrada-usuario');
+    const entrada = entradaInput.value.trim();
     const fala = document.getElementById('fala-personagem');
+
     if (!entrada) {
         fala.textContent = "Pode me contar como está se sentindo ou o que está passando.";
         return;
     }
+
     const texto = entrada.toLowerCase();
 
-    // Verifica se a IA já aprendeu uma resposta para esta entrada
-    const respostaAprendida = memoriaIA.find(item => texto.includes(item.pergunta));
-    if (respostaAprendida) {
-        fala.textContent = respostaAprendida.resposta;
-        document.getElementById('entrada-usuario').value = "";
-        return;
-    }
-
-    // Respostas de autoajuda simples
-    if (texto.includes("triste") || texto.includes("deprimido") || texto.includes("mal")) {
-        fala.textContent = "Sinto muito que esteja se sentindo assim. Lembre-se: tudo passa e você não está sozinho. Que tal respirar fundo e pensar em algo que te faz bem?";
-    } else if (texto.includes("ansioso") || texto.includes("ansiedade")) {
-        fala.textContent = "A ansiedade pode ser difícil, mas tente focar no presente. Inspire e expire devagar algumas vezes. Se precisar, procure conversar com alguém de confiança.";
-    } else if (texto.includes("feliz") || texto.includes("bem")) {
-        fala.textContent = "Que ótimo saber disso! Aproveite esse momento e compartilhe sua alegria com alguém.";
-    } else if (texto.includes("sozinho") || texto.includes("solidão")) {
-        fala.textContent = "A solidão pode ser desafiadora. Lembre-se de que sempre há pessoas dispostas a ouvir. Que tal mandar uma mensagem para um amigo?";
-    } else if (texto.includes("ajuda") || texto.includes("preciso de ajuda")) {
-        fala.textContent = "Reconhecer que precisa de ajuda é um grande passo. Se quiser conversar mais, estou aqui. Se for algo sério, procure um profissional de saúde mental.";
-    } else if (texto.includes("obrigado") || texto.includes("valeu")) {
-        fala.textContent = "De nada! Sempre que precisar, estarei por aqui para conversar.";
-    } else if (texto.includes("tchau") || texto.includes("até")) {
-        fala.textContent = "Até logo! Cuide-se bem e lembre-se: você é importante.";
-    } else if (texto.startsWith("aprenda:")) {
-        // Permite ao usuário ensinar a IA: "aprenda: pergunta | resposta"
-        // Exemplo: aprenda: qual seu filme favorito? | Meu filme favorito é Wall-E!
+    // Comando de aprendizado
+    if (texto.startsWith("aprenda:")) {
         const partes = entrada.substring(8).split("|");
         if (partes.length === 2) {
             const pergunta = partes[0].trim().toLowerCase();
             const resposta = partes[1].trim();
-            memoriaIA.push({ pergunta, resposta });
-            localStorage.setItem('memoriaIA', JSON.stringify(memoriaIA));
-            fala.textContent = "Aprendi uma nova resposta! Pode testar agora.";
+
+            if (memoriaIA.some(item => item.pergunta === pergunta)) {
+                fala.textContent = "Já aprendi essa pergunta antes. Quer ensinar algo diferente?";
+            } else {
+                memoriaIA.push({ pergunta, resposta });
+                localStorage.setItem('memoriaIA', JSON.stringify(memoriaIA));
+                fala.textContent = "Aprendi uma nova resposta! Pode testar agora.";
+                atualizarListaEnsinados();
+            }
         } else {
             fala.textContent = "Para me ensinar, use: aprenda: pergunta | resposta";
         }
+        entradaInput.value = "";
+        return;
+    }
+
+    // Busca por pergunta ensinada
+    const respostaAprendida = memoriaIA.find(item => texto.includes(item.pergunta));
+    if (respostaAprendida) {
+        fala.textContent = respostaAprendida.resposta;
     } else {
         fala.textContent = "Obrigado por compartilhar. Se quiser, pode me contar mais ou perguntar algo. Estou aqui para ouvir você! Se quiser me ensinar uma resposta, digite: aprenda: pergunta | resposta";
     }
-    document.getElementById('entrada-usuario').value = "";
+
+    entradaInput.value = "";
 }
+
+window.onload = () => {
+    atualizarListaEnsinados();
+    const entradaInput = document.getElementById('entrada-usuario');
+    entradaInput.focus();
+    entradaInput.addEventListener('keydown', function(event) {
+        if (event.key === "Enter") {
+            responderPersonagem();
+        }
+    });
+};
 </script>
 </body>
 </html>

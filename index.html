@@ -1,316 +1,125 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Página do Julio Cesar</title>
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family:Arial, Helvetica, sans-serif;
-            font-size: 100%;
-            background-color: black;
-            background-image: url('matrix.webp');
-        }
-        p {
-            font-family:fantasy;
-            font-size: 4rem;
-            color: brown;
-        }
-        .grid-container {
-            background: rgba(249, 248, 248, 0.4); /* semi-transparente */
-            height: 27rem;
-            width: 90%;
-            max-width:60%;
-            margin: 10% auto;
-            margin-top: 10%;
-            margin-left: 20%;
-            border-radius: 10px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-template-rows: 1fr;
-            gap: 0;
-            justify-items: center;
-            align-items: center;
-            grid-template-columns: repeat(auto-fit, minmax(20%, 1fr));
-        }
-        .grid-item img {
-            width: 100%;
-            max-width: 100%;
-            height: auto;
-        }
-        .imgresp {
-            max-width: 70%;
-            height: auto;
-            margin-bottom: 12px;
-            border-radius: 20px;
-            border: 5px;
-        }
-        .navbar {
-            list-style:none;
-            height: 63px;
-            position: fixed;
-            top: 0;
-            z-index:1000;
-            background-color: #333;
-            width: 100%;
-        }
-        nav {
-            position: absolute;
-            margin-top: 0%;
-            font-family: monospace;
-            float: left;
-        }
-        ul {
-            display: flex;
-            position:absolute;
-            list-style: none;
-            padding-left: 0;
-            width:2rem%
-        }
-        li {
-            background-color: #333;
-            float: left;
-            padding: 8%;
-            width: 50%;
-            position: relative;
-            text-decoration: none;
-            transition-duration: 0.5s;
-        }
-        li a{
-            display: flex;
-            color: #f1f1f5;
-            padding: 8%;
-            text-decoration: none;
-        }
-        li ul{
-            visibility: hidden;
-            display: flex;
-            flex-direction: column;
-            opacity: 0;
-            width: 90%;
-            min-width: 5%;
-            position: absolute;
-            transition: all 0.6s ease;
-            margin-top: 1.9rem;
-            left: 0;
-            box-shadow: 0px 4px 12px 0px black;
-        }
-        li ul li{
-            clear:both;
-            width: 150%;
-        }
-        ul li:hover, ul li:focus-within {
-            display: flex;
-            background-color: #726c6c;
-            cursor: pointer;
-            font-weight:bold;
-            transition: 0.3s;
-        }
-        a:hover {
-            color: black;
-        }
-        ul li:hover>ul, ul li:focus-within>ul, ul li ul:hover, ul li ul:focus {
-            position: absolute;
-            display: flex;
-            visibility: visible;
-            opacity: 0.8;
-        }
-        /* RESPONSIVIDADE */
-        @media (max-width: 1200px){
-            .grid-container {
-                max-width: 80%;
-                margin-left: 10%;
-            }
-        }
-        @media (max-width: 900px){
-            .grid-container {
-                max-width: 95%;
-                margin-left: 2.5%;
-                height: auto;
-                min-height: 18rem;
-            }
-            p {
-                font-size: 2.5rem;
-            }
-        }
-        @media (max-width: 700px){
-            .grid-container {
-                max-width: 99%;
-                margin-left: 0.5%;
-                margin-top: 18%;
-                height: auto;
-                min-height: 12rem;
-                padding: 10px 0;
-            }
-            p {
-                font-size: 1.5rem;
-            }
-            .navbar {
-                height: auto;
-                min-height: 48px;
-            }
-        }
-        @media (max-width: 600px){
-            .navbar {
-                display: none;
-                width:fit-content;
-            }
-            ul {
-                margin-top: 10%;
-                display: flex;
-                flex-direction: column;
-                position:absolute;
-                list-style: none;
-                padding-left: 0;
-            }
-            li {
-                float: left;
-                margin-left: 50%;
-                padding: 8%;
-                width: 120%;
-                position: relative;
-                text-decoration: none;
-                transition-duration: 0.5s;
-            }
-            li a{
-                display: flex;
-                color: #fcfbfb;
-                padding: 1%;
-                text-decoration: none;
-            }
-            li ul{
-                visibility: hidden;
-                display: flex;
-                flex-direction: column;
-                opacity: 0;
-                width:fit-content;
-                position: absolute;
-                transition: all 0.6s ease;
-                margin-top: 0rem;
-                margin-left: 1%;
-                box-shadow: 0px 4px 12px 0px black;
-            }
-            li ul li{
-                clear:both;
-                margin-left: 1%;
-                width: 150%;
-            }
-            ul li:hover, ul li:focus-within {
-                display: flex;
-                background-color: #726c6c;
-                cursor: pointer;
-                font-weight:bold;
-                transition: 0.3s;
-            }
-            a:hover {
-                color: black;
-            }
-            ul li:hover>ul, ul li:focus-within>ul, ul li ul:hover, ul li ul:focus {
-                position: absolute;
-                display: flex;
-                visibility: visible;
-                opacity: 0.9;
-                left: 100%;
-            }
-            .menu-toggle {
-                border-style:none;
-                margin-top: 1%;
-                margin-left: 1%;
-                padding: 1%;
-                background-color: black;
-                color: white;
-                font-size:xx-large;
-                cursor:pointer;
-            }
-            .showbar {
-                display:flex;
-                flex-direction: column;
-                position:absolute;
-                opacity: 0.8;
-                margin-top: 8%;
-                width: auto;
-                background-color: black;
-            }
-            footer {
-                font-size: 0.95rem !important;
-                padding: 7px 0 !important;
-            }
-        }
-        @media (max-width: 400px){
-            .grid-container {
-                min-height: 8rem;
-                padding: 4px 0;
-            }
-            p {
-                font-size: 1rem;
-            }
-            footer {
-                font-size: 0.8rem !important;
-                padding: 5px 0 !important;
-            }
-        }
-        .grid-container p:hover {
-            color: #ff4800; /* azul, ou escolha a cor desejada */
-            transition: color 0.3s;
-        }
-        .grid-container:hover {
-            background: rgba(255, 72, 0, 0.2); /* cor laranja semi-transparente, ajuste como quiser */
-            transition: background 0.3s;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Pagina do Julio Cesar</title>
+<style>
+    body {
+        background-color: #000;
+        color: #0f0;
+        font-family: "Courier New", Courier, monospace;
+        margin: 0;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    #tela {
+        width: 640px;
+        height: 480px;
+        background-color: #000;
+        border: 10px solid #333;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    #texto {
+        white-space: pre-wrap;
+        font-size: 14px;
+        line-height: 1.4em;
+    }
+
+    #iniciarBoot {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.2rem;
+        padding: 1rem 2rem;
+        z-index: 10;
+    }
+</style>
 </head>
 <body>
-    <button class="menu-toggle" onclick="botaoh()" data-target="#menuopc">&#8801;</button>
-    <nav class="navbar" id="menuopc">
-        <ul>
-            <li><a href="#">Inicio </a></li>
-            <li><a href="#">Sobre  </a></li>
-            <li><a href="#">Codigos</a>
-                <ul>
-                    <li><a href="calculadora.html">Calculadora</a></li>
-                    <li><a href="xadrezcompleto.html">Xadrez</a></li>
-                    <li><a href="slotmachine.html">Jogo do Gatinho</a></li>
-                    <li><a href="robozinho.html">Dr. Ajuda</a></li>
-                    <li><a href="sinuca.html">SinucatroN</a></li>
-                    <li><a href="peca3d.html">CapturA (TESTE)</a></li>
-                    <li><a href="truco.html">Jogo de Truco</a></li>
-                    <li><a href="tradutordecachorro.html">Dog Tradutor</a></li>
-                </ul>
-            </li>
-            <li><a href="#">Contato </a></li>
-        </ul>
-    </nav>
-    <div class="grid-container">
-        <p>PAGINA DE CODIGOS</p>
-    </div>
-    <script>
-        function botaoh(){
-            const navBut = document.getElementById("menuopc");
-            navBut.classList.toggle("showbar");
-        }
 
-        // Contador de visitas: só soma para um novo usuário (por navegador)
-        window.onload = function() {
-            let visitas = localStorage.getItem('contador_visitas');
-            let jaContou = localStorage.getItem('visitante_contado');
-            if (!visitas) visitas = 0;
-            if (!jaContou) {
-                visitas++;
-                localStorage.setItem('contador_visitas', visitas);
-                localStorage.setItem('visitante_contado', 'sim');
-            }
-            document.getElementById('contador-visitas').textContent = visitas;
+<button id="iniciarBoot">
+    Iniciar Boot
+</button>
+<div id="tela" style="visibility:hidden;">
+    <div id="texto"></div>
+    <audio id="som-boot" src="bootintro.mp3"></audio>
+</div>
+
+<script>
+const linhasBoot = [
+    "Award Modular BIOS v4.51PG, An Energy Star Ally",
+    "Copyright (C) 1984-1999, Award Software, Inc.",
+    "",
+    "Intel(R) Pentium(R) III 733MHz Processor",
+    "Memory Test: 65536K OK",
+    "Primary Master: WDC WD800BB-00CAA1",
+    "Primary Slave: None",
+    "Secondary Master: LG CD-ROM CRD-8521B",
+    "Secondary Slave: None",
+    "",
+    "Detecting IDE Drives...",
+    "Boot from CD-ROM: Not Found",
+    "Boot from Hard Disk...",
+    "",
+    "Starting MS-DOS...",
+    "",
+    "C:\\>"
+];
+
+let linhaAtual = 0;
+const textoEl = document.getElementById("texto");
+const somBoot = document.getElementById("som-boot");
+const tela = document.getElementById("tela");
+const btn = document.getElementById("iniciarBoot");
+
+btn.addEventListener("click", function() {
+    btn.style.display = "none";
+    tela.style.visibility = "visible";
+    somBoot.currentTime = 0;
+    somBoot.play();
+    proximaLinha();
+});
+
+function digitarLinha(texto, callback) {
+    let i = 0;
+    const intervalo = setInterval(() => {
+        textoEl.innerHTML += texto[i] || "";
+        i++;
+        if (i > texto.length) {
+            clearInterval(intervalo);
+            textoEl.innerHTML += "<br>";
+            if (callback) callback();
         }
-    </script>
-    <footer style="width:100%;position:fixed;bottom:0;left:0;z-index:999;background:rgba(20,20,20,0.95);color:#ff4800;text-align:center;padding:10px 0;font-size:1.1rem;letter-spacing:2px;box-shadow:0 -2px 12px #000a;">
-        <span>👁️‍🗨️ Visitas: <span id="contador-visitas">0</span></span>
-    </footer>
+    }, 5);
+}
+
+function proximaLinha() {
+    if (linhaAtual >= linhasBoot.length) {
+        somBoot.pause();
+        somBoot.currentTime = 0;
+        setTimeout(() => {
+            window.location.href = "principal.html"; // Troque pelo destino desejado
+        }, 1000);
+        return;
+    }
+
+    const linha = linhasBoot[linhaAtual];
+    linhaAtual++;
+    digitarLinha(linha, () => setTimeout(proximaLinha,500));
+}
+</script>
+
 </body>
 </html>
