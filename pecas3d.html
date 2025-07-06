@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Peça 3D por Contorno</title>
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        video, canvas {
+            width: 90%;
+            max-width: 400px;
+            margin: 10px 0;
+        }
+        #threeD {
+            width: 100%;
+            height: 300px;
+            background: #222;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Captura da Peça e Modelo 3D</h2>
+<video id="video" autoplay playsinline></video>
+<br>
+<button id="capturar">Capturar</button>
+
+<h3>Contorno Detectado</h3>
+<canvas id="desenho2D"></canvas>
+
+<h3>Modelo 3D Aproximado</h3>
+<div id="threeD"></div>
+
+<script async src="https://docs.opencv.org/4.7.0/opencv.js" onload="cvReady()"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+
+<script>
+let streaming = false;
+
+function startCamera() {
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+        video.srcObject = stream;
+        streaming = true;
+    })
+    .catch(err => alert('Erro ao acessar a câmera: ' + err));
+}
+
+function cvReady() {
+    if (cv.getBuildInformation) {
+        startCamera();
+    } else {
+        alert("Erro ao carregar OpenCV.js");
+    }
+}
+
+document.getElementById('capturar').onclick = () => {
+    if (!streaming) return;
+
+    const video = document.getElementById('video');
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+
+    const src = cv.imread(canvas);
+    const gray = new cv.Mat();
+    const edges = new cv.Mat();
+    const contours = new cv.MatVector();
+    const hierarchy = new cv.Mat();
+
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.Canny(gray, edges, 50, 150);
+    cv.findContours(edges, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    const dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+
+    if (contours.size() > 0) {
+        let maxContour = contours.get(0);
+        let maxArea = cv.contourArea(maxContour);
+
+        for (let i = 1; i < contours.size(); i++) {
+            let cnt = contours.get(i);
+            let area = cv.contourArea(cnt);
+            if (area > maxArea) {
+                maxArea = area;
+                maxContour = cnt;
+            }
+        }
+
+        cv.drawContours(dst, new cv.MatVector(maxContour), -1, new cv.Scalar(255, 255, 255), 2);
+
+        gerar3DDoContorno(maxContour, src.cols, src.rows);
+    }
+
+    cv.imshow('desenho2D', dst);
+
+    src.delete();
+    gray.delete();
+    edges.delete();
+    contours.delete();
+    hierarchy.delete();
+    dst.delete();
+};
+
+function gerar3DDoContorno(contorno, largura, altura) {
+    const container = document.getElementById('threeD');
+    container.innerHTML = '';
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
+
+    const shape = new THREE.Shape();
+
+    for (let i = 0; i < contorno.total(); i++) {
+        const point = contorno.intPtr(i);
+        const x = (point[0] / largura - 0.5) * 2;
+        const y = -(point[1] / altura - 0.5) * 2;
+
+        if (i === 0) {
+            shape.moveTo(x, y);
+        } else {
+            shape.lineTo(x, y);
+        }
+    }
+
+    const extrudeSettings = { depth: 0.1, bevelEnabled: false };
+    const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    const material = new THREE.MeshNormalMaterial({ wireframe: false });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    camera.position.z = 2;
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mesh.rotation.x += 0.01;
+        mesh.rotation.y += 0.01;
+        renderer.render(scene, camera);
+    }
+    animate();
+}
+</script>
+
+</body>
+</html>
