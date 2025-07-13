@@ -1,47 +1,386 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truco em JavaScript</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Truco em JavaScript</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #28a745;
+      color: #fff;
+      margin: 0;
+    }
+    .container {
+      background-color: #343a40;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 800px;
+    }
+    h1, h3 {
+      color: #ffc107;
+    }
+    .placar {
+      font-size: 1.5em;
+      margin-bottom: 20px;
+      border: 1px solid #ffc107;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .virada-container, .mesa {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .mesa {
+      flex-direction: row;
+      justify-content: center;
+      gap: 20px;
+      min-height: 120px;
+      border: 1px dashed #6c757d;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .mao-jogador {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      min-height: 120px;
+      border: 1px dashed #6c757d;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .carta {
+      width: 80px;
+      height: 110px;
+      background: linear-gradient(135deg, #ffffff, #f1f1f1);
+      border: 2px solid #343a40;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #212529;
+      box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+      position: relative;
+    }
+    .carta span.valor {
+      font-size: 1.4em;
+    }
+    .carta span.naipe {
+      font-size: 2em;
+      line-height: 1;
+    }
+    .carta:hover {
+      transform: translateY(-5px);
+    }
+    .carta.selecionada {
+      border: 2px solid #007bff;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.7);
+    }
+    .controles button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      transition: background-color 0.3s ease;
+    }
+    .controles button:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+    .controles button:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+    .mensagens {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #17a2b8;
+      border-radius: 5px;
+      color: #fff;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Truco!</h1>
+<div class="container">
+  <h1>Truco!</h1>
+  <div class="placar">
+    <span id="jogador1-nome">Jogador 1</span>: <span id="jogador1-pontos">0</span><br>
+    <span id="IA-nome">IA</span>: <span id="IA-pontos">0</span>
+  </div>
+  <div class="virada-container">
+    <h3>Carta Virada:</h3>
+    <div id="carta-virada" class="carta"></div>
+  </div>
+  <h3>Mesa:</h3>
+  <div class="mesa">
+    <div id="carta-jogada-jogador1" class="carta"></div>
+    <div id="carta-jogada-IA" class="carta"></div>
+  </div>
+  <div class="mao-jogador" id="mao-jogador1">
+    <h3>Sua Mão:</h3>
+  </div>
+  <div class="controles">
+    <button id="btn-nova-rodada">Nova Rodada</button>
+    <button id="btn-truco" disabled>Pedir Truco</button>
+    <button id="btn-aceitar" disabled>Aceitar Truco</button>
+    <button id="btn-correr" disabled>Correr</button>
+  </div>
+  <div class="mensagens" id="mensagens-jogo"></div>
+</div>
+<script>
+    const cartasValores = ['4', '5', '6', '7', 'Q', 'J', 'K', 'A', '2', '3'];
+    const naipes = ['♣', '♥', '♠', '♦'];
+    let baralho = [], maoJogador1 = [], maoIA = [];
+    let pontosJogador1 = 0, pontosIA = 0;
+    let valorRodada = 1, manilha = '', emTruco = false, quemPediuTruco = null;
+    let rodadaAtual = 0; // Controla o turno atual (0, 1, 2)
+    let vitoriasJogador1 = 0; // Controla vitórias nas mãos da rodada
+    let vitoriasIA = 0; // Controla vitórias nas mãos da rodada
 
-        <div class="placar">
-            <span id="jogador1-nome">Jogador 1</span>: <span id="jogador1-pontos">0</span>
-            <br>
-            <span id="jogador2-nome">Jogador 2</span>: <span id="jogador2-pontos">0</span>
-        </div>
+    const jogador1Pontos = document.getElementById('jogador1-pontos');
+    const IAPontos = document.getElementById('IA-pontos');
+    const maoJogador1Div = document.getElementById('mao-jogador1');
+    const cartaJogada1 = document.getElementById('carta-jogada-jogador1');
+    const cartaJogada2 = document.getElementById('carta-jogada-IA');
+    const cartaVirada = document.getElementById('carta-virada');
+    const mensagens = document.getElementById('mensagens-jogo');
 
-        <div class="virada-container">
-            <h3>Carta Virada:</h3>
-            <div id="carta-virada" class="carta"></div>
-        </div>
+    document.getElementById('btn-nova-rodada').addEventListener('click', novaRodada);
+    document.getElementById('btn-truco').addEventListener('click', pedirTruco);
+    document.getElementById('btn-aceitar').addEventListener('click', aceitarTruco);
+    document.getElementById('btn-correr').addEventListener('click', correrDoTruco);
 
-        <div class="mesa">
-            <h3>Mesa:</h3>
-            <div id="carta-jogada-jogador1" class="carta"></div>
-            <div id="carta-jogada-jogador2" class="carta"></div>
-        </div>
+    function criarCarta(valor, naipe) {
+        const carta = document.createElement('div');
+        carta.className = 'carta';
+        const spanValor = document.createElement('span');
+        spanValor.className = 'valor';
+        spanValor.textContent = valor;
+        const spanNaipe = document.createElement('span');
+        spanNaipe.className = 'naipe';
+        spanNaipe.textContent = naipe;
+        carta.appendChild(spanValor);
+        carta.appendChild(spanNaipe);
+        return carta;
+    }
 
-        <div class="mao-jogador" id="mao-jogador1">
-            <h3>Sua Mão:</h3>
-            </div>
+    function gerarBaralho() {
+        baralho = [];
+        for (let v of cartasValores) {
+            for (let n of naipes) {
+                baralho.push({ valor: v, naipe: n });
+            }
+        }
+    }
 
-        <div class="controles">
-            <button id="btn-nova-rodada">Nova Rodada</button>
-            <button id="btn-truco" disabled>Pedir Truco</button>
-            <button id="btn-aceitar" disabled>Aceitar Truco</button>
-            <button id="btn-correr" disabled>Correr</button>
-        </div>
+    function embaralhar(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
 
-        <div class="mensagens" id="mensagens-jogo">
-            </div>
-    </div>
+    function novaRodada() {
+        resetTruco();
+        resetarMesa();
+        mensagens.textContent = '';
+        maoJogador1 = [];
+        maoIA = [];
+        rodadaAtual = 0;
+        vitoriasJogador1 = 0;
+        vitoriasIA = 0;
 
-    <script src="script.js"></script>
+        gerarBaralho();
+        embaralhar(baralho);
+
+        const virada = baralho.pop();
+        cartaVirada.innerHTML = '';
+        cartaVirada.appendChild(criarCarta(virada.valor, virada.naipe));
+        // A manilha é a próxima carta na sequência de valores
+        manilha = cartasValores[(cartasValores.indexOf(virada.valor) + 1) % cartasValores.length];
+
+        for (let i = 0; i < 3; i++) {
+            maoJogador1.push(baralho.pop());
+            maoIA.push(baralho.pop());
+        }
+
+        renderizarMao();
+        document.getElementById('btn-nova-rodada').disabled = true;
+        document.getElementById('btn-truco').disabled = false;
+        mensagens.textContent = 'Nova rodada iniciada. Jogue uma carta.';
+    }
+
+    function renderizarMao() {
+        maoJogador1Div.innerHTML = '<h3>Sua Mão:</h3>';
+        maoJogador1.forEach((carta, i) => {
+            const div = criarCarta(carta.valor, carta.naipe);
+            div.addEventListener('click', () => jogarCarta(i));
+            maoJogador1Div.appendChild(div);
+        });
+    }
+
+    function jogarCarta(indice) {
+        // Impede jogadas múltiplas no mesmo turno
+        if (cartaJogada1.children.length > 0) return;
+
+        const carta = maoJogador1.splice(indice, 1)[0];
+        cartaJogada1.innerHTML = '';
+        cartaJogada1.appendChild(criarCarta(carta.valor, carta.naipe));
+        renderizarMao();
+        document.getElementById('btn-truco').disabled = true;
+
+        // Lógica de jogada da IA (simples, joga uma carta aleatória)
+        if (maoIA.length > 0) {
+            const indice2 = Math.floor(Math.random() * maoIA.length);
+            const carta2 = maoIA.splice(indice2, 1)[0];
+            cartaJogada2.innerHTML = '';
+            cartaJogada2.appendChild(criarCarta(carta2.valor, carta2.naipe));
+
+            // Verifica o resultado do turno atual (mão)
+            verificarResultado(carta, carta2);
+        }
+    }
+
+    function valorCarta(carta) {
+        // Prioriza Manilha: valor 100 + naipe para desempate
+        if (carta.valor === manilha) {
+            return 100 + naipes.indexOf(carta.naipe);
+        }
+        // Valor normal da carta baseado no array cartasValores
+        return cartasValores.indexOf(carta.valor);
+    }
+
+    function verificarResultado(c1, c2) {
+        const v1 = valorCarta(c1);
+        const v2 = valorCarta(c2);
+        let resultadoTurno = '';
+
+        if (v1 > v2) {
+            vitoriasJogador1++;
+            resultadoTurno = 'Jogador 1 venceu a mão.';
+        } else if (v2 > v1) {
+            vitoriasIA++;
+            resultadoTurno = 'IA venceu a mão.';
+        } else {
+            resultadoTurno = 'Empate na mão.';
+        }
+
+        mensagens.textContent = resultadoTurno;
+        rodadaAtual++;
+
+        // Atraso para que o jogador veja o resultado antes de limpar a mesa
+        setTimeout(() => {
+            // Verifica se alguém já venceu a rodada (melhor de 3)
+            if (vitoriasJogador1 >= 2) {
+                mensagens.textContent = `Rodada encerrada! Jogador 1 venceu e ganhou ${valorRodada} ponto(s)!`;
+                pontosJogador1 += valorRodada;
+                document.getElementById('btn-nova-rodada').disabled = false;
+            } else if (vitoriasIA >= 2) {
+                mensagens.textContent = `Rodada encerrada! IA venceu e ganhou ${valorRodada} ponto(s)!`;
+                pontosIA += valorRodada;
+                document.getElementById('btn-nova-rodada').disabled = false;
+            } else if (rodadaAtual === 3) {
+                // Se as 3 mãos foram jogadas e ninguém venceu 2x, decide pelo placar final das mãos
+                if (vitoriasJogador1 > vitoriasIA) {
+                    mensagens.textContent = `Rodada encerrada! Jogador 1 venceu a rodada. Ganhou ${valorRodada} ponto(s)!`;
+                    pontosJogador1 += valorRodada;
+                } else if (vitoriasIA > vitoriasJogador1) {
+                    mensagens.textContent = `Rodada encerrada! IA venceu a rodada. Ganhou ${valorRodada} ponto(s)!`;
+                    pontosIA += valorRodada;
+                } else {
+                    mensagens.textContent = 'Rodada encerrada em empate!';
+                }
+                document.getElementById('btn-nova-rodada').disabled = false;
+            } else {
+                // A rodada continua, prepare para a próxima mão
+                proximaMao();
+            }
+
+            atualizarPlacar();
+        }, 1000);
+    }
+
+    function proximaMao() {
+        resetarMesa();
+        mensagens.textContent += ' Próxima mão. Jogue uma carta.';
+        document.getElementById('btn-truco').disabled = false;
+    }
+
+    function resetarMesa() {
+        cartaJogada1.innerHTML = '';
+        cartaJogada2.innerHTML = '';
+    }
+
+    function atualizarPlacar() {
+        jogador1Pontos.textContent = pontosJogador1;
+        IAPontos.textContent = pontosIA;
+    }
+
+    // Funções de Truco (sem alterações)
+    function pedirTruco() {
+        mensagens.textContent = "Jogador 1 pediu Truco!";
+        emTruco = true;
+        quemPediuTruco = 'jogador1';
+        document.getElementById('btn-aceitar').disabled = false;
+        document.getElementById('btn-correr').disabled = false;
+        document.getElementById('btn-truco').disabled = true;
+    }
+
+    function aceitarTruco() {
+        mensagens.textContent = "IA aceitou o Truco!";
+        aumentarValorRodada();
+        emTruco = false;
+        document.getElementById('btn-aceitar').disabled = true;
+        document.getElementById('btn-correr').disabled = true;
+    }
+
+    function correrDoTruco() {
+        mensagens.textContent = "IA correu! Jogador 1 ganhou a rodada.";
+        pontosJogador1 += valorRodada;
+        atualizarPlacar();
+        resetTruco();
+        document.getElementById('btn-nova-rodada').disabled = false;
+    }
+
+    function aumentarValorRodada() {
+        if (valorRodada === 1) valorRodada = 3;
+        else if (valorRodada === 3) valorRodada = 6;
+        else if (valorRodada === 6) valorRodada = 9;
+        else if (valorRodada === 9) valorRodada = 12;
+        mensagens.textContent += ` Valor da rodada agora é ${valorRodada} ponto(s).`;
+    }
+
+    function resetTruco() {
+        emTruco = false;
+        quemPediuTruco = null;
+        document.getElementById('btn-aceitar').disabled = true;
+        document.getElementById('btn-correr').disabled = true;
+        valorRodada = 1;
+    }
+</script>
 </body>
 </html>
