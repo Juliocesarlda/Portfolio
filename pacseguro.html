@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Segurança no Trabalho - Pac-Man</title>
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+    }
+
+    h1 {
+      color: #f4d03f;
+      margin-top: 20px;
+    }
+
+    #hud {
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    #gameCanvas {
+      background-color: #000;
+      border: 3px solid #fff;
+      box-shadow: 0 0 10px lime;
+    }
+
+    .controls {
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    .controls button, .controls select {
+      padding: 8px 15px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #f4d03f;
+      color: #222;
+      margin: 0 5px;
+    }
+
+    .controls select {
+      background-color: #eee;
+    }
+
+    .game-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;  
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .game-over-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <audio id="collectSound" src="collect-points-190037.mp3"></audio>
+  <audio id="alertSound" src="gameover.mp3"></audio>
+
+  <h1>Pac-Man da Segurança do Trabalho</h1>
+  <p>Use as setas do teclado para se mover e coletar EPIs. Evite os perigos!</p>
+
+  <div class="controls">
+    <label for="difficulty">Dificuldade:</label>
+    <select id="difficulty" onchange="setDifficulty()">
+      <option value="easy">Fácil</option>
+      <option value="medium" selected>Médio</option>
+      <option value="hard">Difícil</option>
+    </select>
+    <button onclick="startGame()">Iniciar Novo Jogo</button>
+  </div>
+
+  <div class="game-area">
+    <div id="hud">
+      EPIs Coletados: <span id="score">0</span>
+    </div>
+    <canvas id="gameCanvas" width="480" height="480"></canvas>
+  </div>
+
+  <script>
+    const epiImages = [
+        { img: new Image(), name: "Boné", src: "bonecasquete.webp" },
+        { img: new Image(), name: "Luva Anticorte", src: "luvaanticorte.png" },
+        { img: new Image(), name: "Luva de Látex", src: "luvalatex.jpg" },
+        { img: new Image(), name: "Mangote", src: "luvamangote.webp" },
+        { img: new Image(), name: "Óculos de Visão Ampla", src: "oculosamplavisao.webp" },
+        { img: new Image(), name: "Óculos de Segurança", src: "oculosdeseguranca.jpg" }
+    ];
+
+    epiImages.forEach(epi => epi.img.src = epi.src);
+
+    const playerImages = {
+      up: new Image(),
+      down: new Image(),
+      left: new Image(),
+      right: new Image()
+    };
+
+    playerImages.up.src = "pacmanup.png";
+    playerImages.down.src = "pacmandown.png";
+    playerImages.left.src = "pacmanleft.png";
+    playerImages.right.src = "pacmanright.png";
+
+    const ghostImg = new Image();
+    ghostImg.src = "vermelho.png";
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const tileSize = 40;
+    const rows = 12;
+    const cols = 12;
+
+    let score = 0;
+    let gameOver = false;
+    let ghostMovementInterval;
+
+    const initialEpis = [
+      { x: 2, y: 1 },
+      { x: 5, y: 3 },
+      { x: 6, y: 7 },
+      { x: 3, y: 9 }
+    ];
+
+    let epis = [];
+
+    const player = {
+      x: 1,
+      y: 1,
+      direction: "right"
+    };
+
+    const ghosts = [
+      { x: 10, y: 1, dirX: 0, dirY: 1 },
+      { x: 10, y: 10, dirX: 0, dirY: -1 }
+    ];
+
+    const mazeMap = [
+      "############",
+      "#..........#",
+      "#.###.####.#",
+      "#.#......#.#",
+      "#.#.####.#.#",
+      "#..........#",
+      "####.#.#####",
+      "#..........#",
+      "#.##.#.##..#",
+      "#..........#",
+      "#.########.#",
+      "############"
+    ];
+
+    const walls = [];
+    for (let y = 0; y < mazeMap.length; y++) {
+      for (let x = 0; x < mazeMap[y].length; x++) {
+        if (mazeMap[y][x] === "#") {
+          walls.push({ x, y });
+        }
+      }
+    }
+
+    function drawTile(x, y, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      walls.forEach(w => drawTile(w.x, w.y, "#555"));
+      /*epis.forEach(e => drawTile(e.x, e.y, "lime"));*/
+      // EPIs com imagem
+      epis.forEach(e => {
+      ctx.drawImage(e.image, e.x * tileSize, e.y * tileSize, tileSize, tileSize);
+      });
+
+      ghosts.forEach(g => {
+        ctx.drawImage(ghostImg, g.x * tileSize, g.y * tileSize, tileSize, tileSize);
+      });
+      ctx.drawImage(playerImages[player.direction], player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+      document.getElementById("score").innerText = score;
+    }
+
+    function isColliding(x, y) {
+      return walls.some(w => w.x === x && w.y === y);
+    }
+
+    function movePlayer(dx, dy) {
+      if (gameOver) return;
+      const newX = player.x + dx;
+      const newY = player.y + dy;
+
+      if (!isColliding(newX, newY)) {
+        player.x = newX;
+        player.y = newY;
+
+        for (let i = 0; i < epis.length; i++) {
+          if (epis[i].x === player.x && epis[i].y === player.y) {
+            epis.splice(i, 1);
+            document.getElementById("collectSound").play();
+            score++;
+            if (epis.length === 0) {
+              setTimeout(() => {
+                alert("Parabéns! Você coletou todos os EPIs com segurança!");
+                gameOver = true;
+                reset();
+              }, 100);
+            }
+            break;
+          }
+        }
+
+        if (ghosts.some(g => g.x === player.x && g.y === player.y)) {
+          handleGameOver();
+        }
+      }
+      draw();
+    }
+
+    function moveGhosts() {
+      if (gameOver) return;
+
+      ghosts.forEach(g => {
+        const possibleMoves = [
+          { dx: 0, dy: 1 },
+          { dx: 0, dy: -1 },
+          { dx: 1, dy: 0 },
+          { dx: -1, dy: 0 }
+        ];
+
+        const validMoves = possibleMoves.filter(move =>
+          !isColliding(g.x + move.dx, g.y + move.dy)
+        );
+
+        if (validMoves.length > 0) {
+          const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+          g.x += randomMove.dx;
+          g.y += randomMove.dy;
+        }
+
+        g.x = Math.max(1, Math.min(cols - 2, g.x));
+        g.y = Math.max(1, Math.min(rows - 2, g.y));
+
+        if (g.x === player.x && g.y === player.y) {
+          handleGameOver();
+        }
+      });
+
+      draw();
+    }
+
+    function handleGameOver() {
+      document.getElementById("alertSound").play();
+      if (!gameOver) {
+        alert("Você foi pego por um perigo! Fim de jogo.");
+        gameOver = true;
+        reset();
+      }
+    }
+
+    function reset() {
+      gameOver = false;
+      player.x = 1;
+      player.y = 1;
+      score = 0;
+      /*epis = initialEpis.map(epi => ({ ...epi }));*/
+      epis = initialEpis.map((epi, index) => ({
+      ...epi,
+      image: epiImages[index % epiImages.length].img // Distribui imagens circularmente
+      }));
+
+      ghosts[0] = { x: 10, y: 1, dirX: 0, dirY: 1 };
+      ghosts[1] = { x: 10, y: 10, dirX: 0, dirY: -1 };
+      clearInterval(ghostMovementInterval);
+      setDifficulty();
+      draw();
+    }
+
+    function setDifficulty() {
+      const difficultySelect = document.getElementById("difficulty");
+      const selectedDifficulty = difficultySelect.value;
+      let intervalTime;
+
+      switch (selectedDifficulty) {
+        case 'easy':
+          intervalTime = 1000;
+          break;
+        case 'medium':
+          intervalTime = 600;
+          break;
+        case 'hard':
+          intervalTime = 300;
+          break;
+        default:
+          intervalTime = 800;
+          break;
+      }
+
+      clearInterval(ghostMovementInterval);
+      if (!gameOver) {
+        ghostMovementInterval = setInterval(moveGhosts, intervalTime);
+      }
+    }
+
+    function startGame() {
+      reset();
+    }
+
+    document.addEventListener("keydown", e => {
+      const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+      if (keys.includes(e.key)) {
+        e.preventDefault();
+
+        if (e.key === "ArrowUp") {
+          player.direction = "up";
+          movePlayer(0, -1);
+        } else if (e.key === "ArrowDown") {
+          player.direction = "down";
+          movePlayer(0, 1);
+        } else if (e.key === "ArrowLeft") {
+          player.direction = "left";
+          movePlayer(-1, 0);
+        } else if (e.key === "ArrowRight") {
+          player.direction = "right";
+          movePlayer(1, 0);
+        }
+      }
+    }, false);
+
+    reset();
+    setDifficulty();
+    draw();
+  </script>
+</body>
+</html>
