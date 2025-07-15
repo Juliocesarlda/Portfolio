@@ -77,6 +77,8 @@
 <body>
   <audio id="collectSound" src="collect-points-190037.mp3"></audio>
   <audio id="alertSound" src="gameover.mp3"></audio>
+  <audio id="moveSound" src="movepac.mp3"></audio>
+
 
   <h1>Pac-Man da Segurança do Trabalho</h1>
   <p>Use as setas do teclado para se mover e coletar EPIs. Evite os perigos!</p>
@@ -100,11 +102,11 @@
 
   <script>
     const epiImages = [
-        { img: new Image(), name: "Boné", src: "bonecasquete.webp" },
+        { img: new Image(), name: "Boné", src: "bonecasquete.jpg" },
         { img: new Image(), name: "Luva Anticorte", src: "luvaanticorte.png" },
         { img: new Image(), name: "Luva de Látex", src: "luvalatex.jpg" },
-        { img: new Image(), name: "Mangote", src: "luvamangote.webp" },
-        { img: new Image(), name: "Óculos de Visão Ampla", src: "oculosamplavisao.webp" },
+        { img: new Image(), name: "Mangote", src: "luvamangote.jpg" },
+        { img: new Image(), name: "Óculos de Visão Ampla", src: "oculosamplavisao.jpg" },
         { img: new Image(), name: "Óculos de Segurança", src: "oculosdeseguranca.jpg" }
     ];
 
@@ -209,10 +211,13 @@
       if (gameOver) return;
       const newX = player.x + dx;
       const newY = player.y + dy;
-
+        
       if (!isColliding(newX, newY)) {
         player.x = newX;
+        document.getElementById("moveSound").play();
         player.y = newY;
+        document.getElementById("moveSound").play();
+
 
         for (let i = 0; i < epis.length; i++) {
           if (epis[i].x === player.x && epis[i].y === player.y) {
