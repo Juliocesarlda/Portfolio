@@ -219,9 +219,6 @@
         const moveAudio = document.getElementById("moveSound");
         moveAudio.currentTime = 0;
         moveAudio.play();
-
-
-
         for (let i = 0; i < epis.length; i++) {
           if (epis[i].x === player.x && epis[i].y === player.y) {
             epis.splice(i, 1);
