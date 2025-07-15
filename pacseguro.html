@@ -214,9 +214,12 @@
         
       if (!isColliding(newX, newY)) {
         player.x = newX;
-        document.getElementById("moveSound").play();
         player.y = newY;
-        document.getElementById("moveSound").play();
+/*        document.getElementById("moveSound").play();*/
+        const moveAudio = document.getElementById("moveSound");
+        moveAudio.currentTime = 0;
+        moveAudio.play();
+
 
 
         for (let i = 0; i < epis.length; i++) {
