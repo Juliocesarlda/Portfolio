@@ -32,6 +32,9 @@
       background-color: #000;
       border: 3px solid #fff;
       box-shadow: 0 0 10px lime;
+      width: 100%;
+      max-width: 480px;
+      height: auto;
     }
 
     .controls {
@@ -60,6 +63,8 @@
       align-items: center;  
       justify-content: center;
       margin-top: 20px;
+      width: 100%;
+      max-width: 480px;
     }
 
     .game-over-message {
@@ -78,7 +83,6 @@
   <audio id="collectSound" src="collect-points-190037.mp3"></audio>
   <audio id="alertSound" src="gameover.mp3"></audio>
   <audio id="moveSound" src="movepac.mp3"></audio>
-
 
   <h1>Pac-Man da Segurança do Trabalho</h1>
   <p>Use as setas do teclado para se mover e coletar EPIs. Evite os perigos!</p>
@@ -109,7 +113,6 @@
         { img: new Image(), name: "Óculos de Visão Ampla", src: "oculosamplavisao.jpg" },
         { img: new Image(), name: "Óculos de Segurança", src: "oculosdeseguranca.jpg" }
     ];
-
     epiImages.forEach(epi => epi.img.src = epi.src);
 
     const playerImages = {
@@ -118,7 +121,6 @@
       left: new Image(),
       right: new Image()
     };
-
     playerImages.up.src = "pacup.png";
     playerImages.down.src = "pacdown.png";
     playerImages.left.src = "pacleft.png";
@@ -144,7 +146,6 @@
       { x: 6, y: 7 },
       { x: 3, y: 9 }
     ];
-
     let epis = [];
 
     const player = {
@@ -191,17 +192,15 @@
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       walls.forEach(w => drawTile(w.x, w.y, "#555"));
-      /*epis.forEach(e => drawTile(e.x, e.y, "lime"));*/
-      // EPIs com imagem
       epis.forEach(e => {
-      ctx.drawImage(e.image, e.x * tileSize, e.y * tileSize, tileSize, tileSize);
+        ctx.drawImage(e.image, e.x * tileSize, e.y * tileSize, tileSize, tileSize);
       });
-
       ghosts.forEach(g => {
         ctx.drawImage(ghostImg, g.x * tileSize, g.y * tileSize, tileSize, tileSize);
       });
       ctx.drawImage(playerImages[player.direction], player.x * tileSize, player.y * tileSize, tileSize, tileSize);
       document.getElementById("score").innerText = score;
+      resizeCanvas();
     }
 
     function isColliding(x, y) {
@@ -212,14 +211,14 @@
       if (gameOver) return;
       const newX = player.x + dx;
       const newY = player.y + dy;
-        
+
       if (!isColliding(newX, newY)) {
         player.x = newX;
         player.y = newY;
-/*        document.getElementById("moveSound").play();*/
         const moveAudio = document.getElementById("moveSound");
         moveAudio.currentTime = 0;
         moveAudio.play();
+
         for (let i = 0; i < epis.length; i++) {
           if (epis[i].x === player.x && epis[i].y === player.y) {
             epis.splice(i, 1);
@@ -253,7 +252,6 @@
           { dx: 1, dy: 0 },
           { dx: -1, dy: 0 }
         ];
-
         const validMoves = possibleMoves.filter(move =>
           !isColliding(g.x + move.dx, g.y + move.dy)
         );
@@ -289,10 +287,9 @@
       player.x = 1;
       player.y = 1;
       score = 0;
-      /*epis = initialEpis.map(epi => ({ ...epi }));*/
       epis = initialEpis.map((epi, index) => ({
-      ...epi,
-      image: epiImages[index % epiImages.length].img // Distribui imagens circularmente
+        ...epi,
+        image: epiImages[index % epiImages.length].img
       }));
 
       ghosts[0] = { x: 10, y: 1, dirX: 0, dirY: 1 };
@@ -308,18 +305,10 @@
       let intervalTime;
 
       switch (selectedDifficulty) {
-        case 'easy':
-          intervalTime = 1000;
-          break;
-        case 'medium':
-          intervalTime = 600;
-          break;
-        case 'hard':
-          intervalTime = 300;
-          break;
-        default:
-          intervalTime = 800;
-          break;
+        case 'easy': intervalTime = 1000; break;
+        case 'medium': intervalTime = 600; break;
+        case 'hard': intervalTime = 300; break;
+        default: intervalTime = 800; break;
       }
 
       clearInterval(ghostMovementInterval);
@@ -329,14 +318,20 @@
     }
 
     function startGame() {
-      /*reset();*/
+      reset();
+    }
+
+    function resizeCanvas() {
+      const containerWidth = canvas.parentElement.offsetWidth;
+      const scale = containerWidth / (cols * tileSize);
+      canvas.style.width = `${cols * tileSize * scale}px`;
+      canvas.style.height = `${rows * tileSize * scale}px`;
     }
 
     document.addEventListener("keydown", e => {
       const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
       if (keys.includes(e.key)) {
         e.preventDefault();
-
         if (e.key === "ArrowUp") {
           player.direction = "up";
           movePlayer(0, -1);
@@ -352,6 +347,10 @@
         }
       }
     }, false);
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+    });
 
     reset();
     setDifficulty();
