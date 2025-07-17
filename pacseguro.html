@@ -102,12 +102,12 @@
 
   <script>
     const epiImages = [
-        { img: new Image(), name: "Boné", src: "bonecasquete.jpg" },
-        { img: new Image(), name: "Luva Anticorte", src: "luvaanticorte.png" },
-        { img: new Image(), name: "Luva de Látex", src: "luvalatex.jpg" },
-        { img: new Image(), name: "Mangote", src: "luvamangote.jpg" },
-        { img: new Image(), name: "Óculos de Visão Ampla", src: "oculosamplavisao.jpg" },
-        { img: new Image(), name: "Óculos de Segurança", src: "oculosdeseguranca.jpg" }
+        { img: new Image(), name: "Boné", src: "/bonecasquete.jpg" },
+        { img: new Image(), name: "Luva Anticorte", src: "/luvaanticorte.png" },
+        { img: new Image(), name: "Luva de Látex", src: "/luvalatex.jpg" },
+        { img: new Image(), name: "Mangote", src: "/luvamangote.jpg" },
+        { img: new Image(), name: "Óculos de Visão Ampla", src: "/oculosamplavisao.jpg" },
+        { img: new Image(), name: "Óculos de Segurança", src: "/oculosdeseguranca.jpg" }
     ];
 
     epiImages.forEach(epi => epi.img.src = epi.src);
@@ -119,10 +119,10 @@
       right: new Image()
     };
 
-    playerImages.up.src = "pacup.png";
-    playerImages.down.src = "pacdown.png";
-    playerImages.left.src = "pacleft.png";
-    playerImages.right.src = "pacright.png";
+    playerImages.up.src = "/pacup.png";
+    playerImages.down.src = "/pacdown.png";
+    playerImages.left.src = "/pacleft.png";
+    playerImages.right.src = "/pacright.png";
 
     const ghostImg = new Image();
     ghostImg.src = "perigo.png";
