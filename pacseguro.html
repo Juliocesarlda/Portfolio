@@ -60,7 +60,7 @@
     .game-area {
       display: flex;
       flex-direction: column;
-      align-items: center;  
+      align-items: center;
       justify-content: center;
       margin-top: 20px;
       width: 100%;
@@ -77,6 +77,51 @@
       border-radius: 10px;
       display: none;
     }
+    #mobileControls button {
+  background-color: #f4d03f;
+  border: none;
+  margin: 5px;
+  padding: 10px 15px;
+  font-size: 24px;
+  border-radius: 8px;
+  box-shadow: 0 0 5px #fff;
+}
+.quiz-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(30, 30, 30, 0.95);
+  padding: 30px;
+  border: 2px solid #f4d03f;
+  border-radius: 12px;
+  color: #fff;
+  text-align: left;
+  z-index: 9999;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 0 15px #f4d03f;
+}
+.quiz-modal h2 {
+  text-align: center;
+  color: #f4d03f;
+}
+.quiz-modal label {
+  display: block;
+  margin: 5px 0;
+}
+.quiz-modal button {
+  display: block;
+  margin: 20px auto 0;
+  padding: 10px 20px;
+  background-color: #f4d03f;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
   </style>
 </head>
 <body>
@@ -97,6 +142,17 @@
     <button onclick="startGame()">Iniciar Novo Jogo</button>
   </div>
 
+  <div id="mobileControls" style="margin-top: 10px;">
+    <div style="display: flex; justify-content: center;">
+      <button onclick="move('up')">🔼</button>
+    </div>
+    <div style="display: flex; justify-content: center;">
+      <button onclick="move('left')">◀️</button>
+      <button onclick="move('down')">🔽</button>
+      <button onclick="move('right')">▶️</button>
+    </div>
+  </div>
+
   <div class="game-area">
     <div id="hud">
       EPIs Coletados: <span id="score">0</span>
@@ -105,6 +161,85 @@
   </div>
 
   <script>
+    const quizQuestions = [
+  {
+    question: "Para que serve o óculos de segurança?",
+    options: ["Proteger os pés", "Proteger os olhos", "Proteger as mãos"],
+    answer: "Proteger os olhos"
+  },
+  {
+    question: "A luva anticorte é utilizada para:",
+    options: ["Evitar cortes", "Aumentar a temperatura", "Pintar paredes"],
+    answer: "Evitar cortes"
+  },
+  {
+    question: "Qual EPI protege a cabeça?",
+    options: ["Óculos", "Mangote", "Boné de segurança"],
+    answer: "Boné de segurança"
+  },
+  {
+    question: "O mangote protege:",
+    options: ["As pernas", "Os braços", "O rosto"],
+    answer: "Os braços"
+  },
+  {
+    question: "A luva de látex é usada para:",
+    options: ["Conduzir eletricidade", "Proteger contra agentes químicos", "Proteger os olhos"],
+    answer: "Proteger contra agentes químicos"
+  }
+];
+function startQuiz() {
+  gameOver = true;
+  const quizContainer = document.getElementById("quizContainer");
+  const quizContent = document.getElementById("quizContent");
+  quizContainer.style.display = "block";
+
+  // Sorteia 2 perguntas aleatórias
+  const selectedQuestions = quizQuestions.sort(() => 0.5 - Math.random()).slice(0, 2);
+  let html = "";
+  selectedQuestions.forEach((q, i) => {
+    html += `<div><p><strong>${i + 1}. ${q.question}</strong></p>`;
+    q.options.forEach(opt => {
+      html += `<label><input type="radio" name="q${i}" value="${opt}"> ${opt}</label><br>`;
+    });
+    html += `</div><br>`;
+  });
+  quizContent.innerHTML = html;
+
+  // Armazena para correção depois
+  window.currentQuiz = selectedQuestions;
+}
+
+function submitQuiz() {
+  const selected = [];
+  for (let i = 0; i < currentQuiz.length; i++) {
+    const radios = document.getElementsByName(`q${i}`);
+    let found = false;
+    for (let radio of radios) {
+      if (radio.checked) {
+        selected.push(radio.value);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      alert("Responda todas as perguntas.");
+      return;
+    }
+  }
+
+  let acertos = 0;
+  selected.forEach((resp, i) => {
+    if (resp === currentQuiz[i].answer) acertos++;
+  });
+
+/*  alert(`Você acertou ${acertos} de ${currentQuiz.length} perguntas.`);*/
+  alert(`Você acertou ${acertos} de ${currentQuiz.length} perguntas.\nVocê coletou ${score} EPIs durante o jogo.`);
+
+  document.getElementById("quizContainer").style.display = "none";
+  reset();
+}
+
     const epiImages = [
         { img: new Image(), name: "Boné", src: "bonecasquete.jpg" },
         { img: new Image(), name: "Luva Anticorte", src: "luvaanticorte.png" },
@@ -155,8 +290,9 @@
     };
 
     const ghosts = [
-      { x: 10, y: 1, dirX: 0, dirY: 1 },
-      { x: 10, y: 10, dirX: 0, dirY: -1 }
+    { x: 10, y: 1, dirX: 0, dirY: 1 },
+    { x: 10, y: 10, dirX: 0, dirY: -1 },
+    { x: 1, y: 10, dirX: 1, dirY: 0 } // Novo fantasma
     ];
 
     const mazeMap = [
@@ -206,6 +342,26 @@
     function isColliding(x, y) {
       return walls.some(w => w.x === x && w.y === y);
     }
+    function move(direction) {
+      switch (direction) {
+      case "up":
+        player.direction = "up";
+        movePlayer(0, -1);
+        break;
+      case "down":
+        player.direction = "down";
+        movePlayer(0, 1);
+        break;
+      case "left":
+        player.direction = "left";
+        movePlayer(-1, 0);
+        break;
+      case "right":
+        player.direction = "right";
+        movePlayer(1, 0);
+        break;
+    }
+}
 
     function movePlayer(dx, dy) {
       if (gameOver) return;
@@ -225,12 +381,12 @@
             document.getElementById("collectSound").play();
             score++;
             if (epis.length === 0) {
-              setTimeout(() => {
-                alert("Parabéns! Você coletou todos os EPIs com segurança!");
-                gameOver = true;
-                reset();
-              }, 100);
-            }
+  setTimeout(() => {
+    startQuiz(); // Inicia o quiz educativo
+  }, 300);
+}
+
+
             break;
           }
         }
@@ -276,7 +432,9 @@
     function handleGameOver() {
       document.getElementById("alertSound").play();
       if (!gameOver) {
-        alert("Você foi pego por um perigo! Fim de jogo.");
+/*        alert("Você foi pego por um perigo! Fim de jogo.");*/
+        alert(`Você foi pego por um perigo! Fim de jogo.\nVocê coletou ${score} EPIs.`);
+
         gameOver = true;
         reset();
       }
@@ -294,6 +452,7 @@
 
       ghosts[0] = { x: 10, y: 1, dirX: 0, dirY: 1 };
       ghosts[1] = { x: 10, y: 10, dirX: 0, dirY: -1 };
+      ghosts[2] = { x: 1, y: 10, dirX: 1, dirY: 0 }; // Reinicializa o novo fantasma
       clearInterval(ghostMovementInterval);
       setDifficulty();
       draw();
@@ -356,5 +515,11 @@
     setDifficulty();
     draw();
   </script>
+  <div id="quizContainer" class="quiz-modal" style="display:none;">
+  <h2>Quiz de Segurança</h2>
+  <div id="quizContent"></div>
+  <button onclick="submitQuiz()">Enviar Respostas</button>
+</div>
+
 </body>
 </html>
