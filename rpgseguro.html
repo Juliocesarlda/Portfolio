@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segurança na Fábrica: O Jogo</title>
+    <style>
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    margin: 0;
+}
+
+#game-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 600px;
+    text-align: center;
+}
+
+h1 {
+    color: #333;
+}
+
+#game-info {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+}
+
+#game-area p {
+    margin-bottom: 15px;
+    font-size: 1.1em;
+}
+
+#options-container button {
+    display: block;
+    width: 80%;
+    margin: 10px auto;
+    padding: 10px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+#options-container button:hover {
+    background-color: #0056b3;
+}
+
+button#start-game-btn,
+button#restart-game-btn,
+button#play-again-btn {
+    padding: 12px 25px;
+    font-size: 1.2em;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+button#start-game-btn:hover,
+button#restart-game-btn:hover,
+button#play-again-btn:hover {
+    background-color: #218838;
+}
+
+#game-over-screen, #victory-screen {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: none; /* Escondido por padrão */
+}
+
+#victory-screen {
+    background-color: #d4edda;
+    color: #155724;
+}
+    </Style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Segurança na Fábrica: O Jogo</h1>
+        <div id="game-info">
+            <p>Dia: <span id="current-day">1</span></p>
+            <p>Saúde: <span id="player-health">100%</span></p>
+            <p>EPIs Adquiridos: <span id="player-epis">Nenhum</span></p>
+        </div>
+
+        <div id="game-area">
+            <p id="scenario-text">Bem-vindo à Fábrica! Seu primeiro dia de trabalho.</p>
+            <div id="options-container">
+                </div>
+            <button id="start-game-btn">Começar Jogo</button>
+        </div>
+
+        <div id="game-over-screen" style="display:none;">
+            <h2>FIM DE JOGO!</h2>
+            <p id="game-over-message"></p>
+            <button id="restart-game-btn">Jogar Novamente</button>
+        </div>
+
+        <div id="victory-screen" style="display:none;">
+            <h2>PARABÉNS!</h2>
+            <p>Você completou todos os dias na fábrica sem acidentes!</p>
+            <button id="play-again-btn">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        // Elementos do DOM
+const currentDaySpan = document.getElementById('current-day');
+const playerHealthSpan = document.getElementById('player-health');
+const playerEPIsSpan = document.getElementById('player-epis');
+const scenarioText = document.getElementById('scenario-text');
+const optionsContainer = document.getElementById('options-container');
+const startGameBtn = document.getElementById('start-game-btn');
+const gameOverScreen = document.getElementById('game-over-screen');
+const gameOverMessage = document.getElementById('game-over-message');
+const restartGameBtn = document.getElementById('restart-game-btn');
+const victoryScreen = document.getElementById('victory-screen');
+const playAgainBtn = document.getElementById('play-again-btn');
+
+// Variáveis do Jogo
+let currentDay = 1;
+let playerHealth = 100;
+let playerEPIs = []; // EPIs que o jogador possui
+const totalDays = 5; // Número de dias para "sobreviver"
+
+// Definição dos EPIs disponíveis
+const EPIS = {
+    oculos: { name: "Óculos de Segurança", description: "Protege os olhos contra partículas e respingos." },
+    luvas: { name: "Luvas de Proteção", description: "Protege as mãos contra cortes, abrasões e produtos químicos." },
+    capacete: { name: "Capacete de Segurança", description: "Protege a cabeça contra impactos e quedas de objetos." },
+    protetorAuricular: { name: "Protetor Auricular", description: "Protege os ouvidos contra ruídos excessivos." },
+    botas: { name: "Botas de Segurança", description: "Protege os pés contra quedas de objetos, perfurações e umidade." },
+    mascara: { name: "Máscara Respiratória", description: "Protege contra inalação de poeira, fumos e gases tóxicos." }
+};
+
+// Cenários para cada dia
+const scenarios = [
+    // Dia 1
+    {
+        day: 1,
+        text: "Você está na área de produção, onde há máquinas operando. Poeira e pequenas partículas estão no ar. O que você faz?",
+        options: [
+            { text: "Usar Óculos de Segurança", requiredEPI: [EPIS.oculos], healthEffect: 0, outcome: "Seus olhos estão protegidos! Bom trabalho." },
+            { text: "Ignorar e continuar trabalhando", requiredEPI: [], healthEffect: -20, outcome: "Uma partícula atinge seu olho! Você sente uma forte ardência." }
+        ]
+    },
+    // Dia 2
+    {
+        day: 2,
+        text: "Hoje você precisa manusear algumas peças metálicas que podem ter rebarbas afiadas. Há também alguns óleos no chão.",
+        options: [
+            { text: "Usar Luvas de Proteção e Botas de Segurança", requiredEPI: [EPIS.luvas, EPIS.botas], healthEffect: 0, outcome: "Suas mãos e pés estão seguros. Você evita cortes e escorregões." },
+            { text: "Apenas Luvas de Proteção", requiredEPI: [EPIS.luvas], healthEffect: -10, outcome: "Suas mãos estão protegidas, mas você quase escorrega no óleo." },
+            { text: "Trabalhar sem EPIs", requiredEPI: [], healthEffect: -40, outcome: "Você corta a mão em uma peça e escorrega no óleo, torcendo o tornozelo!" }
+        ]
+    },
+    // Dia 3
+    {
+        day: 3,
+        text: "Você está em uma seção da fábrica com ruído muito alto de máquinas. Também há sinalização de 'Cuidado, Objetos Suspensos'.",
+        options: [
+            { text: "Usar Protetor Auricular e Capacete", requiredEPI: [EPIS.protetorAuricular, EPIS.capacete], healthEffect: 0, outcome: "Seus ouvidos estão protegidos do barulho e sua cabeça segura." },
+            { text: "Apenas Protetor Auricular", requiredEPI: [EPIS.protetorAuricular], healthEffect: -15, outcome: "Seus ouvidos estão bem, mas um parafuso cai perto da sua cabeça. Que susto!" },
+            { text: "Apenas Capacete", requiredEPI: [EPIS.capacete], healthEffect: -20, outcome: "Sua cabeça está segura, mas o barulho forte te deixa com dor de cabeça." },
+            { text: "Não usar nenhum EPI", requiredEPI: [], healthEffect: -50, outcome: "O barulho intenso prejudica sua audição e algo cai em sua cabeça! Você precisa de atendimento médico urgente." }
+        ]
+    },
+    // Dia 4 - Novo EPI a ser adquirido
+    {
+        day: 4,
+        text: "Hoje, a empresa está distribuindo Máscaras Respiratórias devido a um novo processo que gera fumaça. Você decide pegar a sua?",
+        options: [
+            { text: "Sim, pegar a Máscara Respiratória e usá-la.", healthEffect: 0, outcome: "Você adquire a Máscara Respiratória. Bom para sua saúde!", acquireEPI: EPIS.mascara },
+            { text: "Não, não vejo necessidade de usar agora.", healthEffect: -5, outcome: "Você não pega a máscara. Esperamos que não precise dela." }
+        ]
+    },
+    // Dia 5 - Usa o novo EPI
+    {
+        day: 5,
+        text: "Há um cheiro forte no ar, indicando a presença de substâncias químicas. O supervisor alerta para a importância da proteção respiratória.",
+        options: [
+            { text: "Usar Máscara Respiratória", requiredEPI: [EPIS.mascara], healthEffect: 0, outcome: "A Máscara Respiratória protege suas vias aéreas. Você se sente seguro." },
+            { text: "Ignorar e tentar aguentar o cheiro", requiredEPI: [], healthEffect: -30, outcome: "O cheiro te causa tontura e mal-estar. Você precisa se afastar da área." }
+        ]
+    }
+];
+
+
+// Função para iniciar ou reiniciar o jogo
+function startGame() {
+    currentDay = 1;
+    playerHealth = 100;
+    playerEPIs = [EPIS.oculos, EPIS.luvas, EPIS.capacete, EPIS.protetorAuricular, EPIS.botas]; // EPIs iniciais
+    updateGameInfo();
+    startGameBtn.style.display = 'none'; // Esconde o botão de iniciar
+    gameOverScreen.style.display = 'none';
+    victoryScreen.style.display = 'none';
+    loadDayScenario();
+}
+
+// Função para atualizar as informações do jogo na tela
+function updateGameInfo() {
+    currentDaySpan.textContent = currentDay;
+    playerHealthSpan.textContent = `${playerHealth}%`;
+    playerEPIsSpan.textContent = playerEPIs.length > 0 ? playerEPIs.map(epi => epi.name).join(', ') : 'Nenhum';
+    // Mudar a cor da saúde se estiver baixa
+    if (playerHealth <= 30) {
+        playerHealthSpan.style.color = 'red';
+    } else if (playerHealth <= 60) {
+        playerHealthSpan.style.color = 'orange';
+    } else {
+        playerHealthSpan.style.color = 'green';
+    }
+}
+
+// Função para carregar o cenário do dia atual
+function loadDayScenario() {
+    if (currentDay > totalDays) {
+        showVictoryScreen();
+        return;
+    }
+
+    const currentScenario = scenarios.find(s => s.day === currentDay);
+    if (!currentScenario) {
+        console.error("Cenário não encontrado para o dia:", currentDay);
+        return;
+    }
+
+    scenarioText.textContent = currentScenario.text;
+    optionsContainer.innerHTML = ''; // Limpa as opções anteriores
+
+    currentScenario.options.forEach(option => {
+        const button = document.createElement('button');
+        button.textContent = option.text;
+        button.addEventListener('click', () => handleOptionClick(option));
+        optionsContainer.appendChild(button);
+    });
+}
+
+// Função para lidar com a escolha do jogador
+function handleOptionClick(option) {
+    let outcomeText = option.outcome;
+    let healthChange = option.healthEffect;
+    let requiredEPIsPresent = true;
+
+    // Verifica se o jogador possui os EPIs necessários para esta opção
+    if (option.requiredEPI && option.requiredEPI.length > 0) {
+        for (const epi of option.requiredEPI) {
+            if (!playerEPIs.some(pEpi => pEpi.name === epi.name)) {
+                requiredEPIsPresent = false;
+                break;
+            }
+        }
+        if (!requiredEPIsPresent) {
+            healthChange -= 25; // Penalidade por não ter o EPI necessário
+            outcomeText += "\nVocê não possuía todos os EPIs necessários para essa ação!";
+        }
+    }
+
+    // Adquire EPI se a opção for para adquirir
+    if (option.acquireEPI) {
+        if (!playerEPIs.some(pEpi => pEpi.name === option.acquireEPI.name)) {
+            playerEPIs.push(option.acquireEPI);
+        }
+    }
+
+    playerHealth += healthChange;
+    if (playerHealth < 0) playerHealth = 0; // Garante que a saúde não seja negativa
+    if (playerHealth > 100) playerHealth = 100; // Garante que a saúde não exceda 100
+
+    scenarioText.textContent = outcomeText; // Mostra o resultado da ação
+    optionsContainer.innerHTML = ''; // Remove as opções
+
+    updateGameInfo();
+
+    // Verifica se o jogo acabou
+    if (playerHealth <= 0) {
+        showGameOverScreen("Sua saúde chegou a 0%. Você sofreu um acidente grave e foi desligado da fábrica. A segurança é fundamental!");
+    } else {
+        // Botão para avançar para o próximo dia ou para o próximo cenário
+        const nextDayButton = document.createElement('button');
+        nextDayButton.textContent = "Avançar para o Próximo Dia";
+        nextDayButton.addEventListener('click', () => {
+            currentDay++;
+            loadDayScenario();
+        });
+        optionsContainer.appendChild(nextDayButton);
+    }
+}
+
+// Função para mostrar a tela de Game Over
+function showGameOverScreen(message) {
+    gameOverMessage.textContent = message;
+    gameOverScreen.style.display = 'block';
+    optionsContainer.innerHTML = ''; // Remove opções do jogo
+    scenarioText.textContent = ''; // Limpa texto do cenário
+    startGameBtn.style.display = 'none';
+}
+
+// Função para mostrar a tela de Vitória
+function showVictoryScreen() {
+    victoryScreen.style.display = 'block';
+    optionsContainer.innerHTML = ''; // Remove opções do jogo
+    scenarioText.textContent = ''; // Limpa texto do cenário
+    startGameBtn.style.display = 'none';
+}
+
+// Event Listeners para os botões
+startGameBtn.addEventListener('click', startGame);
+restartGameBtn.addEventListener('click', startGame);
+playAgainBtn.addEventListener('click', startGame);
+
+// Iniciar o jogo quando a página carregar (opcional, ou espera o clique no botão)
+// startGame();
+    </script>
+</body>
+</html>
