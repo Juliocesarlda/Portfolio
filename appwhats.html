@@ -1,0 +1,171 @@
+// Estrutura inicial do app "Venda Fácil - Criador de Catálogo Online"
+// JavaScript puro + layout mais estilizado
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Venda Fácil</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #f7f8fc, #dbeafe);
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #2563eb;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .container {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    .form {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      grid-column: span 3;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    .produtos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .card h2 {
+      font-size: 1.2rem;
+      margin: 10px 0 5px;
+      color: #111827;
+    }
+    .card p {
+      color: #10b981;
+      font-weight: bold;
+    }
+    .btn-whatsapp {
+      margin-top: 10px;
+      background: #22c55e;
+      color: white;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+    .btn-whatsapp:hover {
+      background: #15803d;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📦 Venda Fácil – Seu Catálogo Online</h1>
+  </header>
+  <div class="container">
+    <div class="form">
+      <input type="text" id="nome" placeholder="Nome do produto">
+      <input type="text" id="preco" placeholder="Preço (ex: 29.90)">
+      <input type="text" id="imagem" placeholder="URL da imagem">
+      <button onclick="adicionarProduto()">+ Adicionar Produto</button>
+    </div>
+
+    <div class="produtos" id="listaProdutos"></div>
+  </div>
+
+  <script>
+    let produtos = [];
+
+    function carregarProdutos() {
+      const dadosSalvos = localStorage.getItem("produtos");
+      if (dadosSalvos) {
+        produtos = JSON.parse(dadosSalvos);
+        renderizarProdutos();
+      }
+    }
+
+    function salvarProdutos() {
+      localStorage.setItem("produtos", JSON.stringify(produtos));
+    }
+
+    function adicionarProduto() {
+      const nome = document.getElementById('nome').value;
+      const preco = document.getElementById('preco').value;
+      const imagem = document.getElementById('imagem').value;
+
+      if (!nome || !preco || !imagem) return alert("Preencha todos os campos!");
+
+      const produto = { nome, preco, imagem };
+      produtos.push(produto);
+      salvarProdutos();
+      renderizarProdutos();
+
+      document.getElementById('nome').value = "";
+      document.getElementById('preco').value = "";
+      document.getElementById('imagem').value = "";
+    }
+
+    function renderizarProdutos() {
+      const lista = document.getElementById('listaProdutos');
+      lista.innerHTML = "";
+      produtos.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.imagem}" alt="${p.nome}">
+          <h2>${p.nome}</h2>
+          <p>R$ ${p.preco}</p>
+          <a class="btn-whatsapp" href="https://wa.me/?text=Olá! Gostei do produto: ${p.nome} por R$${p.preco}" target="_blank">Comprar pelo WhatsApp</a>
+        `;
+        lista.appendChild(card);
+      });
+    }
+
+    // Inicializar
+    carregarProdutos();
+  </script>
+</body>
+</html>
