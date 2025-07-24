@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA DE TRÁFEGO AÉREO</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: black;
+            color: rgb(218, 166, 88);
+            border-radius: 20px;
+            border: 10px solid blue;
+            margin: 20px;
+            font-family: 'Inter', sans-serif; /* Usando Inter para uma aparência moderna */
+        }
+        .container-box {
+            background-color: rgb(0, 0, 0);
+            border-radius: 20px;
+            border: 10px solid rgb(235, 136, 8);
+            padding: 20px;
+            margin: 20px auto; /* Centraliza a div */
+            width: 90%;
+            max-width: 800px; /* Adiciona um limite de largura para melhor leitura */
+        }
+        .result-box {
+            background-color: rgb(0, 0, 0);
+            border-radius: 20px;
+            border: 10px solid rgb(190, 4, 4);
+            padding: 20px;
+            margin: 20px auto; /* Centraliza a div */
+            width: 90%;
+            max-width: 400px; /* Um pouco mais estreito para resultados */
+            text-align: center; /* Centraliza o texto dentro da div */
+        }
+        p {
+            font-family: 'Trebuchet MS', sans-serif;
+            color: rgb(233, 160, 77);
+            font-size: larger;
+            text-align: center;
+        }
+        h1 {
+            font-family: 'Trebuchet MS', sans-serif;
+            color: blue;
+            font-size: xx-large;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: rgb(233, 160, 77);
+            font-size: larger;
+            text-align: center;
+        }
+        .input-field {
+            border-style: groove;
+            border-color: brown;
+            border-radius: 5px;
+            border: 2px solid rgb(255, 81, 0);
+            width: 5rem; /* Aumentado para melhor visualização */
+            height: 2rem; /* Aumentado para melhor visualização */
+            padding: 0 0.5rem;
+            text-align: center;
+            color: black; /* Garante que o texto digitado seja visível */
+        }
+        .convert-button {
+            background-color: rgb(255, 81, 0);
+            color: white;
+            height: 2.5rem; /* Aumentado para melhor toque */
+            padding: 0 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .convert-button:hover {
+            background-color: rgb(200, 60, 0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-box">
+        <h1>
+            SISTEMA DE TRÁFEGO AÉREO<br>
+            MÓDULO DE CONVERSÃO DE BASES<br><br>
+            ( OCTAL PARA DECIMAL / HEXADECIMAL PARA BINÁRIO )<br>
+        </h1>
+    </div>
+
+    <div class="container-box" id="octal-to-decimal-section">
+        <p>
+            Digite o valor octal a ser convertido em decimal: 
+            <input type="text" name="dados" id="octaldecimal" class="input-field" 
+            title="Digite o valor octal do sistema antigo" placeholder="Ex: 253"/>
+            <button onclick="convertOctalToDecimal()" class="convert-button">
+            CONVERTER</button>
+        </p>
+    </div>
+    
+    <div class="result-box" id="showdecimal">
+        <!-- O resultado da conversão octal para decimal aparecerá aqui -->
+        <p>Aguardando entrada octal...</p>
+    </div>
+
+    <div class="container-box" id="hex-to-binary-section">
+        <p>
+            Digite o valor hexadecimal a ser convertido em binário: 
+            <input type="text" name="hex-input" id="hexadecimal-binary" class="input-field" 
+            title="Digite o valor hexadecimal do radar" placeholder="Ex: A3"/>
+            <button onclick="convertHexToBinary()" class="convert-button">
+            CONVERTER</button>
+        </p>
+    </div>
+
+    <div class="result-box" id="showbinary">
+        <!-- O resultado da conversão hexadecimal para binário aparecerá aqui -->
+        <p>Aguardando entrada hexadecimal...</p>
+    </div>
+
+    <div class="container-box" id="trigonometric-section">
+        <p>
+            Digite um ângulo em graus para calcular seno, cosseno e tangente: 
+            <input type="number" name="angle-input" id="angle-input" class="input-field" 
+            title="Digite o valor do ângulo em graus" value="45"/>
+            <button onclick="calculateTrigonometricValues()" class="convert-button">
+            CALCULAR</button>
+        </p>
+    </div>
+
+    <div class="result-box" id="trig-results">
+        <!-- Os resultados trigonométricos aparecerão aqui -->
+        <p>Resultados trigonométricos aparecerão aqui.</p>
+    </div>
+    
+    <script>
+        /**
+         * Converts an octal string to its decimal equivalent and displays the result.
+         * Handles validation for valid octal digits.
+         */
+        function convertOctalToDecimal() {
+            const octalInput = document.getElementById('octaldecimal');
+            const octalValue = octalInput.value.trim(); // Remove espaços em branco
+            const showDecimalDiv = document.getElementById('showdecimal');
+
+            if (octalValue === "") {
+                showDecimalDiv.innerHTML = `<p style="color: red;">Por favor, digite um valor octal.</p>`;
+                return;
+            }
+
+            // Verifica se a entrada contém apenas dígitos octais (0-7)
+            if (!/^[0-7]+$/.test(octalValue)) {
+                showDecimalDiv.innerHTML = `<p style="color: red;">Entrada inválida. Digite apenas dígitos de 0 a 7 para um número octal.</p>`;
+                return;
+            }
+
+            try {
+                const decimalValue = parseInt(octalValue, 8);
+                showDecimalDiv.innerHTML = `<p>O valor octal <b>${octalValue}</b> equivale a <b>${decimalValue}</b> em decimal.</p>`;
+            } catch (error) {
+                // Em caso de erro de parse, embora a validação acima já previna a maioria
+                showDecimalDiv.innerHTML = `<p style="color: red;">Erro na conversão: ${error.message}</p>`;
+            }
+        }
+
+        /**
+         * Converts a hexadecimal string to its binary equivalent and displays the result.
+         * Handles validation for valid hexadecimal digits.
+         */
+        function convertHexToBinary() {
+            const hexInput = document.getElementById('hexadecimal-binary');
+            const hexValue = hexInput.value.trim(); // Remove espaços em branco
+            const showBinaryDiv = document.getElementById('showbinary');
+
+            if (hexValue === "") {
+                showBinaryDiv.innerHTML = `<p style="color: red;">Por favor, digite um valor hexadecimal.</p>`;
+                return;
+            }
+
+            // Verifica se a entrada contém apenas dígitos hexadecimais (0-9, A-F, a-f)
+            if (!/^[0-9a-fA-F]+$/.test(hexValue)) {
+                showBinaryDiv.innerHTML = `<p style="color: red;">Entrada inválida. Digite apenas dígitos hexadecimais (0-9, A-F).</p>`;
+                return;
+            }
+
+            try {
+                const decimalEquivalent = parseInt(hexValue, 16);
+                // Converte para binário e preenche com zeros à esquerda para múltiplos de 4 (formato comum para hex a bin)
+                let binaryValue = decimalEquivalent.toString(2);
+                // O padStart(8, '0') é mais útil para um byte completo, mas pode ser ajustado
+                // Para números hexadecimais, cada dígito hex vira 4 dígitos binários.
+                // Ajustamos para preencher até o próximo múltiplo de 4, se necessário.
+                const paddingNeeded = 4 - (binaryValue.length % 4);
+                if (paddingNeeded !== 4 && paddingNeeded !== 0) { // Dont pad for already multiple of 4 or 0 length
+                    binaryValue = binaryValue.padStart(binaryValue.length + paddingNeeded, '0');
+                }
+                
+                showBinaryDiv.innerHTML = `<p>O valor hexadecimal <b>${hexValue}</b> equivale a <b>${binaryValue}</b> em binário.</p>`;
+            } catch (error) {
+                showBinaryDiv.innerHTML = `<p style="color: red;">Erro na conversão: ${error.message}</p>`;
+            }
+        }
+
+        /**
+         * Calculates the sine, cosine, and tangent of a given angle in degrees and displays the results.
+         */
+        function calculateTrigonometricValues() {
+            const angleInput = document.getElementById('angle-input');
+            const angulo = parseFloat(angleInput.value); // Convert string to number
+            const trigResultsDiv = document.getElementById('trig-results');
+
+            if (isNaN(angulo)) {
+                trigResultsDiv.innerHTML = `<p style="color: red;">Por favor, digite um número válido para o ângulo.</p>`;
+                return;
+            }
+
+            const radianos = angulo * (Math.PI / 180); // conversão para radianos
+
+            const seno = Math.sin(radianos);
+            const senof = seno.toFixed(4); // arredondar para 4 casas decimais
+            const cosseno = Math.cos(radianos);
+            const cossenof = cosseno.toFixed(4); // arredondar para 4 casas decimais
+            let tangente = Math.tan(radianos);
+            let tangentef;
+
+            // Lidar com casos onde a tangente é indefinida (90, 270 graus, etc.)
+            if (Math.abs(Math.cos(radianos)) < 1e-9) { // Aproximadamente 0
+                tangentef = "Indefinida";
+            } else {
+                tangentef = tangente.toFixed(4); // arredondar para 4 casas decimais
+            }
+
+            trigResultsDiv.innerHTML = `
+                <h2>O seno de ${angulo}° é: <b>${senof}</b></h2>
+                <h2>O cosseno de ${angulo}° é: <b>${cossenof}</b></h2>
+                <h2>A tangente de ${angulo}° é: <b>${tangentef}</b></h2>
+            `;
+        }
+
+        // Chama a função para calcular e exibir os valores trigonométricos iniciais ao carregar a página
+        window.onload = function() {
+            calculateTrigonometricValues();
+        };
+
+    </script>
+    
+    <br><br>
+    <h1><b>
+    <center>
+        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒<br>
+        ▒_.-={[[( CONVERSÃO DE BASES )]]}=-._▒<br>
+        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+    </center>
+    </b></h1>
+    <br><br>
+
+</body>
+</html>

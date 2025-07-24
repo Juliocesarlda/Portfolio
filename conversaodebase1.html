@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SISTEMA DE TRÁFEGO AÉREO</title>
+    <style>
+
+        body
+        {
+            background-color: black;
+            color: rgb(218, 166, 88);
+            border-radius: 20px;
+            border: 10px solid blue;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            margin-left: 20px;
+        }
+        .texto1 {
+            background-color: rgb(0, 0, 0);
+            border-radius: 20px;
+            border: 10px solid rgb(235, 136, 8);
+            padding: 20px;
+            margin: 20px;
+            width: 90%;
+            }
+        .texto2 {
+            background-color: rgb(0, 0, 0);
+            border-radius: 20px;
+            border: 10px solid rgb(235, 136, 8);
+            padding: 20px;
+            margin: 20px;
+            width: 90%;
+        }
+        .ocdec {
+            background-color: rgb(0, 0, 0);
+            border-radius: 20px;
+            border: 10px solid rgb(190, 4, 4);
+            padding: 20px;
+            justify-content: center;
+            margin: 20px;
+            width: 10%;
+            
+        }
+        p {
+            font-family: 'Trebuchet MS';
+            color: rgb(233, 160, 77);
+            font-size: larger;
+            text-align: center;
+        }
+        h1
+        {
+            font-family: 'Trebuchet MS';
+            color: blue;
+            font-size: xx-large;
+            text-align: center;
+        }
+        h2
+        {
+            color: rgb(233, 160, 77);
+            font-size: larger;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="texto1">
+        <h1>
+        SISTEMA DE TRÁFEGO AÉREO<br>
+        MODULO DE CONVERSÃO DE BASES<br><br>
+        ( OCTAL PARA DECIMAL / HEXADECIMAL PARA BINÁRIO )<br>
+        </h1>
+    </div>
+    <div class="texto2" id="DSC">
+        <p>Digite o valor octal a ser convertido em decimal: 
+        <input type="number" name="dados" id="octaldecimal" 
+        style="border-style:groove; border-color: brown; 
+        border-radius:5px; border:2px solid rgb(255, 81, 0); width:3rem; height:1.5rem;" 
+        title="Digite o valor octal do sistema antigo" />
+        <button onclick="convertOctalToDecimal()" 
+        style="background-color: rgb(255, 81, 0); color: white; height: 2rem;">
+        CONVERTER</button></p>
+    </div>
+    <div class="ocdec" id="showdecimal">
+    </div>
+    <script>
+        
+/*
+        var oldsys = "253";// sistema antigo em octal
+        var radarc = "A3";//  radar em outros aeroportor em hexadecimal
+
+//                     USUARIO DIGITA OS VALORES A SEREM CONVERTIDOS
+
+//      var oldsys = window.prompt("Dgite o valor octal do sistema antigo");
+//      var radarc = window.prompt("Digite o valor hexadecimal do radar em outros aeroportos");
+
+        var oldcom = parseInt(oldsys,8);
+//      var valbin = (parseInt(radarc, 16).toString(2)).padStart(8, '0');
+        var valbin = parseInt(radarc, 16).toString(2);
+
+        document.write(`<br><br><h2>O valor octal <i><b>${oldsys}</b></i> do sistema antigo equivale a <i><b>${oldcom}</b></i> em decimal.</h2><br>`);
+        document.write(`<h2>O valor hexadecimal <b><i>${radarc}</b></i> dos radares em outros aeroportos equivale a <b><i>${valbin}</b></i> em binário.</h2>`);
+*/
+
+
+
+//                             CALCULAR SENO CONSENO E TANGENTE
+
+        var angulo = 45; // valor do ângulo em graus
+        var radianos = angulo * (Math.PI / 180); // conversão para radianos
+
+        var seno      = Math.sin(radianos);
+        var senof     = seno.toFixed(4); // arredondar para 2 casas decimais
+        var cosseno   = Math.cos(radianos);
+        var cossenof  = cosseno.toFixed(4); // arredondar para 2 casas decimais
+        var tangente  = Math.tan(radianos);
+        var tangentef = tangente.toFixed(4); // arredondar para 2 casas decimais
+
+        document.write(`<br><h2>O seno de ${angulo} graus é: <b>${senof}</b></h2>`);
+        document.write(`<h2>O cosseno de ${angulo} graus é: <b>${cossenof}</b></h2>`);
+        document.write(`<h2>A tangente de ${angulo} graus é: <b>${tangentef}</b></h2>`);
+        
+    </script>
+    
+    <br><br>
+    <h1><b>
+    <center>
+        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒<br>
+        ▒_.-={[[( CONVERSÃO DE BASES )]]}=-._▒<br>
+        ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+    </center>
+    </b></h1>
+    <br><br>
+
+</body>
+</html>
