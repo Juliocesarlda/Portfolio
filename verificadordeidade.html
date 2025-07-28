@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificador de Idade</title>
+    <style>
+    body {
+        background-color: rgb(217, 217, 247);
+        color: brown;
+        font: 15pt Arial, sans-serif;
+        margin: 0;
+    }
+
+    header {
+        color: rgb(196, 74, 3);
+        text-align: center;
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        background-color: rgba(109, 50, 8, 0.356);
+        border-radius: 20px;
+        border: 0.1rem solid rgb(16, 16, 17);
+        padding: 0.5rem 0;
+        box-sizing: border-box;
+    }
+
+    section {
+        background-color: white;
+        border-radius: 1rem;
+        padding: 1rem;
+        width: 90%;
+        max-width: 900px;
+        margin: 3rem auto;
+        box-shadow: 0.5rem 0.5rem 0.5rem rgba(0, 0, 0, 0.568);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        align-items: flex-start;
+        border: 0.2rem solid rgba(16, 16, 17, 0.459);
+    }
+
+    .pergdata {
+        background-color: #ebec98;
+        flex: 1 1 300px;
+        min-width: 280px;
+        max-width: 100%;
+        min-height: 20rem;
+        color: black;
+        font-family: Georgia, 'Times New Roman', Times, serif;
+        font-size: 1.2rem;
+        border-radius: 50px;
+        border: 0.2rem solid rgba(16, 16, 17, 0.459);
+        box-shadow: 2px 2px 8px black;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        align-items: flex-start;
+        padding: 1rem;
+        box-sizing: border-box;
+    }
+
+    .pergdata > div {
+        margin-bottom: 0.5rem;
+    }
+
+    .pergdata input[type="button"] {
+        margin-top: 2rem;
+        width: 100%;
+        padding: 0.8rem 1.5rem;
+        font-size: 1.5rem !important;
+        cursor: pointer;
+        border-radius: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+    }
+
+    .foto {
+        background-color: rgb(235, 219, 201);
+        width: 9rem;
+        height: 12rem;
+        border-radius: 50px;
+        border: 0.2rem solid rgba(16, 16, 17, 0.459);
+        box-shadow: 2px 2px 8px black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 1rem;
+        overflow: hidden;
+    }
+
+    .foto img {
+        width: 90%;
+        height: 90%;
+        border-radius: 30%;
+        border: 0.2rem solid rgba(16, 16, 17, 1);
+        box-shadow: 2px 2px 8px rgba(16, 16, 17, 1);
+        object-fit: cover;
+    }
+
+    #res {
+        margin-top: 1.5rem;
+        font-size: 1.3rem;
+        text-align: center;
+        color: black;
+        font-weight: bold;
+        padding: 0 1rem;
+    }
+
+    footer {
+        color: #050505;
+        text-align: center;
+        font-style: italic;
+        margin-top: 2rem;
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+        section {
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .pergdata {
+            width: 100%;
+        }
+
+        .foto {
+            width: 8rem;
+            height: 10rem;
+            margin: 1rem auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pergdata input[type="button"] {
+            font-size: 1.2rem !important;
+            padding: 0.6rem;
+        }
+
+        .foto {
+            width: 7rem;
+            height: 9rem;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+</head>
+<body>
+    <header><h1>Verificador de Idade</h1></header>
+    
+    <section>
+        <div class="pergdata">
+            <div>
+                Ano de nascimento:
+                <input type="number" name="ano" id="ano" style="width:4rem; height:1.5rem; font-size: 1.3rem;" oninput="validarNumero(this)">
+            </div>
+            <div>
+                Sexo: &nbsp;
+                <input type="radio" id="feminino" name="sexo" value="feminino" onchange="toggleRadio('feminino', 'masculino')"> &nbsp;Feminino&nbsp;&nbsp;&nbsp;
+                <input type="radio" id="masculino" name="sexo" value="masculino" onchange="toggleRadio('masculino', 'feminino')"> Masculino
+            </div>
+            <div>
+                <input type="button" value="Verificar" onclick="verificar()">
+            </div>
+        </div>
+        
+        <div id="msg" class="foto">
+            <img id="imagem" src="pessoafoto.png" alt="Pessoa">
+        </div>
+    </section>
+
+    <div id="res">
+        Preencha os dados acima para ver o resultado!
+    </div>
+
+    <script>
+        function verificar() {
+            const anoInput = document.getElementById('ano');
+            const anoNascimento = Number(anoInput.value);
+            const anoAtual = new Date().getFullYear();
+            const resDiv = document.getElementById('res');
+            const imagem = document.getElementById('imagem');
+            const femininoCheckbox = document.getElementById('feminino');
+            const masculinoCheckbox = document.getElementById('masculino');
+
+            if (anoNascimento === 0 || anoNascimento > anoAtual || anoNascimento < 1900) {
+                resDiv.style.color = 'red';
+                resDiv.innerHTML = '<strong>[ERRO] Verifique o ano de nascimento!</strong>';
+                imagem.src = 'pessoafoto.png'; // Reset image on error
+                return;
+            }
+
+            if (!femininoCheckbox.checked && !masculinoCheckbox.checked) {
+                resDiv.style.color = 'red';
+                resDiv.innerHTML = '<strong>[ERRO] Selecione o sexo!</strong>';
+                imagem.src = 'pessoafoto.png'; // Reset image on error
+                return;
+            }
+
+            const idade = anoAtual - anoNascimento;
+            let genero = '';
+            let faixaEtaria = '';
+
+            if (femininoCheckbox.checked) {
+                genero = 'Mulher';
+                if (idade < 12) {
+                    faixaEtaria = 'criança';
+                    imagem.src = 'criancafeminino.png'; // Placeholder, replace with actual image
+                    imagem.alt = 'Criança do sexo feminino';
+                } else if (idade < 21) {
+                    faixaEtaria = 'jovem';
+                    imagem.src = 'jovemfeminino.jpg'; // Placeholder
+                    imagem.alt = 'Jovem do sexo feminino';
+                } else if (idade < 60) {
+                    faixaEtaria = 'adulta';
+                    imagem.src = 'adultofeminino.jpg'; // Placeholder
+                    imagem.alt = 'Adulta do sexo feminino';
+                } else {
+                    faixaEtaria = 'idosa';
+                    imagem.src = 'idosafeminino.jpg'; // Placeholder
+                    imagem.alt = 'Idosa do sexo feminino';
+                }
+            } else if (masculinoCheckbox.checked) {
+                genero = 'Homem';
+                if (idade < 12) {
+                    faixaEtaria = 'criança';
+                    imagem.src = 'criancamasculino.png'; // Placeholder
+                    imagem.alt = 'Criança do sexo masculino';
+                } else if (idade < 21) {
+                    faixaEtaria = 'jovem';
+                    imagem.src = 'jovemmasculino.png'; // Placeholder
+                    imagem.alt = 'Jovem do sexo masculino';
+                } else if (idade < 60) {
+                    faixaEtaria = 'adulto';
+                    imagem.src = 'adultomasculino.jpg'; // Placeholder
+                    imagem.alt = 'Adulto do sexo masculino';
+                } else {
+                    faixaEtaria = 'idoso';
+                    imagem.src = 'idosomasculino.jpg'; // Placeholder
+                    imagem.alt = 'Idoso do sexo masculino';
+                }
+            }
+            
+            resDiv.style.color = 'black'; // Reset color on success
+            resDiv.innerHTML = `Detectamos ${genero} com ${idade} anos (${faixaEtaria}).`;
+            // If you want to show the image inside the pergdata div instead of a separate 'foto' div,
+            // you'd move the image element there and update its source accordingly.
+        }
+
+        // Changed to radio buttons, so toggling disabled state isn't strictly necessary for mutual exclusion,
+        // but the logic can still be useful if you wanted to maintain it for some reason.
+        function toggleRadio(checkedId, uncheckedId) {
+            // With radio buttons, the 'name' attribute handles mutual exclusion automatically.
+            // No need to manually disable/enable.
+        }
+
+        function validarNumero(input) {
+            // Restrict input to 4 digits and numbers only
+            if (input.value.length > 4) {
+                input.value = input.value.slice(0, 4);
+            }
+            input.value = input.value.replace(/[^0-9]/g, '');
+        }
+    </script>
+    <footer>
+        <p>&copy; 2025 Verificador de Idade</p>
+    </footer>
+</body>
+</html>
