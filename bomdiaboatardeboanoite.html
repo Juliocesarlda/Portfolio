@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bom dia - Boa tarde - Boa noite</title>
+    <style>
+        body {
+            background-color: rgb(60, 120, 248);
+            font: normal 15pt Arial;
+        }
+
+        header {
+            color:white;
+            text-align: center;
+        }
+        section {
+            background-color: white;
+            border-radius: 1rem;
+            padding:1rem;
+            width: 40rem;
+            margin: auto;
+            box-shadow: 0.5rem 0.5rem 0.5rem rgba(0, 0, 0, 0.568);
+        }
+        footer {
+            color:#050505;
+            text-align: center;
+            font-style: italic;
+        }
+        .bordaredonda img{
+            display: flex;
+            border-radius: 100%;
+            width: 20rem;
+            height: 20rem;
+            margin:auto;
+            box-shadow: 5pt, 5pt, 5pt, #02020269;
+            padding: 10px;
+            
+        }
+    </style>
+</head>
+<body onload="carregar()">
+   <header>
+        <h1>Hora do dia</h1>
+    </header>
+    <section>
+        <div style="text-align: center;">
+            Dia :
+            <input type="checkbox" id="dia" name="dia" style="height:1.5rem;" value="html" onchange="toggleCheckbox('dia', 'noite')">
+            Noite :
+            <input type="checkbox" id="noite" name="noite" style="height:1.5rem;" value="html" onchange="toggleCheckbox('noite', 'dia')"><br><br>
+            Digite um horário:
+            <input type="number" name="hora" id="hora" style="width:3rem;" min="0" max="23" placeholder="0-23">
+            <button onclick="carregar()">Verificar</button>
+        </div>
+        <div id="msg" style="text-align: center;"></div>
+        <div id="foto" class="bordaredonda">
+            <img id="imagem" src="manha.jpg">
+        </div>
+    </section>
+    <script>
+        function toggleCheckbox(checkedId, disabledId) {
+            const checkedCheckbox = document.getElementById(checkedId);
+            const disabledCheckbox = document.getElementById(disabledId);
+
+            if (checkedCheckbox.checked) {
+                disabledCheckbox.disabled = true;
+
+                // Muda a tela para dia ou noite conforme o checkbox
+                if (checkedId === 'dia') {
+                    document.body.style.background = '#ffe4c4';
+                    document.getElementById('imagem').src = 'manha.jpg';
+                    document.getElementById('msg').innerHTML = '<br>MANHÃ';
+                } else if (checkedId === 'noite') {
+                    document.body.style.background = '#1c142b';
+                    document.getElementById('imagem').src = 'noite.jpg';
+                    document.getElementById('msg').innerHTML = '<br>NOITE';
+                }
+            } else {
+                disabledCheckbox.disabled = false;
+                // Opcional: restaurar para o estado padrão ao desmarcar
+                document.body.style.background = 'rgb(60, 120, 248)';
+                document.getElementById('imagem').src = 'manha.jpg';
+                document.getElementById('msg').innerHTML = '';
+            }
+        }
+        function carregar() {
+            var msg = window.document.getElementById('msg');
+            var img = window.document.getElementById('imagem');
+            var inputHora = window.document.getElementById('hora');
+            var hora = Number(inputHora.value);
+
+            // Se o usuário não digitar nada, pega a hora atual do sistema
+            if (isNaN(hora) || inputHora.value === "") {
+                var data = new Date();
+                hora = data.getHours();
+            }
+
+            msg.innerHTML = `Agora são ${hora} horas.`;
+
+            if (hora >= 0 && hora < 12) {
+                msg.innerHTML += "<br>MANHÃ";
+                document.body.style.background = '#ffe4c4';
+                img.src = "manha.jpg";
+            } else if (hora >= 12 && hora < 18) {
+                document.body.style.background = '#8a5718';
+                msg.innerHTML += "<br>TARDE";
+                img.src = "tarde.jpg";
+            } else if (hora >= 18 && hora <= 23) {
+                document.body.style.background = '#1c142b';
+                msg.innerHTML += "<br>NOITE";
+                img.src = "noite.jpg";
+            } else {
+                msg.innerHTML += "<br>Horário inválido!";
+            }
+        }
+    </script>
+    <footer>
+        <p>&copy;Julio Cesar</p>
+    </footer>
+</body>
+</html>
