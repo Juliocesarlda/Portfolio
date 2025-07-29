@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Detector de Mentira (Teoria de Bayes)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h2>IA - Detector de Mentira (Teoria de Bayes)</h2>
+  <input id="frase" placeholder="Digite uma frase..." size="60">
+  <button onclick="verificarMentira()">Analisar</button>
+  <p id="resultado"></p>
+
+  <script>
+    const baseTreinamento = [
+      { texto: "eu nunca estive lá", mentira: true },
+      { texto: "não sei do que você está falando", mentira: true },
+      { texto: "isso não aconteceu comigo", mentira: true },
+      { texto: "eu estava em casa assistindo TV", mentira: false },
+      { texto: "fui ao mercado comprar pão", mentira: false },
+      { texto: "estava com meus amigos no shopping", mentira: false },
+    ];
+
+    const contagemPalavras = { mentira: {}, verdade: {} };
+    let totalMentira = 0;
+    let totalVerdade = 0;
+
+    function treinar() {
+      for (let exemplo of baseTreinamento) {
+        const palavras = exemplo.texto.toLowerCase().split(" ");
+        if (exemplo.mentira) {
+          totalMentira++;
+          for (let palavra of palavras) {
+            contagemPalavras.mentira[palavra] = (contagemPalavras.mentira[palavra] || 0) + 1;
+          }
+        } else {
+          totalVerdade++;
+          for (let palavra of palavras) {
+            contagemPalavras.verdade[palavra] = (contagemPalavras.verdade[palavra] || 0) + 1;
+          }
+        }
+      }
+    }
+
+    function calcularProbabilidadeMentira(frase) {
+      const palavras = frase.toLowerCase().split(" ");
+      let probMentira = Math.log(totalMentira / (totalMentira + totalVerdade));
+      let probVerdade = Math.log(totalVerdade / (totalMentira + totalVerdade));
+
+      for (let palavra of palavras) {
+        const freqMentira = (contagemPalavras.mentira[palavra] || 0.01);
+        const freqVerdade = (contagemPalavras.verdade[palavra] || 0.01);
+        probMentira += Math.log(freqMentira);
+        probVerdade += Math.log(freqVerdade);
+      }
+
+      const expMentira = Math.exp(probMentira);
+      const expVerdade = Math.exp(probVerdade);
+      const total = expMentira + expVerdade;
+
+      return expMentira / total;
+    }
+
+    function verificarMentira() {
+      const frase = document.getElementById("frase").value;
+      const prob = calcularProbabilidadeMentira(frase);
+      const resultado = document.getElementById("resultado");
+
+      if (prob > 0.5) {
+        resultado.innerText = `🤥 Provavelmente é uma MENTIRA (Confiança: ${(prob * 100).toFixed(2)}%)`;
+        resultado.style.color = "red";
+      } else {
+        resultado.innerText = `✅ Provavelmente é VERDADE (Confiança: ${(100 - prob * 100).toFixed(2)}%)`;
+        resultado.style.color = "green";
+      }
+    }
+
+    treinar();
+  </script>
+</body>
+</html>
