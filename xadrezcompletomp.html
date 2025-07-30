@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+socket.on(!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://unpkg.com/socket.io@latest/client-dist/socket.io.min.js"></script>
 
   <title>Jogo de Xadrez com IA</title>
@@ -134,6 +135,12 @@
       <option value="online">Multiplayer Online</option>
 
     </select>
+    
+    <!-- inserir nome do jogador MODO MULTIPLAYER -->
+    
+    <label style="margin-left:20px;">Seu nome:</label>
+<input type="text" id="nome-jogador" placeholder="Digite seu nome" style="padding:6px; border-radius:4px;"/>
+
     <button onclick="trocarLado()" style="margin-left:14px; padding:6px 18px; border-radius:6px; background:#0ff; color:#111; border:none; font-size:1rem; cursor:pointer;">Confirmar</button>
   </div>
   <div class="container-xadrez">
@@ -145,9 +152,17 @@
       </div>
     </div>
   </div>
+<div id="info-jogadores" style="display:flex; justify-content:space-around; margin-bottom:10px;">
+  <div id="area-branca">Brancas: <span id="nome-branca">–</span><br/>Tempo: <span id="timer-branca">05:00</span></div>
+  <div id="area-preta">Pretas: <span id="nome-preta">–</span><br/>Tempo: <span id="timer-preta">05:00</span></div>
+</div>
 
 <script>
+
   const socket = io();
+let nomeLocal = "";
+let modoJogo = "online"; // ou ia/multiplayer
+  
 let corLocal = null;
 
 socket.on("assignColor", (cor) => {
@@ -562,6 +577,36 @@ function jogadaDaIA() {
   }, 500);
 }
 
+let tempoTotal = 300000; // 5 min em ms
+let timeRemaining = { branca: tempoTotal, preta: tempoTotal };
+let timerInterval = null;
+
+function iniciarTimerLocal() {
+  clearInterval(timerInterval);
+  const lado = vez;
+  const inicio = Date.now();
+  timerInterval = setInterval(() => {
+    const decorrido = Date.now() - inicio;
+    timeRemaining[lado] = Math.max(0, tempoTotal - decorrido - (tempoTotal - timeRemaining[lado]));
+    atualizarDisplayTimer();
+    if (timeRemaining[lado] <= 0) {
+      clearInterval(timerInterval);
+      alert(`${lado === "branca" ? "Brancas" : "Pretas"} esgotaram o tempo!`);
+      vez = "fim";
+    }
+  }, 500);
+}
+
+function atualizarDisplayTimer() {
+  ["branca", "preta"].forEach(cor => {
+    const ms = timeRemaining[cor];
+    const min = String(Math.floor(ms/60000)).padStart(2, "0");
+    const sec = String(Math.floor((ms%60000)/1000)).padStart(2, "0");
+    document.getElementById(`timer-${cor}`).textContent = `${min}:${sec}`;
+  });
+}
+
+
 function reiniciarJogo() {
   pecas = JSON.parse(JSON.stringify(pecasIniciais));
   selecionado = null;
@@ -591,6 +636,9 @@ if (modoJogo === "online") {
   // lado será atribuído pelo servidor
   return;
 }
+nomeLocal = document.getElementById("nome-jogador").value || "Jogador";
+socket.emit("joinGame", { nome: nomeLocal });
+
 reiniciarJogo();
 
 }
