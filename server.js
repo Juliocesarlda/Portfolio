@@ -1,70 +1,37 @@
-const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io");
+const express = require('express');
+const http = require('http');
+const io = require('socket.io');
 
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+const srv = http.createServer(app);
+const socket = io(srv);
 
-let players = {};
-let gameState = null;
+const players = {};
 
-io.on("connection", (socket) => {
-  console.log("Novo cliente conectado:", socket.id);
+socket.on('connection', sock => {
+  sock.on('joinGame', ({ nome }) => {
+    const cor = !players.branca ? 'branca' : (!players.preta ? 'preta' : null);
+    if (!cor) return sock.emit('salaCheia');
+    players[cor] = { id: sock.id, nome };
+    sock.emit('assignColor', cor);
 
-  // Adiciona jogador à sala se ainda houver vaga
-  if (Object.keys(players).length < 2) {
-    const cor = Object.keys(players).length === 0 ? "branca" : "preta";
-    players[socket.id] = cor;
-    socket.emit("assignColor", cor);
+    const obj = {
+      branca: players.branca?.nome,
+      preta: players.preta?.nome
+    };
+    socket.emit('opponentInfo', obj);
+  });
 
-    // Informa ao outro jogador que o adversário entrou
-    socket.broadcast.emit("opponentJoined");
-  } else {
-    socket.emit("salaCheia");
-    socket.disconnect();
-  }
+  sock.on('movimento', data => sock.broadcast.emit('movimento', data));
+  sock.on('resetar', () => sock.broadcast.emit('resetar'));
 
-  // Quando um jogador faz um movimento
-  socket.on("joinGame", ({ nome }) => {
-  players[socket.id] = { nome, color: /* atribua brancas/preta */ };
-  socket.emit("assignColor", players[socket.id].color);
-  socket.emit("opponentInfo", { nome: players[op.id]?.nome || null, color: players[op.id]?.color });
-  if (opponente também conectado) {
-    socket.to(opID).emit("opponentInfo", { nome: nomeLocal, color: players[socket.id].color });
-  }
+  sock.on('disconnect', () => {
+    for (const cor of ['branca','preta']){
+      if (players[cor]?.id === sock.id) delete players[cor];
+    }
+    socket.emit('opponentLeft');
+  });
 });
 
-
-  socket.on("movimento", (data) => {
-    socket.broadcast.emit("movimento", data); // envia para o oponente
-    lastMoveTime = Date.now();
-vez = data.vez;
-iniciarTimerLocal();
-
-  });
-
-  socket.on("resetar", () => {
-    socket.broadcast.emit("resetar");
-  });
-
-  socket.on("disconnect", () => {
-    
-    socket.broadcast.emit("opponentLeft");
-    socket.on("opponentInfo", ({ nome, color }) => {
-  if (nome) mostrarNomeOponente(nome, color);
-  });
-    console.log("Cliente desconectado:", socket.id);
-    delete players[socket.id];
-    
-  });
-
-  
-
-});
-
-app.use(express.static("public")); // pasta com index.html e JS
-
-server.listen(3000, () => {
-  console.log("Servidor rodando em http://localhost:3000");
-});
+app.use(express.static('public'));
+srv.listen(3000, () => console.log('Servidor rodando em localhost:3000'));

@@ -1,11 +1,8 @@
-socket.on(!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://unpkg.com/socket.io@latest/client-dist/socket.io.min.js"></script>
-
   <title>Jogo de Xadrez com IA</title>
   <style>
     body {
@@ -110,6 +107,8 @@ socket.on(!DOCTYPE html>
       color: #111;
       text-shadow: 1px 1px 2px #fff;
     }
+    #info-jogadores { display:flex; justify-content:space-around; margin-bottom:10px; }
+    #info-jogadores div { font-size:1rem; }
   </style>
 </head>
 <body>
@@ -127,70 +126,119 @@ socket.on(!DOCTYPE html>
       Divirta-se e tente vencer a IA!
     </p>
   </div>
-  <div style="display:flex; justify-content:center; margin-bottom:18px;">
-    <label style="margin-right:10px; font-weight:bold;">Escolha seu lado:</label>
-    <select id="lado-jogador" style="padding:6px 12px; border-radius:6px; font-size:1rem;">
-      <option value="branca">Brancas</option>
-      <option value="preta">Pretas</option>
-      <option value="online">Multiplayer Online</option>
+ 
+   <h1>♟ Xadrez Online ♟</h1>
 
-    </select>
-    
-    <!-- inserir nome do jogador MODO MULTIPLAYER -->
-    
-    <label style="margin-left:20px;">Seu nome:</label>
-<input type="text" id="nome-jogador" placeholder="Digite seu nome" style="padding:6px; border-radius:4px;"/>
-
-    <button onclick="trocarLado()" style="margin-left:14px; padding:6px 18px; border-radius:6px; background:#0ff; color:#111; border:none; font-size:1rem; cursor:pointer;">Confirmar</button>
+  <div>
+    <label>Seu nome:</label>
+    <input id="nome-jogador" placeholder="Digite seu nome" />
+    <button onclick="entrarSala()">Entrar na sala</button>
   </div>
-  <div class="container-xadrez">
-    <div>
-      <div id="tabuleiro"></div>
-      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
-        <button class="btn-voltar" onclick="window.location.href='principal.html'">Voltar ao Início</button>
-        <button class="btn-reiniciar" onclick="reiniciarJogo()">Reiniciar Jogo</button>
-      </div>
+
+  <div id="info-jogadores" hidden>
+    <div id="area-branca">
+      Brancas: <span id="nome-branca">–</span><br/>
+      Tempo: <span id="timer-branca">05:00</span>
+    </div>
+    <div id="area-preta">
+      Pretas: <span id="nome-preta">–</span><br/>
+      Tempo: <span id="timer-preta">05:00</span>
     </div>
   </div>
-<div id="info-jogadores" style="display:flex; justify-content:space-around; margin-bottom:10px;">
-  <div id="area-branca">Brancas: <span id="nome-branca">–</span><br/>Tempo: <span id="timer-branca">05:00</span></div>
-  <div id="area-preta">Pretas: <span id="nome-preta">–</span><br/>Tempo: <span id="timer-preta">05:00</span></div>
-</div>
+
+  <div id="tabuleiro"></div>
+   <button onclick="reiniciarJogo()">Reiniciar Jogo</button>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+  </div>
 
 <script>
-
   const socket = io();
 let nomeLocal = "";
-let modoJogo = "online"; // ou ia/multiplayer
-  
 let corLocal = null;
+let pecas, vez, enPassant;
+const tempoTotal = 300000; // 5min por lado
+let timeRemaining = { branca: tempoTotal, preta: tempoTotal };
+let timerInterval = null;
 
-socket.on("assignColor", (cor) => {
+document.getElementById("tabuleiro").style.display = 'none';
+
+socket.on("assignColor", cor => {
   corLocal = cor;
-  ladoJogador = cor;
-  reiniciarJogo();
-  alert(`Você é o lado ${cor === "branca" ? "⚪ Branco" : "⚫ Preto"}`);
 });
-
-socket.on("opponentJoined", () => {
-  alert("Seu oponente entrou na sala.");
+socket.on("opponentInfo", info => {
+  preencheInfoJogadores(info);
+  document.getElementById("info-jogadores").hidden = false;
+  iniciaPartida();
 });
-
-socket.on("movimento", (data) => {
-  // Atualiza peças
+socket.on("movimento", data => {
   pecas = data.pecas;
   vez = data.vez;
   enPassant = data.enPassant;
   desenharTabuleiro();
+  iniciarTimer();
 });
+socket.on("resetar", () => reiniciarJogo());
 
-socket.on("resetar", () => {
-  reiniciarJogo();
-});
+function entrarSala(){
+  nomeLocal = document.getElementById("nome-jogador").value || "Jogador";
+  socket.emit("joinGame", { nome: nomeLocal });
+}
 
-socket.on("opponentLeft", () => {
-  alert("Seu oponente saiu da sala.");
-});
+function preencheInfoJogadores({ branca, preta }){
+  document.getElementById("nome-branca").textContent = branca || "–";
+  document.getElementById("nome-preta").textContent = preta || "–";
+}
+
+function iniciaPartida(){
+  pecas = JSON.parse(JSON.stringify(pecasIniciais));
+  vez = "branca";
+  enPassant = null;
+  timeRemaining = { branca: tempoTotal, preta: tempoTotal };
+  desenharTabuleiro();
+  iniciarTimer();
+  document.getElementById("tabuleiro").style.display = '';
+}
+
+function iniciarTimer(){
+  clearInterval(timerInterval);
+  const lado = vez;
+  const start = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = Date.now() - start;
+    timeRemaining[lado] = Math.max(0, tempoTotal - elapsed + (tempoTotal - timeRemaining[lado]));
+    atualizaTimerUI();
+    if (timeRemaining[lado] <= 0){
+      clearInterval(timerInterval);
+      alert(`${lado === "branca" ? "Brancas" : "Pretas"} esgotaram o tempo!`);
+      vez = "fim";
+    }
+  }, 500);
+}
+
+function atualizaTimerUI(){
+  ["branca","preta"].forEach(cor => {
+    const ms = timeRemaining[cor];
+    const min = String(Math.floor(ms/60000)).padStart(2,"0");
+    const sec = String(Math.floor((ms%60000)/1000)).padStart(2,"0");
+    document.getElementById(`timer-${cor}`).textContent = `${min}:${sec}`;
+  });
+}
+
+// Aqui entra todo restante da sua lógica:
+// - pecasIniciais
+// - desenharTabuleiro()
+// - movimentoValido()
+// - selecionarOuMover()
+// - jogadaDaIA()
+// - reiniciarJogo()
+// ...
+// No final do bloco que executa um movimento válido, adicione:
+
+if (corLocal && modoJogo === "online") {
+  socket.emit("movimento", { pecas, vez, enPassant });
+}
 
 let pecasIniciais = [
   ["&#9814;","&#9816;","&#9815;","&#9813;","&#9812;","&#9815;","&#9816;","&#9814;"],
@@ -454,15 +502,6 @@ function selecionarOuMover(event) {
     desenharTabuleiro();
     casa.classList.add("selecionado");
   }
-
-  if (modoJogo === "online") {
-  socket.emit("movimento", {
-    pecas,
-    vez,
-    enPassant
-  });
-  }
-
 }
 
 function jogadaDaIA() {
@@ -577,36 +616,6 @@ function jogadaDaIA() {
   }, 500);
 }
 
-let tempoTotal = 300000; // 5 min em ms
-let timeRemaining = { branca: tempoTotal, preta: tempoTotal };
-let timerInterval = null;
-
-function iniciarTimerLocal() {
-  clearInterval(timerInterval);
-  const lado = vez;
-  const inicio = Date.now();
-  timerInterval = setInterval(() => {
-    const decorrido = Date.now() - inicio;
-    timeRemaining[lado] = Math.max(0, tempoTotal - decorrido - (tempoTotal - timeRemaining[lado]));
-    atualizarDisplayTimer();
-    if (timeRemaining[lado] <= 0) {
-      clearInterval(timerInterval);
-      alert(`${lado === "branca" ? "Brancas" : "Pretas"} esgotaram o tempo!`);
-      vez = "fim";
-    }
-  }, 500);
-}
-
-function atualizarDisplayTimer() {
-  ["branca", "preta"].forEach(cor => {
-    const ms = timeRemaining[cor];
-    const min = String(Math.floor(ms/60000)).padStart(2, "0");
-    const sec = String(Math.floor((ms%60000)/1000)).padStart(2, "0");
-    document.getElementById(`timer-${cor}`).textContent = `${min}:${sec}`;
-  });
-}
-
-
 function reiniciarJogo() {
   pecas = JSON.parse(JSON.stringify(pecasIniciais));
   selecionado = null;
@@ -620,10 +629,6 @@ function reiniciarJogo() {
             
     }, 600);
   }
-  if (modoJogo === "online") {
-  socket.emit("resetar");
-}
-
 }
 
 // Função para trocar o lado do jogador
@@ -631,16 +636,6 @@ function trocarLado() {
   const select = document.getElementById("lado-jogador");
   ladoJogador = select.value;
   reiniciarJogo();
-  modoJogo = document.getElementById("modo-jogo").value;
-if (modoJogo === "online") {
-  // lado será atribuído pelo servidor
-  return;
-}
-nomeLocal = document.getElementById("nome-jogador").value || "Jogador";
-socket.emit("joinGame", { nome: nomeLocal });
-
-reiniciarJogo();
-
 }
 
 // Inicialização
