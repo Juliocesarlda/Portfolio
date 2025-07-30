@@ -1,37 +1,81 @@
+// server.js
 const express = require('express');
 const http = require('http');
-const io = require('socket.io');
+const { Server } = require('socket.io');
+const path = require('path');
 
 const app = express();
-const srv = http.createServer(app);
-const socket = io(srv);
+const server = http.createServer(app);
+const io = new Server(server);
 
-const players = {};
+app.use(express.static(path.join(__dirname, 'public')));
 
-socket.on('connection', sock => {
-  sock.on('joinGame', ({ nome }) => {
-    const cor = !players.branca ? 'branca' : (!players.preta ? 'preta' : null);
-    if (!cor) return sock.emit('salaCheia');
-    players[cor] = { id: sock.id, nome };
-    sock.emit('assignColor', cor);
+let jogadores = {};
+let nomes = { branca: null, preta: null };
+let estadoJogo = null;
 
-    const obj = {
-      branca: players.branca?.nome,
-      preta: players.preta?.nome
-    };
-    socket.emit('opponentInfo', obj);
+function corDisponivel() {
+  if (!jogadores.branca) return 'branca';
+  if (!jogadores.preta) return 'preta';
+  return null;
+}
+
+io.on('connection', socket => {
+  const cor = corDisponivel();
+  if (!cor) {
+    socket.emit('erro', 'Sala cheia');
+    socket.disconnect();
+    return;
+  }
+
+  jogadores[cor] = socket;
+
+  socket.on('joinGame', ({ nome }) => {
+    nomes[cor] = nome;
+    socket.emit('assignColor', cor);
+    io.emit('opponentInfo', nomes);
+
+    if (jogadores.branca && jogadores.preta) {
+      estadoJogo = criarEstadoInicial();
+      io.emit('movimento', estadoJogo);
+    }
   });
 
-  sock.on('movimento', data => sock.broadcast.emit('movimento', data));
-  sock.on('resetar', () => sock.broadcast.emit('resetar'));
+  socket.on('movimento', estado => {
+    estadoJogo = estado;
+    socket.broadcast.emit('movimento', estado);
+  });
 
-  sock.on('disconnect', () => {
-    for (const cor of ['branca','preta']){
-      if (players[cor]?.id === sock.id) delete players[cor];
+  socket.on('resetar', () => {
+    estadoJogo = criarEstadoInicial();
+    io.emit('resetar');
+  });
+
+  socket.on('disconnect', () => {
+    if (jogadores[cor] === socket) {
+      jogadores[cor] = null;
+      nomes[cor] = null;
+      io.emit('opponentInfo', nomes);
     }
-    socket.emit('opponentLeft');
   });
 });
 
-app.use(express.static('public'));
-srv.listen(3000, () => console.log('Servidor rodando em localhost:3000'));
+function criarEstadoInicial() {
+  return {
+    pecas: [
+      ["&#9814;","&#9816;","&#9815;","&#9813;","&#9812;","&#9815;","&#9816;","&#9814;"],
+      ["&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;"],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["","","","","","","",""],
+      ["&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;","&#9823;"],
+      ["&#9820;","&#9822;","&#9821;","&#9819;","&#9818;","&#9821;","&#9822;","&#9820;"]
+    ],
+    vez: 'branca',
+    enPassant: null
+  };
+}
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
