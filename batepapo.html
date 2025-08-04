@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat Firebase com Emojis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    .chat-container {
+      width: 80%;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .chat-header {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+    }
+    .chat-messages {
+      padding: 20px;
+      overflow-y: auto;
+      max-height: 400px;
+      border-bottom: 1px solid #ccc;
+    }
+    .chat-message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .chat-message .username {
+      font-weight: bold;
+      color: #333;
+    }
+    .chat-message .message {
+      color: #666;
+    }
+    #message-input {
+      width: 75%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #send-button {
+      padding: 10px 20px;
+      margin-left: 5px;
+      border-radius: 5px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #send-button:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div id="username-container">
+    <h2>Digite seu nome para entrar na sala de bate-papo:</h2>
+    <input type="text" id="username-input" placeholder="Digite seu nome...">
+    <button id="enter-button">Entrar</button>
+  </div>
+
+  <div id="chat-container" style="display: none;" class="chat-container">
+    <div class="chat-header">
+      <h2>Sala de Bate-Papo com Emojis 🙂 😊 😄 ❤ 💛 💙</h2>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+    <button id="send-button">Enviar</button>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+  <script>
+    // 🔁 Cole aqui sua configuração do Firebase:
+     // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyBJQ94Ty6lurovUXe07P9ph8C30-ZdqX2g",
+    authDomain: "batepapo-7940a.firebaseapp.com",
+    databaseURL: "https://batepapo-7940a-default-rtdb.firebaseio.com",
+    projectId: "batepapo-7940a",
+    storageBucket: "batepapo-7940a.firebasestorage.app",
+    messagingSenderId: "785173093230",
+    appId: "1:785173093230:web:df0fcdf5e4318397127f7f",
+    measurementId: "G-HBCD95MEQ8"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_DOMINIO.firebaseapp.com",
+      databaseURL: "https://SEU_DATABASE_URL.firebaseio.com",
+      projectId: "SEU_PROJECT_ID",
+      storageBucket: "SEU_BUCKET.appspot.com",
+      messagingSenderId: "SEU_ID",
+      appId: "SEU_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const usernameContainer = document.getElementById('username-container');
+    const chatContainer = document.getElementById('chat-container');
+    const usernameInput = document.getElementById('username-input');
+    const enterButton = document.getElementById('enter-button');
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    let username;
+
+    function sanitize(input) {
+      const div = document.createElement('div');
+      div.innerText = input;
+      return div.innerHTML;
+    }
+
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (text !== '') {
+        db.ref("mensagens").push({
+          user: username,
+          text: text,
+          timestamp: Date.now()
+        });
+        messageInput.value = '';
+      }
+    }
+
+    function renderMessage(data) {
+      const { user, text } = data.val();
+      const div = document.createElement('div');
+      div.classList.add('chat-message');
+      div.innerHTML = `<span class="username">${sanitize(user)}:</span> <span class="message">${sanitize(text)}</span>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    enterButton.addEventListener('click', () => {
+      username = sanitize(usernameInput.value.trim());
+      if (username !== '') {
+        usernameContainer.style.display = 'none';
+        chatContainer.style.display = 'block';
+
+        db.ref("mensagens").limitToLast(100).on("child_added", renderMessage);
+      }
+    });
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
