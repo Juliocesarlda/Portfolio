@@ -431,3 +431,160 @@ function selecionarOuMover(event) {
     selecionado = null;
     desenharTabuleiro();
   } else if (pecas[linha]
+} else if (pecas[linha][coluna] !== "" && corDaPeca(pecas[linha][coluna]) === ladoJogador) {
+    selecionado = { linha, coluna };
+    desenharTabuleiro();
+    casa.classList.add("selecionado");
+  }
+}
+
+function jogadaDaIA() {
+  // A IA joga com o lado oposto ao do jogador
+  let corIA = ladoJogador === "branca" ? "preta" : "branca";
+  if (vez !== corIA) return;
+
+  let movimentos = [];
+  for (let linha = 0; linha < 8; linha++) {
+    for (let coluna = 0; coluna < 8; coluna++) {
+      const peca = pecas[linha][coluna];
+      if (peca && corDaPeca(peca) === corIA) {
+        for (let l2 = 0; l2 < 8; l2++) {
+          for (let c2 = 0; c2 < 8; c2++) {
+            if ((linha !== l2 || coluna !== c2) && movimentoValido({ linha, coluna }, { linha: l2, coluna: c2 })) {
+              // Normal
+              const backup = pecas[l2][c2];
+              pecas[l2][c2] = peca;
+              pecas[linha][coluna] = "";
+              const emXeque = estaEmXeque(corIA);
+              pecas[linha][coluna] = peca;
+              pecas[l2][c2] = backup;
+              if (!emXeque) movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 }, enPassant: false });
+            }
+            // En passant
+            if (enPassant && peca && (Number(peca.replace(/[^\d]/g, "")) === 9817 || Number(peca.replace(/[^\d]/g, "")) === 9823)) {
+              if (l2 === enPassant.linha && c2 === enPassant.coluna) {
+                if (Math.abs(c2 - coluna) === 1 && ((corIA === "branca" && l2 - linha === 1) || (corIA === "preta" && l2 - linha === -1))) {
+                  // Simula en passant
+                  const backup = pecas[l2][c2];
+                  const capturada = corIA === "branca" ? pecas[l2 - 1][c2] : pecas[l2 + 1][c2];
+                  pecas[l2][c2] = peca;
+                  pecas[linha][coluna] = "";
+                  if (corIA === "branca") pecas[l2 - 1][c2] = "";
+                  else pecas[l2 + 1][c2] = "";
+                  const emXeque = estaEmXeque(corIA);
+                  pecas[linha][coluna] = peca;
+                  pecas[l2][c2] = backup;
+                  if (corIA === "branca") pecas[l2 - 1][c2] = capturada;
+                  else pecas[l2 + 1][c2] = capturada;
+                  if (!emXeque) movimentos.push({ de: { linha, coluna }, para: { linha: l2, coluna: c2 }, enPassant: true });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (movimentos.length === 0) {
+    alert(estaEmXeque(corIA) ? (corIA === "preta" ? "Xeque-mate! Você venceu!" : "Xeque-mate! A IA venceu!") : "Empate! Nenhum movimento possível.");
+    vez = "fim";
+    return;
+  }
+
+  const jogada = movimentos[Math.floor(Math.random() * movimentos.length)];
+  const pecaMovida = pecas[jogada.de.linha][jogada.de.coluna];
+  pecas[jogada.para.linha][jogada.para.coluna] = pecaMovida;
+  pecas[jogada.de.linha][jogada.de.coluna] = "";
+
+  // En passant: remove o peão capturado
+  if (jogada.enPassant) {
+    if (corIA === "branca") pecas[jogada.para.linha - 1][jogada.para.coluna] = "";
+    else pecas[jogada.para.linha + 1][jogada.para.coluna] = "";
+  }
+
+  // Promoção de peão
+  for (let col = 0; col < 8; col++) {
+    if (pecas[7][col] === "&#9817;") pecas[7][col] = "&#9813;";
+    if (pecas[0][col] === "&#9823;") pecas[0][col] = "&#9819;";
+  }
+
+  // Roque
+  if ((pecas[jogada.para.linha][jogada.para.coluna] === "&#9812;" || pecas[jogada.para.linha][jogada.para.coluna] === "&#9818;") && Math.abs(jogada.para.coluna - jogada.de.coluna) === 2) {
+    if (jogada.para.coluna === 6) {
+      pecas[jogada.para.linha][5] = pecas[jogada.para.linha][7];
+      pecas[jogada.para.linha][7] = "";
+    }
+    if (jogada.para.coluna === 2) {
+      pecas[jogada.para.linha][3] = pecas[jogada.para.linha][0];
+      pecas[jogada.para.linha][0] = "";
+    }
+  }
+
+  // Atualiza enPassant
+  enPassant = null;
+  const tipo = Number(pecaMovida.replace(/[^\d]/g, ""));
+  if (tipo === 9817 || tipo === 9823) {
+    if (Math.abs(jogada.para.linha - jogada.de.linha) === 2) {
+      enPassant = {
+        linha: (jogada.para.linha + jogada.de.linha) / 2,
+        coluna: jogada.para.coluna
+      };
+    }
+  }
+
+  desenharTabuleiro();
+
+  setTimeout(() => {
+    // Alterna a vez para o outro lado após a jogada da IA
+    vez = vez === "branca" ? "preta" : "branca";
+    // Removido o chamado recursivo da IA aqui!
+    // Não chame jogadaDaIA novamente aqui!
+    if (estaEmXeque(vez) && !temMovimentosPossiveis(vez)) {
+      alert(vez === "preta" ? "Xeque-mate! Você venceu!" : "Xeque-mate! A IA venceu!");
+      vez = "fim";
+    } else if (!temMovimentosPossiveis(vez)) {
+      alert("Empate! Nenhum movimento possível.");
+      vez = "fim";
+    }
+  }, 500);
+}
+
+function reiniciarJogo() {
+  pecas = JSON.parse(JSON.stringify(pecasIniciais));
+  selecionado = null;
+  vez = "branca"; // Sempre começa com as brancas
+  enPassant = null;
+  desenharTabuleiro();
+  // Se o jogador escolher pretas, a IA joga primeiro com as brancas e depois alterna normalmente
+  if (ladoJogador === "preta") {
+    setTimeout(() => {
+      jogadaDaIA();
+            
+    }, 600);
+  }
+}
+
+// Função para trocar o lado do jogador
+function trocarLado() {
+  const select = document.getElementById("lado-jogador");
+  ladoJogador = select.value;
+  reiniciarJogo();
+}
+
+// Inicialização
+desenharTabuleiro();
+
+// Sincroniza ladoJogador com o select ao carregar a página
+window.addEventListener("DOMContentLoaded", () => {
+  const select = document.getElementById("lado-jogador");
+  ladoJogador = select.value;
+  if (ladoJogador === "preta") {
+    setTimeout(() => {
+      jogadaDaIA();
+    }, 600);
+  }
+});
+</script>
+</body>
+</html>
