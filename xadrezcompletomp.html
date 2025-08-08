@@ -8,20 +8,60 @@
     body { background:#000; color:#fff; font-family:Arial, sans-serif; text-align:center; margin:0; padding:16px; }
     #top { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
     #tabuleiro { display:grid; grid-template-columns:repeat(8,1fr); width:90vmin; height:90vmin; max-width:420px; max-height:420px; margin:0 auto; border:3px solid #fff; }
-    .casa { display:flex; align-items:center; justify-content:center; font-size:calc(90vmin/8 * .6); user-select:none; }
-    .branca{ background:#febe7e } .preta{ background:#713303 }
+    .casa { display:flex; align-items:center; justify-content:center; font-size:calc(90vmin/8 * .6); user-select:none; position:relative; }
+    .branca{ background:#febe7e }
+    .preta{ background:#713303 }
     .casa.selecionado{ outline:3px solid yellow }
+    .casa.movimento-possivel::after {
+      content: "";
+      position: absolute;
+      width: 20%;
+      height: 20%;
+      background: rgba(255, 255, 0, 0.6);
+      border-radius: 50%;
+      top: 40%;
+      left: 40%;
+    }
     .casa:hover{ filter:brightness(1.2); cursor:pointer }
+    .peca-branca { color: #fff; }
+    .peca-preta { color: #000; }
     .controls { display:flex; gap:8px; justify-content:center; margin-bottom:12px; flex-wrap:wrap }
-    button, input { padding:8px 10px; border-radius:6px; border:none; font-size:0.95rem }
+    button, input, textarea { padding:8px 10px; border-radius:6px; border:none; font-size:0.95rem; font-family: inherit; }
     .btn-primary{ background:#007bff; color:#fff }
     #info { background:#222; padding:12px; border-radius:8px; max-width:720px; margin:8px auto 18px auto; text-align:left }
     #room-ui { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap }
     #statusLine{ margin-top:8px; font-weight:600 }
     small { color:#ccc }
+    
+    /* --- NOVO: Responsivo celular */
+    @media (max-width: 480px) {
+      #tabuleiro { width: 95vmin; height: 95vmin; max-width: 95vw; max-height: 95vw; }
+      .casa { font-size: calc(95vmin/8 * 0.5); }
+    }
+    
+    /* --- NOVO: Chat box */
+    #chat {
+      max-width: 720px;
+      margin: 0 auto 16px auto;
+      background: #111;
+      padding: 8px;
+      border-radius: 8px;
+      color: #eee;
+      height: 180px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+    #chat input[type="text"] {
+      width: calc(100% - 80px);
+      margin-right: 4px;
+    }
+    #chat button {
+      width: 60px;
+    }
   </style>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
@@ -44,8 +84,10 @@
       <button id="btn-join">Entrar / Atualizar</button>
       <button id="btn-leave">Sair da Sala</button>
     </div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <label>Você é:</label>
+    <div style="display:flex;align-items:center;gap:8px; flex-wrap:wrap; justify-content:center;">
+      <label>Seu apelido:</label>
+      <input id="nickname" type="text" placeholder="Digite seu nome" style="width:120px" />
+      <label style="margin-left:8px">Você é:</label>
       <span id="meuLado">—</span>
       <label style="margin-left:8px">Estado partida:</label>
       <span id="gameStatus">—</span>
@@ -56,6 +98,13 @@
   </div>
 
   <div id="tabuleiro"></div>
+
+  <!-- --- NOVO: Chat --->
+  <div id="chat">
+    <div id="chat-messages"></div>
+    <input type="text" id="chat-input" placeholder="Digite mensagem..." />
+    <button id="chat-send">Enviar</button>
+  </div>
 
 
 <script>
@@ -75,12 +124,9 @@ if (!firebaseConfig || !firebaseConfig.apiKey || !firebaseConfig.databaseURL) {
   document.getElementById('statusLine').innerText = '⚠️ configuração Firebase incompleta.';
 }
 
-// Inicializa Firebase (v8 namespaced)
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-
-/* --- resto do jogo (idêntico ao código funcional anterior) --- */
 let pecasIniciais = [
   ["&#9814;","&#9816;","&#9815;","&#9813;","&#9812;","&#9815;","&#9816;","&#9814;"],
   ["&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;","&#9817;"],
@@ -102,7 +148,26 @@ localStorage.setItem('xadrez_meuId', meuId);
 document.getElementById('meuIdLine').innerText = `ID: ${meuId}`;
 
 let meuLado = null; // 'branca' | 'preta' | null
-let connectedRef = db.ref(".info/connected");
+
+// --- NOVO: Apelido
+let meuApelido = localStorage.getItem('xadrez_nickname') || '';
+const inputNickname = document.getElementById('nickname');
+inputNickname.value = meuApelido;
+inputNickname.addEventListener('change', () => {
+  meuApelido = inputNickname.value.trim() || meuId.slice(0,6);
+  localStorage.setItem('xadrez_nickname', meuApelido);
+  if(roomId) atualizarApelidoJogador();
+});
+
+const connectedRef = db.ref(".info/connected");
+
+function atualizarApelidoJogador() {
+  if (!roomId || !meuLado) return;
+  const sideKey = meuLado === 'branca' ? 'white' : 'black';
+  db.ref(`rooms/${roomId}/players/${sideKey}Name`).set(meuApelido);
+}
+
+// --- FUNÇÕES ORIGINAIS ---
 
 function corDaPeca(simbolo) {
   if (!simbolo) return null;
@@ -213,6 +278,7 @@ function temMovimentosPossiveis(cor) {
 }
 
 const tabuleiroEl = document.getElementById('tabuleiro');
+
 function desenharTabuleiro() {
   tabuleiroEl.innerHTML = '';
   for (let i=0;i<8;i++){
@@ -229,270 +295,276 @@ function desenharTabuleiro() {
         casa.appendChild(span);
       }
       casa.addEventListener('click', selecionarOuMover);
+      if (selecionado && selecionado.linha === i && selecionado.coluna === j) {
+        casa.classList.add('selecionado');
+      }
       tabuleiroEl.appendChild(casa);
     }
   }
-}
-function atualizarStatusLinha() {
-  document.getElementById('meuLado').innerText = meuLado ? (meuLado === 'branca' ? 'Brancas' : 'Pretas') : '—';
-  document.getElementById('gameStatus').innerText = vez ? `Vez: ${vez}` : '—';
+  if (selecionado) destacarMovimentosPossiveis(selecionado);
 }
 
-function criarSala() {
-  const id = Math.random().toString(36).slice(2,8).toUpperCase();
-  document.getElementById('room-id').value = id;
-  entrarSala(id);
-}
-
-function entrarSala(id) {
-  if (!id) {
-    alert('Informe um ID de sala ou clique em Criar Sala');
-    return;
-  }
-  if (roomId === id) return;
-  sairSala();
-  roomId = id;
-  const roomRef = db.ref('rooms/' + roomId);
-  roomRef.child('state').transaction(current => {
-    if (current === null) {
-      return {
-        pecas: pecasIniciais,
-        vez: 'branca',
-        enPassant: null,
-        status: 'playing',
-        lastMove: null
-      };
-    }
-    return current;
-  }, (err, committed, snapshot) => {
-    roomRef.child('players').transaction(players => {
-      if (!players) {
-        return { white: meuId, black: null };
+function destacarMovimentosPossiveis(origem) {
+  for (let l=0; l<8; l++) {
+    for (let c=0; c<8; c++) {
+      if (movimentoValido(origem, {linha:l, coluna:c})) {
+        const casa = tabuleiroEl.querySelector(`.casa[data-linha="${l}"][data-coluna="${c}"]`);
+        if (casa) casa.classList.add('movimento-possivel');
       }
-      if (players.white === meuId || players.black === meuId) return players;
-      if (!players.white) { players.white = meuId; return players; }
-      if (!players.black) { players.black = meuId; return players; }
-      return players;
-    }, (err2, committed2, snapPlayers) => {
-      const players = snapPlayers.val();
-      if (players && players.white === meuId) meuLado = 'branca';
-      else if (players && players.black === meuId) meuLado = 'preta';
-      else { alert('Sala cheia. Você entrou apenas como espectador.'); meuLado = null; }
-      atualizarStatusLinha();
-      if (meuLado) {
-        const sideKey = (meuLado === 'branca' ? 'white' : 'black');
-        roomRef.child('players/' + sideKey).onDisconnect().set(null);
-      }
-      roomRef.child('state').on('value', snap => {
-        const s = snap.val();
-        if (!s) return;
-        pecas = s.pecas;
-        vez = s.vez;
-        enPassant = s.enPassant || null;
-        document.getElementById('gameStatus').innerText = s.status || 'playing';
-        desenharTabuleiro();
-        atualizarStatusLinha();
-      });
-      roomRef.child('players').on('value', pSnap => {
-        const p = pSnap.val() || {};
-        const desc = `white:${p.white ? p.white.slice(0,6) : '-'} black:${p.black ? p.black.slice(0,6) : '-'}`;
-        document.getElementById('statusLine').innerText = `Sala ${roomId} — ${desc}`;
-      });
-    });
-  });
-}
-
-function sairSala() {
-  if (!roomId) return;
-  const roomRef = db.ref('rooms/' + roomId);
-  roomRef.child('state').off();
-  roomRef.child('players').off();
-  if (meuLado) {
-    const sideKey = meuLado === 'branca' ? 'white' : 'black';
-    roomRef.child('players/' + sideKey).transaction(cur => {
-      if (!cur) return null;
-      if (cur === meuId) return null;
-      return cur;
-    });
-  }
-  roomId = null;
-  meuLado = null;
-  document.getElementById('statusLine').innerText = 'Desconectado da sala';
-  atualizarStatusLinha();
-}
-
-function solicitarMovimentoServidor(novoEstado) {
-  if (!roomId) {
-    applyLocalState(novoEstado);
-    return;
-  }
-  const stateRef = db.ref('rooms/' + roomId + '/state');
-  stateRef.transaction(current => {
-    if (!current) return novoEstado;
-    if (current.vez === novoEstado.vez) {
-      // Moveu na vez do outro, não faz nada
-      return;
     }
-    return novoEstado;
-  }, (err, committed, snap) => {
-    if (err) { console.error('Erro transação:', err); alert('Erro ao enviar movimento.'); }
-  });
+  }
 }
 
-function applyLocalState(novo) {
-  pecas = novo.pecas;
-  vez = novo.vez;
-  enPassant = novo.enPassant;
-  document.getElementById('gameStatus').innerText = novo.status || 'playing';
-  desenharTabuleiro();
-  atualizarStatusLinha();
+function limparDestaques() {
+  tabuleiroEl.querySelectorAll('.casa').forEach(casa => casa.classList.remove('movimento-possivel'));
 }
 
 function selecionarOuMover(event) {
-  if (roomId && meuLado && vez !== meuLado) return;
-  const casa = event.currentTarget;
-  const linha = parseInt(casa.dataset.linha);
-  const coluna = parseInt(casa.dataset.coluna);
-
+  if (!meuLado) return alert('Entre em uma sala para jogar.');
+  if (vez !== meuLado) return alert('Não é sua vez.');
+  const linha = Number(event.currentTarget.dataset.linha);
+  const coluna = Number(event.currentTarget.dataset.coluna);
   if (selecionado) {
-    const destino = { linha, coluna };
-    const pecaMovida = pecas[selecionado.linha][selecionado.coluna];
-    const tipo = Number(pecaMovida.replace(/[^\d]/g, ""));
-    const cor = corDaPeca(pecaMovida);
-
-    let enPassantCaptura = false;
-    if (enPassant && (tipo === 9817 || tipo === 9823)) {
-      if (linha === enPassant.linha && coluna === enPassant.coluna) {
-        if (Math.abs(coluna - selecionado.coluna) === 1 && ((cor === "branca" && linha - selecionado.linha === 1) || (cor === "preta" && linha - selecionado.linha === -1))) {
-          enPassantCaptura = true;
-        }
-      }
+    if (selecionado.linha === linha && selecionado.coluna === coluna) {
+      selecionado = null;
+      limparDestaques();
+      desenharTabuleiro();
+      return;
     }
-
-    if (movimentoValido(selecionado, destino) || enPassantCaptura) {
-      const backup = pecas[linha][coluna];
-      pecas[linha][coluna] = pecaMovida;
+    // valida movimento
+    if (movimentoValido(selecionado, {linha,coluna})) {
+      // Simular movimento para checar xeque
+      const pecaOrig = pecas[selecionado.linha][selecionado.coluna];
+      const pecaDest = pecas[linha][coluna];
+      pecas[linha][coluna] = pecaOrig;
       pecas[selecionado.linha][selecionado.coluna] = "";
-
-      if (enPassantCaptura) {
-        if (cor === "branca") pecas[linha - 1][coluna] = "";
-        else pecas[linha + 1][coluna] = "";
+      if (estaEmXeque(meuLado)) {
+        alert('Movimento inválido: você ficaria em xeque!');
+        // Reverter
+        pecas[selecionado.linha][selecionado.coluna] = pecaOrig;
+        pecas[linha][coluna] = pecaDest;
+        return;
       }
-
-      for (let col = 0; col < 8; col++) {
-        if (pecas[7][col] === "&#9817;") pecas[7][col] = "&#9813;";
-        if (pecas[0][col] === "&#9823;") pecas[0][col] = "&#9819;";
-      }
-
-      if ((pecas[linha][coluna] === "&#9812;" || pecas[linha][coluna] === "&#9818;") && Math.abs(coluna - selecionado.coluna) === 2) {
-        if (coluna === 6) { pecas[linha][5] = pecas[linha][7]; pecas[linha][7] = ""; }
-        if (coluna === 2) { pecas[linha][3] = pecas[linha][0]; pecas[linha][0] = ""; }
-      }
-
-      const prevEnPassant = enPassant;
-      enPassant = null;
-      if (tipo === 9817 || tipo === 9823) {
-        if (Math.abs(linha - selecionado.linha) === 2) {
-          enPassant = { linha: (linha + selecionado.linha) / 2, coluna: coluna };
-        }
-      }
-
-      const backupOrig = pecas[selecionado.linha][selecionado.coluna];
-      const backupDest = backup;
-      if (estaEmXeque(cor)) {
-        pecas[selecionado.linha][selecionado.coluna] = backupOrig;
-        pecas[linha][coluna] = backupDest;
-        if (enPassantCaptura) {
-          if (cor === "branca") pecas[linha - 1][coluna] = "&#9823;"; else pecas[linha + 1][coluna] = "&#9817;";
-        }
-        enPassant = prevEnPassant;
-        alert("Movimento ilegal: seu rei ficaria em xeque!");
-      } else {
-        vez = vez === "branca" ? "preta" : "branca";
-        const novoEstado = {
-          pecas: pecas,
-          vez: vez,
-          enPassant: enPassant,
-          status: 'playing',
-          lastMove: { from: selecionado, to: { linha, coluna }, by: meuId }
-        };
-        solicitarMovimentoServidor(novoEstado);
-        setTimeout(() => {
-          if (estaEmXeque(vez) && !temMovimentosPossiveis(vez)) {
-            alert(vez === "preta" ? "Xeque-mate! As Brancas venceram!" : "Xeque-mate! As Pretas venceram!");
-            vez = "fim";
-          } else if (!temMovimentosPossiveis(vez)) {
-            alert("Empate! Nenhum movimento possível.");
-            vez = "fim";
-          }
-        }, 100);
-      }
+      // Movimento válido, atualizar no Firebase
+      atualizarTabuleiroNoFirebase(pecas);
+      selecionado = null;
+      limparDestaques();
+      return;
+    } else {
+      alert('Movimento inválido!');
     }
-    selecionado = null;
-    desenharTabuleiro();
-  } else if (pecas[linha][coluna] && corDaPeca(pecas[linha][coluna]) === vez) {
-    selecionado = { linha, coluna };
-    desenharTabuleiro(); // Redesenha para limpar a seleção anterior
-    casa.classList.add('selecionado');
+  } else {
+    if (pecas[linha][coluna] && corDaPeca(pecas[linha][coluna]) === meuLado) {
+      selecionado = {linha, coluna};
+      limparDestaques();
+      desenharTabuleiro();
+    }
   }
 }
 
-
-function reiniciarPartida() {
-  if (!roomId) {
-    alert('Você não está em uma sala.');
-    return;
-  }
-  if (meuLado !== 'branca' && meuLado !== 'preta') {
-    alert('Você deve ser um jogador para reiniciar a partida.');
-    return;
-  }
-
-  const confirm = window.confirm("Tem certeza que deseja reiniciar a partida? Isso irá apagar todo o progresso.");
-  if (!confirm) return;
-
-  const roomRef = db.ref('rooms/' + roomId + '/state');
-  roomRef.transaction(currentState => {
-    if (currentState) {
-      return {
-        pecas: pecasIniciais,
-        vez: 'branca',
-        enPassant: null,
-        status: 'playing',
-        lastMove: null
-      };
-    }
-    return currentState;
-  }, (error, committed, snapshot) => {
-    if (error) {
-      console.error("Transação de reinício falhou: ", error);
-      alert("Erro ao tentar reiniciar a partida.");
-    } else if (committed) {
-      alert("Partida reiniciada com sucesso!");
+function atualizarTabuleiroNoFirebase(pecasAtuais) {
+  if (!roomId) return;
+  db.ref(`rooms/${roomId}/board`).set({
+    pecas: pecasAtuais,
+    vez: vez === 'branca' ? 'preta' : 'branca',
+    lastMove: { // simples
+      from: selecionado,
+      to: null
     }
   });
 }
 
+// --- Gerenciamento sala ---
 
-document.getElementById('btn-create').addEventListener('click', criarSala);
-document.getElementById('btn-join').addEventListener('click', () => {
-  const id = document.getElementById('room-id').value;
-  entrarSala(id);
-});
-document.getElementById('btn-leave').addEventListener('click', sairSala);
-document.getElementById('btn-reiniciar').addEventListener('click', reiniciarPartida);
+function criarSala() {
+  const newRoomId = Math.random().toString(36).substr(2, 6);
+  db.ref(`rooms/${newRoomId}`).set({
+    board: { pecas: pecasIniciais, vez: 'branca' },
+    players: {},
+    chat: {}
+  });
+  roomId = newRoomId;
+  conectarSala();
+}
 
-connectedRef.on("value", function(snap) {
-  if (snap.val() === true) {
-    document.getElementById('statusLine').innerText = 'Online';
-  } else {
-    document.getElementById('statusLine').innerText = 'Desconectado';
+function conectarSala() {
+  if (!roomId) return;
+  document.getElementById('statusLine').innerText = `Conectado à sala ${roomId}`;
+  db.ref(`rooms/${roomId}/players`).once('value').then(snapshot => {
+    const players = snapshot.val() || {};
+    // Adicionar jogador se faltar
+    if (!players.white) {
+      meuLado = 'branca';
+      db.ref(`rooms/${roomId}/players/white`).set(meuId);
+      atualizarApelidoJogador();
+    } else if (!players.black && players.white !== meuId) {
+      meuLado = 'preta';
+      db.ref(`rooms/${roomId}/players/black`).set(meuId);
+      atualizarApelidoJogador();
+    } else if (players.white === meuId) {
+      meuLado = 'branca';
+    } else if (players.black === meuId) {
+      meuLado = 'preta';
+    } else {
+      alert('Sala cheia!');
+      meuLado = null;
+      return;
+    }
+    document.getElementById('meuLado').innerText = meuLado === 'branca' ? 'Brancas' : 'Pretas';
+    escutarSala();
+  }).catch(console.error);
+}
+
+function escutarSala() {
+  if (!roomId) return;
+  const salaRef = db.ref(`rooms/${roomId}`);
+  salaRef.on('value', snapshot => {
+    const data = snapshot.val();
+    if (!data) {
+      alert('Sala fechada.');
+      resetarJogo();
+      return;
+    }
+    // Atualiza jogadores
+    const players = data.players || {};
+    document.getElementById('statusLine').innerText = `Sala: ${roomId} | Jogadores: Branco: ${players.white ? players.white.slice(0,6) : '-'} / Preto: ${players.black ? players.black.slice(0,6) : '-'}`;
+    // Atualiza apelidos
+    const whiteName = data.players?.whiteName || players.white?.slice(0,6) || '-';
+    const blackName = data.players?.blackName || players.black?.slice(0,6) || '-';
+
+    // Atualizar apelidos visuais (pode expandir)
+    // Atualizar vez
+    vez = data.board?.vez || 'branca';
+    pecas = data.board?.pecas || JSON.parse(JSON.stringify(pecasIniciais));
+
+    desenharTabuleiro();
+
+    // Atualiza status partida
+    let statusTxt = '';
+    if (estaEmXeque(vez)) {
+      statusTxt = `Xeque nas ${vez === 'branca' ? 'Brancas' : 'Pretas'}!`;
+    }
+    if (!temMovimentosPossiveis(vez)) {
+      statusTxt = `Xeque-mate! ${vez === 'branca' ? 'Pretas' : 'Brancas'} venceu!`;
+    }
+    document.getElementById('gameStatus').innerText = statusTxt || 'Jogando';
+
+    // Avisar se adversário desconectou (simples)
+    if (meuLado) {
+      const meuSideKey = meuLado === 'branca' ? 'white' : 'black';
+      const outroSideKey = meuSideKey === 'white' ? 'black' : 'white';
+      const outroJogador = players[outroSideKey];
+      if (!outroJogador) {
+        document.getElementById('statusLine').innerText += " | Aguardando adversário...";
+      }
+    }
+  });
+}
+
+// --- NOVO: Chat ---
+
+const chatRef = () => roomId ? db.ref(`rooms/${roomId}/chat`) : null;
+const chatMessagesEl = document.getElementById('chat-messages');
+const chatInputEl = document.getElementById('chat-input');
+const chatSendBtn = document.getElementById('chat-send');
+
+chatSendBtn.onclick = () => {
+  const msg = chatInputEl.value.trim();
+  if (!msg || !roomId || !meuApelido) return;
+  const now = Date.now();
+  chatRef().push({
+    from: meuApelido,
+    text: msg,
+    time: now
+  });
+  chatInputEl.value = '';
+};
+
+function exibirMensagem(msg) {
+  const el = document.createElement('div');
+  const hora = new Date(msg.time).toLocaleTimeString();
+  el.innerHTML = `<small>[${hora}]</small> <b>${msg.from}:</b> ${msg.text}`;
+  chatMessagesEl.appendChild(el);
+  chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+}
+
+function escutarChat() {
+  if (!chatRef()) return;
+  chatRef().off();
+  chatRef().limitToLast(50).on('child_added', snapshot => {
+    exibirMensagem(snapshot.val());
+  });
+}
+
+// --- Eventos botões ---
+
+document.getElementById('btn-create').onclick = () => {
+  criarSala();
+  escutarChat();
+};
+
+document.getElementById('btn-join').onclick = () => {
+  const id = document.getElementById('room-id').value.trim();
+  if (!id) return alert('Digite um ID de sala.');
+  roomId = id;
+  conectarSala();
+  escutarChat();
+};
+
+document.getElementById('btn-leave').onclick = () => {
+  if (!roomId) return alert('Você não está em nenhuma sala.');
+  db.ref(`rooms/${roomId}/players`).once('value').then(snapshot => {
+    const players = snapshot.val() || {};
+    if (meuLado === 'branca') db.ref(`rooms/${roomId}/players/white`).remove();
+    else if (meuLado === 'preta') db.ref(`rooms/${roomId}/players/black`).remove();
+    roomId = null;
+    meuLado = null;
+    pecas = JSON.parse(JSON.stringify(pecasIniciais));
+    vez = 'branca';
+    selecionado = null;
+    desenharTabuleiro();
+    document.getElementById('statusLine').innerText = 'Você saiu da sala.';
+    document.getElementById('meuLado').innerText = '—';
+    document.getElementById('gameStatus').innerText = '—';
+    chatMessagesEl.innerHTML = '';
+  });
+};
+
+document.getElementById('btn-reiniciar').onclick = () => {
+  if (!roomId) return alert('Entre em uma sala para reiniciar.');
+  if (confirm('Solicitar reinício da partida?')) {
+    db.ref(`rooms/${roomId}/restartRequest/${meuId}`).set(true);
   }
+};
+
+let restartListener = null;
+function escutarReiniciar() {
+  if (!roomId) return;
+  if (restartListener) restartListener.off();
+  restartListener = db.ref(`rooms/${roomId}/restartRequest`);
+  restartListener.on('value', snapshot => {
+    const pedidos = snapshot.val() || {};
+    const keys = Object.keys(pedidos);
+    if (keys.length >= 2) {
+      // Ambos concordaram
+      db.ref(`rooms/${roomId}/restartRequest`).remove();
+      db.ref(`rooms/${roomId}/board`).set({
+        pecas: pecasIniciais,
+        vez: 'branca'
+      });
+      alert('Partida reiniciada!');
+    }
+  });
+}
+
+// Atualizar apelido do jogador quando muda input
+inputNickname.addEventListener('change', () => {
+  atualizarApelidoJogador();
 });
 
-// Inicialização
+// Inicializar
 desenharTabuleiro();
-atualizarStatusLinha();
+
 </script>
 </body>
 </html>
