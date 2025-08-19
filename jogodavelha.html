@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Jogo da Velha com IA</title>
+  <style>
+    /* Estilo geral da página */
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #222; /* fundo escuro */
+      color: white;     /* texto branco */
+    }
+
+    /* Estilo do tabuleiro */
+    #board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px); /* 3 colunas de 100px */
+      grid-template-rows: repeat(3, 100px);    /* 3 linhas de 100px */
+      gap: 5px;                                /* espaço entre células */
+      margin: 20px auto;                       /* centraliza horizontalmente */
+      width: max-content;                       /* largura ajusta ao conteúdo */
+    }
+
+    /* Estilo das células do tabuleiro */
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: #444;                        /* cinza escuro */
+      font-size: 2em;                          /* tamanho da letra */
+      display: flex;
+      align-items: center;
+      justify-content: center;                 /* centraliza X ou O */
+      cursor: pointer;                         /* cursor clicável */
+      border-radius: 10px;                     /* cantos arredondados */
+      transition: background 0.3s;             /* animação ao marcar */
+    }
+
+    /* Célula já ocupada */
+    .cell.taken {
+      cursor: not-allowed;                     /* cursor não clicável */
+      background: #666;                        /* cor diferente para ocupado */
+    }
+
+    /* Botão Reiniciar */
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Animação de vitória */
+    .highlight {
+      background: gold !important;
+      color: black;
+      animation: blink 0.8s infinite alternate;
+    }
+
+    @keyframes blink {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Jogo da Velha (Humano vs IA)</h1>
+
+  <!-- Tabuleiro -->
+  <div id="board"></div>
+
+  <!-- Mensagem de status -->
+  <p id="status"></p>
+
+  <!-- Botão de reinício -->
+  <button onclick="resetGame()">Reiniciar</button>
+
+  <script>
+    // Referências aos elementos do DOM
+    const boardEl = document.getElementById("board");
+    const statusEl = document.getElementById("status");
+
+    // Estado do jogo
+    let board = Array(9).fill(""); // tabuleiro 3x3 vazio
+    let human = "X";                // símbolo do humano
+    let ai = "O";                   // símbolo da IA
+    let gameOver = false;           // flag de fim de jogo
+
+    // Função que desenha o tabuleiro
+    function renderBoard() {
+      boardEl.innerHTML = ""; // limpa tabuleiro
+      board.forEach((val, i) => {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+
+        if (val) {
+          cell.textContent = val;     // marca X ou O
+          cell.classList.add("taken"); // adiciona estilo de ocupado
+        } else {
+          // Se célula vazia, adiciona evento de clique
+          cell.addEventListener("click", () => makeMove(i, human));
+        }
+        boardEl.appendChild(cell);
+      });
+    }
+
+    // Função que verifica se alguém venceu
+    function checkWinner(b) {
+        // Esta parte e um vetor (ARRAY)
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8], // linhas
+        [0,3,6],[1,4,7],[2,5,8], // colunas
+        [0,4,8],[2,4,6]          // diagonais
+      ];
+      for (let [a,b2,c] of wins) {
+        if (b[a] && b[a] === b[b2] && b[a] === b[c]) {
+          return [b[a], [a,b2,c]]; // retorna símbolo e células vencedoras
+        }
+      }
+      return b.includes("") ? null : ["empate", []]; // empate ou ainda não terminou
+    }
+
+    // Função que realiza uma jogada
+    function makeMove(index, player) {
+      if (board[index] || gameOver) return; // evita jogar em célula ocupada ou jogo acabado
+      board[index] = player;                // registra jogada
+      renderBoard();                        // atualiza interface
+
+      let result = checkWinner(board);
+      if (result) {
+        endGame(result);                     // finaliza se houver vencedor
+        return;
+      }
+
+      if (player === human) {
+        // Jogada da IA usando Minimax
+        let bestMove = minimax(board, ai).index;
+        board[bestMove] = ai;
+        renderBoard();
+
+        result = checkWinner(board);
+        if (result) endGame(result);
+      }
+    }
+
+    // Função que finaliza o jogo
+    function endGame(result) {
+      gameOver = true;
+      if (result[0] === "empate") {
+        statusEl.textContent = "Empate!";
+      } else {
+        statusEl.textContent = result[0] === human ? "Você venceu!" : "A IA venceu!";
+        // Destacar células vencedoras
+        result[1].forEach(i => boardEl.children[i].classList.add("highlight"));
+      }
+    }
+
+    // Algoritmo Minimax para a IA
+    function minimax(newBoard, player) {
+      let availSpots = newBoard.map((v,i)=>v===""?i:null).filter(v=>v!==null);
+
+      let winner = checkWinner(newBoard);
+      if (winner) {
+        if (winner[0] === human) return {score: -10};
+        else if (winner[0] === ai) return {score: 10};
+        else return {score: 0};
+      }
+
+      let moves = [];
+      for (let i of availSpots) {
+        let move = {};
+        move.index = i;
+        newBoard[i] = player;
+
+        let result;
+        if (player === ai) result = minimax(newBoard, human);
+        else result = minimax(newBoard, ai);
+
+        move.score = result.score;
+        newBoard[i] = "";
+        moves.push(move);
+      }
+
+      let bestMove;
+      if (player === ai) {
+        let bestScore = -Infinity;
+        for (let m of moves) {
+          if (m.score > bestScore) {
+            bestScore = m.score;
+            bestMove = m;
+          }
+        }
+      } else {
+        let bestScore = Infinity;
+        for (let m of moves) {
+          if (m.score < bestScore) {
+            bestScore = m.score;
+            bestMove = m;
+          }
+        }
+      }
+      return bestMove;
+    }
+
+    // Reinicia o jogo
+    function resetGame() {
+      board = Array(9).fill("");
+      gameOver = false;
+      statusEl.textContent = "";
+      renderBoard();
+    }
+
+    // Desenha tabuleiro inicial
+    renderBoard();
+  </script>
+</body>
+</html>
