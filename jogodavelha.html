@@ -67,6 +67,11 @@
 <body>
   <h1>Jogo da Velha (Humano vs IA)</h1>
 
+  <!-- Campo para inserir o nome do jogador -->
+  <label for="playerName">Nome do Jogador:</label>
+  <input type="text" id="playerName" value="Jogador">
+  <button onclick="startGame()">Começar Jogo</button>
+
   <!-- Tabuleiro -->
   <div id="board"></div>
 
@@ -76,16 +81,33 @@
   <!-- Botão de reinício -->
   <button onclick="resetGame()">Reiniciar</button>
 
+  <!-- Placar -->
+  <p id="score">Placar: <span id="playerNameDisplay">Jogador</span>: <span id="playerScore">0</span>, IA: <span id="aiScore">0</span></p>
+
   <script>
     // Referências aos elementos do DOM
     const boardEl = document.getElementById("board");
     const statusEl = document.getElementById("status");
+    const playerNameInput = document.getElementById("playerName");
+    const playerNameDisplay = document.getElementById("playerNameDisplay");
+    const playerScoreEl = document.getElementById("playerScore");
+    const aiScoreEl = document.getElementById("aiScore");
 
     // Estado do jogo
     let board = Array(9).fill(""); // tabuleiro 3x3 vazio
     let human = "X";                // símbolo do humano
     let ai = "O";                   // símbolo da IA
     let gameOver = false;           // flag de fim de jogo
+    let playerName = "Jogador";     // Nome do jogador
+    let playerScore = 0;            // Pontuação do jogador
+    let aiScore = 0;                // Pontuação da IA
+
+    // Função para iniciar o jogo e pegar o nome do jogador
+    function startGame() {
+      playerName = playerNameInput.value || "Jogador";
+      playerNameDisplay.textContent = playerName;
+      resetGame();
+    }
 
     // Função que desenha o tabuleiro
     function renderBoard() {
@@ -150,7 +172,18 @@
       if (result[0] === "empate") {
         statusEl.textContent = "Empate!";
       } else {
-        statusEl.textContent = result[0] === human ? "Você venceu!" : "A IA venceu!";
+        let winner = result[0] === human ? playerName : "A IA";
+        statusEl.textContent = winner + " venceu!";
+
+        // Atualiza placar
+        if (result[0] === human) {
+          playerScore++;
+          playerScoreEl.textContent = playerScore;
+        } else {
+          aiScore++;
+          aiScoreEl.textContent = aiScore;
+        }
+
         // Destacar células vencedoras
         result[1].forEach(i => boardEl.children[i].classList.add("highlight"));
       }
@@ -212,7 +245,7 @@
     }
 
     // Desenha tabuleiro inicial
-    renderBoard();
+    //renderBoard(); // Removido para iniciar o jogo com o nome do jogador
   </script>
 </body>
 </html>
