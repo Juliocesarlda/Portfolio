@@ -7,7 +7,7 @@
 
     <style>
         /* * ----------------------------------------
-         * 1. CSS (Layout Moderno e Arrojado) 
+         * 1. CSS (Layout Moderno e Arrojado com RESPONSIVIDADE) 
          * ----------------------------------------
          */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
@@ -24,7 +24,7 @@
             background-color: #f0f0f0;
             color: #333;
             margin: 0;
-            padding: 0;
+            padding: 20px; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -33,7 +33,7 @@
         }
 
         #game-container {
-            width: 90%;
+            width: 100%; 
             max-width: 1200px;
             background-color: #ffffff;
             border-radius: 20px;
@@ -41,11 +41,14 @@
             overflow: hidden;
         }
 
+        /* --- Cabeçalho e Status --- */
         #header-game {
             background-color: var(--amcor-blue);
             color: white;
-            padding: 20px;
+            padding: 15px 20px; 
             display: flex;
+            flex-direction: column; 
+            gap: 10px; 
             justify-content: space-between;
             align-items: center;
             border-top-left-radius: 20px;
@@ -54,41 +57,66 @@
 
         #header-game h1 {
             margin: 0;
-            font-size: 1.8em;
+            font-size: 1.5em; 
         }
 
         #status-bar {
             display: flex;
-            gap: 20px;
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px 15px; 
             font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        /* Ajuste do layout para telas maiores */
+        @media (min-width: 600px) {
+            #header-game {
+                flex-direction: row; 
+            }
+            #header-game h1 {
+                font-size: 1.8em;
+            }
+            #status-bar {
+                 justify-content: flex-end; 
+                 gap: 20px;
+                 font-size: 1em;
+            }
         }
 
+        /* --- Área Principal do Jogo --- */
         #game-area {
             display: flex;
             flex-direction: column; 
-            padding: 30px;
+            padding: 20px; 
             gap: 30px;
         }
 
-        @media (min-width: 768px) {
-            #game-area {
-                flex-direction: row; 
-            }
-            #scenario-display {
-                border-right: 1px solid #ccc;
-                padding-right: 30px;
-            }
-        }
-        
         #scenario-display {
             flex-grow: 1;
             text-align: left;
-        }
-
-        #scenario-display h2 {
-            color: var(--amcor-red);
+            padding-bottom: 20px; 
         }
         
+        /* Quebra de layout para telas maiores */
+        @media (min-width: 768px) {
+            #game-area {
+                flex-direction: row; 
+                padding: 30px;
+            }
+            #scenario-display {
+                border-right: 1px solid #ccc; 
+                padding-right: 30px;
+                padding-bottom: 0;
+            }
+        }
+        
+        #scenario-display h2 {
+            color: var(--amcor-red);
+            font-size: 1.4em;
+        }
+        
+        /* --- Inventário --- */
         #inventory {
             width: 100%;
             max-width: 250px;
@@ -96,16 +124,21 @@
             margin: 0 auto;
         }
 
+        #inventory h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+        }
+
         #inventory-items {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
+            gap: 10px; 
         }
 
         .epi-item {
-            width: 80px;
-            height: 80px;
+            width: 60px; 
+            height: 60px; 
             object-fit: contain;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
@@ -114,96 +147,74 @@
             padding: 5px;
             background-color: #fff;
         }
+        
+        @media (min-width: 768px) {
+            .epi-item {
+                 width: 80px; 
+                 height: 80px;
+            }
+        }
 
         .epi-item:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px) scale(1.03);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
             opacity: 0.9;
         }
 
-        /* Barra de Saúde (HP) */
+        /* --- Barra de Saúde (HP) e Botões --- */
         #health-bar-container {
-            width: 150px;
-            height: 20px;
+            width: 100px; 
+            height: 15px;
             background-color: #ddd;
             border-radius: 10px;
             overflow: hidden;
             border: 1px solid #666;
         }
-
+        
         #health-bar {
             height: 100%;
             background-color: var(--color-correct);
             transition: width 0.5s ease-in-out, background-color 0.5s;
             text-align: center;
             color: white;
-            line-height: 20px;
-            font-size: 0.9em;
+            line-height: 15px;
+            font-size: 0.7em; 
+        }
+        
+        @media (min-width: 600px) {
+            #health-bar-container {
+                 width: 150px; 
+                 height: 20px;
+            }
+            #health-bar {
+                 line-height: 20px;
+                 font-size: 0.9em;
+            }
         }
 
-        /* Botão de Iniciar Estilizado */
         #start-button, #next-day-button {
             background-color: var(--amcor-red);
             color: white;
-            padding: 15px 30px;
+            padding: 10px 20px; 
             border: none;
             border-radius: 8px;
-            font-size: 1.1em;
+            font-size: 1em;
             cursor: pointer;
             transition: background-color 0.3s;
             margin-top: 20px;
             font-weight: bold;
         }
-
+        
         #start-button:hover, #next-day-button:hover {
             background-color: #a0001e;
         }
-
-        /* Estilos para feedback: Certo e Errado */
-        .correct {
-            border-color: var(--color-correct) !important;
-            box-shadow: 0 0 10px var(--color-correct);
-        }
-
-        .incorrect {
-            border-color: var(--color-incorrect) !important;
-            box-shadow: 0 0 10px var(--color-incorrect);
-            animation: shake 0.5s;
-        }
         
-        #feedback-area {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            font-weight: bold;
-        }
-
-        .correct-text {
-            background-color: #e8f5e9; 
-            color: #2e7d32; 
-            padding: 10px;
-            border-radius: 5px;
-        }
-
-        .incorrect-text {
-            background-color: #ffebee; 
-            color: #c62828; 
-            padding: 10px;
-            border-radius: 5px;
-        }
-        
-        .hint {
-            font-style: italic;
-            color: #666;
-            margin-top: 15px;
-        }
-
         /* Estilo para Botões de Múltipla Escolha */
         .choice-button {
             background-color: var(--amcor-blue); 
             color: white; 
-            padding: 10px; 
-            margin: 5px; 
+            padding: 12px; 
+            margin: 8px 0; 
             border: none; 
             border-radius: 5px; 
             cursor: pointer; 
@@ -219,6 +230,14 @@
             cursor: not-allowed;
             opacity: 0.7;
         }
+
+        /* --- Estilos de Feedback --- */
+        .correct { border-color: var(--color-correct) !important; box-shadow: 0 0 10px var(--color-correct); }
+        .incorrect { border-color: var(--color-incorrect) !important; box-shadow: 0 0 10px var(--color-incorrect); }
+        #feedback-area { margin-top: 20px; padding: 15px; border-radius: 8px; font-weight: bold; }
+        .correct-text { background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; }
+        .incorrect-text { background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; }
+        .hint { font-style: italic; color: #666; margin-top: 15px; }
 
     </style>
 </head>
@@ -261,7 +280,7 @@
 
     <script>
         /* * ----------------------------------------
-         * 2. JAVASCRIPT (Lógica do Jogo com 10 Dias, HP e Pontuação) 
+         * 2. JAVASCRIPT (Lógica do Jogo com 10 Dias, HP e Pontuação - CORRIGIDO) 
          * ----------------------------------------
          */
         
@@ -373,7 +392,9 @@
             currentDay = 1;
             playerHP = 100;
             score = 0;
-            updateHP(0);
+            
+            // CORREÇÃO: Chamamos updateHP(100) para garantir que o display inicial esteja correto (100% e verde)
+            updateHP(100); 
             updateScore(0);
             startDay();
         }
@@ -421,14 +442,14 @@
                 document.querySelectorAll('.choice-button').forEach(button => {
                     button.addEventListener('click', handleMultipleChoice);
                 });
-                inventoryItemsDiv.style.display = 'none';
+                // Esconde inventário para perguntas de múltipla escolha
                 document.getElementById('inventory').style.display = 'none';
 
             } else { // Type: epi
                 scenarioHTML += `<p class="hint">Clique no EPI que você usaria.</p>`;
                 scenarioDisplay.innerHTML = scenarioHTML;
                 epiItems.forEach(item => item.addEventListener('click', handleEPISelection));
-                inventoryItemsDiv.style.display = 'flex';
+                // Mostra inventário para perguntas de EPI
                 document.getElementById('inventory').style.display = 'block';
             }
         }
@@ -498,8 +519,9 @@
                 );
                 if (correctButton) correctButton.style.backgroundColor = varColor('correct');
 
-                updateHP(playerHP - (choice.penaltyHP || 2)); // Punição de HP
-                updateScore(score - (choice.penaltyScore || 10)); // Punição de Pontos
+                // APLICAÇÃO DA PENALIDADE CORRETA
+                updateHP(playerHP - (choice.penaltyHP || 2)); 
+                updateScore(score - (choice.penaltyScore || 10)); 
                 displayFeedback(false, currentSituationData.failMessage);
             }
 
@@ -528,7 +550,8 @@
                     correctEPIElement.classList.add('correct');
                 }
 
-                updateHP(playerHP - 3); // Punição padrão de EPI
+                // APLICAÇÃO DA PENALIDADE CORRETA
+                updateHP(playerHP - 3); 
                 updateScore(score - 10);
                 displayFeedback(false, currentSituationData.failMessage);
             }
@@ -539,7 +562,9 @@
         // --- Funções de Utilitário e Display ---
 
         function updateHP(newHP) {
+            // CORREÇÃO: Apenas atribui o novo valor limitado, resolvendo o problema de inicialização/decremento.
             playerHP = Math.max(0, Math.min(100, newHP));
+            
             healthBar.style.width = `${playerHP}%`;
             healthBar.textContent = `${playerHP}%`;
             
