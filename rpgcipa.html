@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amcor SafeQuest: A Jornada Segura (RPG de Segurança)</title>
+
+    <style>
+        /* * ----------------------------------------
+         * 1. CSS (Layout Moderno e Arrojado) 
+         * ----------------------------------------
+         */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f0f0; /* Fundo claro */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        #game-container {
+            width: 90%;
+            max-width: 1200px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Sombra para profundidade */
+            overflow: hidden;
+        }
+
+        #header-game {
+            background-color: #004d99; /* Azul escuro da AMCOR */
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+
+        #header-game h1 {
+            margin: 0;
+            font-size: 1.8em;
+        }
+
+        #status-bar span {
+            margin-left: 20px;
+            font-weight: bold;
+        }
+
+        #game-area {
+            display: flex;
+            flex-direction: column; /* Coloca os elementos em coluna no mobile */
+            padding: 30px;
+            gap: 30px;
+        }
+
+        @media (min-width: 768px) {
+            #game-area {
+                flex-direction: row; /* Volta para linha em telas maiores */
+            }
+            #scenario-display {
+                border-right: 1px solid #ccc;
+                padding-right: 30px;
+            }
+        }
+        
+        #scenario-display {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        #scenario-display h2 {
+            color: #e5002b; /* Vermelho da AMCOR */
+        }
+        
+        #inventory {
+            width: 100%;
+            max-width: 250px;
+            text-align: center;
+            margin: 0 auto;
+        }
+
+        #inventory-items {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .epi-item {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            border-radius: 10px;
+            border: 3px solid transparent;
+            padding: 5px;
+            background-color: #fff;
+        }
+
+        .epi-item:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            opacity: 0.9;
+        }
+
+        /* Botão de Iniciar Estilizado */
+        #start-button {
+            background-color: #e5002b; /* Vermelho da AMCOR */
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        #start-button:hover {
+            background-color: #a0001e;
+        }
+
+        /* Estilos para feedback: Certo e Errado */
+        .correct {
+            border-color: #4CAF50 !important; /* Verde */
+            box-shadow: 0 0 10px #4CAF50;
+        }
+
+        .incorrect {
+            border-color: #f44336 !important; /* Vermelho */
+            box-shadow: 0 0 10px #f44336;
+            animation: shake 0.5s;
+        }
+        
+        #feedback-area {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .correct-text {
+            background-color: #e8f5e9; /* Verde claro */
+            color: #2e7d32; /* Verde escuro */
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .incorrect-text {
+            background-color: #ffebee; /* Vermelho claro */
+            color: #c62828; /* Vermelho escuro */
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .hint {
+            font-style: italic;
+            color: #666;
+            margin-top: 15px;
+        }
+
+        /* Animação de erro */
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            20%, 60% {transform: translateX(-10px);}
+            40%, 80% {transform: translateX(10px);}
+        }
+
+        /* Estilo para Botões de Múltipla Escolha */
+        .choice-button {
+            background-color: #004d99; 
+            color: white; 
+            padding: 10px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            transition: background-color 0.3s;
+            display: block; /* Garante que cada botão ocupe uma linha */
+            width: 100%;
+            text-align: left;
+        }
+        .choice-button:hover {
+            background-color:#a0001e !important;
+        }
+        .choice-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <header id="header-game">
+            <h1>🛡️ Amcor SafeQuest</h1>
+            <div id="status-bar">
+                <span id="level-display">Pronto</span>
+                <span id="score-display">Pontuação: 0</span>
+            </div>
+        </header>
+
+        <main id="game-area">
+            <div id="scenario-display">
+                <h2>Bem-vindo(a) à Jornada Segura!</h2>
+                <p>Neste RPG, você aplicará as regras de segurança e qualidade da AMCOR. Seu objetivo é completar as missões escolhendo os Equipamentos de Proteção Individual (EPIs) corretos e tomando as decisões certas.</p>
+                <p>Prepare-se para garantir um **Comportamento Seguro** e de **Qualidade**!</p>
+                <button id="start-button">Iniciar Missão</button>
+                <div id="feedback-area"></div>
+            </div>
+            
+            <div id="inventory">
+                <h3>Inventário de EPIs</h3>
+                <div id="inventory-items">
+                    <img src="luvaanticorte.png" alt="Luva Anticorte" class="epi-item" data-epi-id="luva-anticorte" title="Luva Anticorte">
+                    <img src="luvalatex.jpg" alt="Luva de Látex Química" class="epi-item" data-epi-id="luva-latex" title="Luva de Látex Química">
+                    <img src="oculosamplavisao.webp" alt="Óculos Ampla Visão" class="epi-item" data-epi-id="oculos-ampla" title="Óculos Ampla Visão (contra respingos)">
+                    <img src="oculosdeseguranca.jpg" alt="Óculos de Segurança" class="epi-item" data-epi-id="oculos-seguranca" title="Óculos de Segurança (básico)">
+                    <img src="bonecasquete.webp" alt="Boné Casquete" class="epi-item" data-epi-id="bone-casquete" title="Boné Casquete (contra impactos leves)">
+                    <img src="luvamangote.jpg" alt="Mangote de Proteção" class="epi-item" data-epi-id="mangote" title="Mangote (Proteção de Antebraço)">
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        /* * ----------------------------------------
+         * 2. JAVASCRIPT (Lógica do Jogo com 7 Fases) 
+         * ----------------------------------------
+         */
+        
+        // Dados do Jogo (Scenarios/Fases)
+        const gameData = [
+            // Fase 1: Intervalo de Segurança (Conhecimento Básico)
+            {
+                phase: 1,
+                title: "Início da Atividade: Intervalo de Segurança",
+                description: "Você está prestes a começar uma tarefa. De acordo com o cartaz, qual das 5 perguntas você deve fazer a si mesmo para garantir um Intervalo de Segurança?",
+                type: "multiple-choice",
+                choices: [
+                    { text: "1 - Estou treinado?", isCorrect: true },
+                    { text: "Estou com fome?", isCorrect: false },
+                    { text: "Posso terceirizar esta tarefa?", isCorrect: false },
+                    { text: "A produção está alta?", isCorrect: false }
+                ],
+                successMessage: "Correto! O primeiro passo é garantir que você está **treinado**. Você demonstrou Comportamento Seguro!",
+                failMessage: "Incorreto. Você deve sempre se perguntar: **'Estou treinado?'** (Pergunta 1 do Intervalo de Segurança). Menos pontos de segurança."
+            },
+            // Fase 2: Prevenção de Cortes (EPI)
+            {
+                phase: 2,
+                title: "Manuseio de Material Cortante",
+                description: "Você precisa trabalhar com chapas metálicas afiadas que exigem proteção total das mãos e antebraços. Qual EPI você DEVE usar para esta tarefa?",
+                correctEPI: "luva-anticorte", // Chave do EPI no inventário
+                hint: "Você precisa de resistência mecânica para cortes.",
+                successMessage: "Excelente! A **Luva Anticorte** é crucial para evitar lesões graves. Avance para a próxima missão.",
+                failMessage: "Incorreto. Usar uma luva comum ou de látex é um **Risco Grave** de acidente. Reveja as regras de segurança."
+            },
+            // Fase 3: Proteção Química (EPI)
+            {
+                phase: 3,
+                title: "Limpeza com Produto Agressivo",
+                description: "Você precisa fazer a limpeza de um derramamento usando um solvente químico que pode causar queimaduras na pele e respingar nos olhos. Quais EPIs são necessários para a proteção ocular?",
+                correctEPI: "oculos-ampla",
+                hint: "Pense na vedação completa dos olhos contra respingos.",
+                successMessage: "Perfeito! O **Óculos Ampla Visão** é essencial para proteger contra respingos químicos. Segurança garantida!",
+                failMessage: "Você não selecionou o óculos correto (ampla visão) para proteção contra respingos. Lembre-se: **Urgentemente, a segurança em primeiro lugar!**"
+            },
+            // Fase 4: LOTO (Regras/Processo)
+            {
+                phase: 4,
+                title: "Procedimento de Bloqueio (LOTO)",
+                description: "Você é o Executante e o Líder de Bloqueio já acionou e verificou as energias. De acordo com o 'CAMINHO SEGURO DO LOTO', qual é o 3º passo do processo que deve ser realizado?",
+                type: "multiple-choice",
+                choices: [
+                    { text: "Líder bloqueia o armário com cadeado azul.", isCorrect: false },
+                    { text: "Bloqueia as Energias.", isCorrect: true },
+                    { text: "Realiza o Teste Zero.", isCorrect: false },
+                    { text: "Líder reúne os executantes e autoriza o início.", isCorrect: false }
+                ],
+                successMessage: "Correto! O 3º passo é o **Bloqueio das Energias** pelo executante. LOTO é obrigatório e salva vidas!",
+                failMessage: "Incorreto. A ordem no LOTO é crítica. O 3º passo é **Bloqueia as Energias**. Revisite o cartaz LOTO."
+            },
+            // Fase 5: 4 Princípios de Segurança (Comportamento)
+            {
+                phase: 5,
+                title: "Situação de Risco Imediato",
+                description: "Seu colega está realizando uma tarefa sem o EPI correto, apressado para terminar a produção. De acordo com os '4 PRINCÍPIOS DE SEGURANÇA', o que você deve fazer imediatamente?",
+                type: "multiple-choice",
+                choices: [
+                    { text: "Ignorar, pois 'Urgências e produtividade não justificam ações inseguras'.", isCorrect: false },
+                    { text: "Parar e corrigir, pois 'Comportamento seguro' exige perceber os riscos e preveni-los.", isCorrect: true },
+                    { text: "Avisar o supervisor só no final do turno (Reportar todos os incidentes).", isCorrect: false },
+                    { text: "Ajudar o colega, mas ignorar o EPI.", isCorrect: false }
+                ],
+                successMessage: "Gesto de líder! Você aplicou o 'Comportamento Seguro' e a regra de que 'Urgências não justificam...'! Excelente!",
+                failMessage: "Incorreto. Você deve **intervir** (Perceber os riscos e preveni-los). Nunca coloque a produtividade acima da vida. Reveja os Princípios."
+            },
+            // Fase 6: 📢 Qualidade - Reporte de Incidentes
+            {
+                phase: 6,
+                title: "🚨 Missão de Qualidade: Reporte Imediato",
+                description: "Você percebe um problema de qualidade que pode afetar o produto final. De acordo com os Princípios de Segurança e Qualidade, qual é a ação correta?",
+                type: "multiple-choice",
+                choices: [
+                    { text: "Tentar corrigir o defeito secretamente para não parar a linha.", isCorrect: false },
+                    { text: "Continuar a produção e reportar no final do turno.", isCorrect: false },
+                    { text: "Parar, Isolar (segurança/qualidade) e Reportar todos os incidentes (Near Miss, Incidente ou Acidente).", isCorrect: true },
+                    { text: "Pedir para o colega resolver, pois não é sua função direta.", isCorrect: false }
+                ],
+                successMessage: "Correto! A regra de ouro é: **Parar, Isolar e Reportar todos os incidentes.** Isso garante a segurança e a qualidade do produto!",
+                failMessage: "Incorreto. A falha em reportar imediatamente um incidente de qualidade ou segurança viola um dos 4 Princípios. Lembre-se de **Reportar todos os incidentes**."
+            },
+            // Fase 7: 📘 Qualidade - Padrão de Trabalho
+            {
+                phase: 7,
+                title: "Missão Final: O Padrão Incorreto",
+                description: "Você está seguindo um Procedimento Operacional Padrão (POP), mas percebe que o método descrito é ineficiente ou até perigoso. O que fazer?",
+                type: "multiple-choice",
+                choices: [
+                    { text: "Seguir o procedimento arriscado, pois 'É o que está escrito'.", isCorrect: false },
+                    { text: "Criar seu próprio atalho, pois 'Urgências e produtividade' importam.", isCorrect: false },
+                    { text: "Parar, não realizar a tarefa e reportar a não conformidade para revisão do POP (Melhoria Contínua).", isCorrect: true },
+                    { text: "Apenas reclamar para o colega, mas seguir trabalhando.", isCorrect: false }
+                ],
+                successMessage: "Vitória! Seu **Comportamento de Qualidade** está em nível máximo. Você garantiu que o trabalho seja feito com segurança e excelência, seguindo/melhorando o padrão!",
+                failMessage: "Incorreto. Você deve **Parar e Reportar**. Nunca realize uma tarefa perigosa ou ineficiente. Se o padrão não é seguro, ele deve ser corrigido."
+            }
+        ];
+
+        let currentPhase = 0;
+        let score = 0;
+        let currentPhaseData = null;
+
+        const startButton = document.getElementById('start-button');
+        const scenarioDisplay = document.getElementById('scenario-display');
+        const scoreDisplay = document.getElementById('score-display');
+        const levelDisplay = document.getElementById('level-display');
+        const feedbackArea = document.getElementById('feedback-area');
+        const epiItems = document.querySelectorAll('.epi-item');
+
+        startButton.addEventListener('click', startGame);
+
+        function startGame() {
+            startButton.style.display = 'none';
+            currentPhase = 1;
+            score = 0;
+            updateScore(0);
+            loadPhase(currentPhase);
+        }
+
+        function loadPhase(phaseNum) {
+            currentPhaseData = gameData.find(d => d.phase === phaseNum);
+
+            if (!currentPhaseData) {
+                // Fim do jogo
+                scenarioDisplay.innerHTML = `
+                    <h2>🏆 Missão de Segurança e Qualidade Concluída!</h2>
+                    <p>Parabéns! Você completou a Jornada Segura com sucesso. Pontuação final: **${score}**!</p>
+                    <p>Você demonstrou grande **Comportamento Seguro** e aplicou corretamente o conhecimento sobre EPIs, LOTO e os Princípios de Segurança e Qualidade.</p>
+                    <button onclick="window.location.reload()" id="start-button">Jogar Novamente</button>
+                `;
+                document.getElementById('inventory-items').style.display = 'none';
+                return;
+            }
+
+            // Reset visual dos EPIs e listeners
+            epiItems.forEach(item => {
+                item.classList.remove('correct', 'incorrect');
+                item.removeEventListener('click', handleEPISelection); // Remove todos os listeners
+            });
+
+            levelDisplay.textContent = `Fase ${currentPhaseData.phase}`;
+            feedbackArea.innerHTML = '';
+            
+            // Renderiza o cenário da fase (Multi-choice ou EPI)
+            let scenarioHTML = `
+                <h2>${currentPhaseData.title}</h2>
+                <p>${currentPhaseData.description}</p>
+            `;
+
+            if (currentPhaseData.type === "multiple-choice") {
+                // Lógica para Múltipla Escolha
+                scenarioHTML += '<div id="choices-container" style="margin-top: 20px;">';
+                currentPhaseData.choices.forEach((choice, index) => {
+                    scenarioHTML += `
+                        <button class="choice-button" data-index="${index}">
+                            ${choice.text}
+                        </button>`;
+                });
+                scenarioHTML += '</div>';
+                scenarioDisplay.innerHTML = scenarioHTML;
+                
+                // Adiciona listeners aos botões de múltipla escolha
+                document.querySelectorAll('.choice-button').forEach(button => {
+                    button.addEventListener('click', handleMultipleChoice);
+                });
+                document.getElementById('inventory-items').style.display = 'none';
+
+            } else {
+                // Lógica para Seleção de EPI (Padrão)
+                scenarioHTML += `<p class="hint">Clique no EPI que você usaria.</p>`;
+                scenarioDisplay.innerHTML = scenarioHTML;
+                epiItems.forEach(item => item.addEventListener('click', handleEPISelection));
+                document.getElementById('inventory-items').style.display = 'flex';
+            }
+        }
+
+        // Função de Múltipla Escolha
+        function handleMultipleChoice(event) {
+            const selectedIndex = parseInt(event.target.getAttribute('data-index'));
+            const isCorrect = currentPhaseData.choices[selectedIndex].isCorrect;
+            
+            // Desativa todos os botões de escolha
+            document.querySelectorAll('.choice-button').forEach(btn => {
+                btn.disabled = true;
+                btn.style.opacity = 0.6;
+                btn.removeEventListener('click', handleMultipleChoice);
+            });
+
+            if (isCorrect) {
+                event.target.style.backgroundColor = '#4CAF50'; // Verde
+                updateScore(score + 15);
+                displayFeedback(true, currentPhaseData.successMessage);
+            } else {
+                event.target.style.backgroundColor = '#f44336'; // Vermelho
+                
+                // Marca a correta
+                const correctButton = Array.from(document.querySelectorAll('.choice-button')).find(btn => 
+                    currentPhaseData.choices[parseInt(btn.getAttribute('data-index'))].isCorrect
+                );
+                if (correctButton) correctButton.style.backgroundColor = '#4CAF50';
+
+                updateScore(score - 10);
+                displayFeedback(false, currentPhaseData.failMessage);
+            }
+
+            // Avança para a próxima fase após o feedback
+            setTimeout(() => {
+                currentPhase++;
+                loadPhase(currentPhase);
+            }, 3500); // Dá um pouco mais de tempo para ler o feedback
+        }
+
+        // Função de Seleção de EPI
+        function handleEPISelection(event) {
+            const selectedEPI = event.target.getAttribute('data-epi-id');
+            const isCorrect = Array.isArray(currentPhaseData.correctEPI) 
+                ? currentPhaseData.correctEPI.includes(selectedEPI)
+                : selectedEPI === currentPhaseData.correctEPI;
+
+            // Desativa temporariamente a seleção de EPIs
+            epiItems.forEach(item => item.removeEventListener('click', handleEPISelection));
+
+            if (isCorrect) {
+                event.target.classList.add('correct');
+                updateScore(score + 10);
+                displayFeedback(true, currentPhaseData.successMessage);
+            } else {
+                event.target.classList.add('incorrect');
+                
+                // Marca a correta
+                const correctEPIElement = document.querySelector(`[data-epi-id="${currentPhaseData.correctEPI}"]`);
+                if (correctEPIElement) {
+                    correctEPIElement.classList.add('correct');
+                }
+
+                updateScore(score - 5);
+                displayFeedback(false, currentPhaseData.failMessage);
+            }
+            
+            setTimeout(() => {
+                currentPhase++;
+                loadPhase(currentPhase);
+            }, 3500); 
+        }
+
+        function displayFeedback(isCorrect, message) {
+            feedbackArea.innerHTML = `<p class="${isCorrect ? 'correct-text' : 'incorrect-text'}">${message}</p>`;
+        }
+
+        function updateScore(newScore) {
+            score = Math.max(0, newScore); // Garante que a pontuação não seja negativa
+            scoreDisplay.textContent = `Pontuação: ${score}`;
+        }
+    </script>
+</body>
+</html>
