@@ -2,201 +2,145 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SinucatroN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SinucatroN Debug</title>
     <style>
-        body {
-            background: #111;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
-        #camera-container {
-            position: relative;
-            display: inline-block;
-            margin-top: 20px;
-        }
-        #video, #canvas {
-            width: 95vw;
-            max-width: 480px;
-            height: auto;
-            aspect-ratio: 4 / 3;
-            border-radius: 16px;
-            box-shadow: 0 4px 24px #000a;
-        }
-        #canvas {
-            position: absolute;
-            left: 0;
-            top: 0;
-            pointer-events: none;
-        }
-        .info {
-            margin-top: 18px;
-            font-size: 1.1rem;
-            color: #ff9800;
-        }
-        .btn {
-            margin-top: 12px;
-            padding: 14px 28px;
-            border-radius: 8px;
-            border: none;
-            background: #0ff;
-            color: #111;
-            font-size: 1.2rem;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-        .btn:hover {
-            background: #00bcd4;
-        }
+        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
+        #status-bar { background: #ff9800; color: #000; padding: 10px; font-weight: bold; font-size: 14px; }
+        #camera-container { position: relative; width: 100vw; height: 70vh; background: #111; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 999; touch-action: none; }
+        .controls { padding: 20px; }
+        .btn { padding: 15px 30px; background: #0ff; border: none; font-weight: bold; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <h2>SinucatroN - Visualização de Tabelas</h2>
-    <div class="info" style="background:#222; color:#fff; border-radius:12px; max-width:480px; margin:18px auto 0 auto; padding:16px; font-size:1.05rem;">
-        <strong>Como usar o SinucatroN:</strong><br>
-        1. Permita o acesso à câmera do seu celular.<br>
-        2. Aponte a câmera para a mesa de sinuca.<br>
-        3. Toque na tela (sobre as bolas) para marcar a posição de cada bola na mesa.<br>
-        4. O sistema irá desenhar linhas mostrando as possíveis tabelas (rebotes nas bordas) e trajetórias entre as bolas.<br>
-        5. Use o botão "Limpar" para remover todas as marcações e começar de novo.<br>
-        6. Use "Voltar ao Início" para retornar à página principal.<br>
-        <br>
-        <em>Dica:</em> Quanto mais precisa for a marcação das bolas, mais útil será a visualização das linhas de tabela!
-    </div>
-    <div id="camera-container">
-        <video id="video" autoplay playsinline></video>
-        <canvas id="canvas"></canvas>
-    </div>
-    <div>
-        <button class="btn" onclick="limparBolas()">Limpar</button>
-    </div>
-    <div class="info">
-        Toque nas bolas na tela para marcar. As linhas de tabela possíveis aparecerão automaticamente.
-    </div>
-    <button class="btn" style="margin-top:24px;" onclick="window.location.href='principal.html'">Voltar ao Início</button>
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let bolas = [];
+<div id="status-bar">CLIQUES: 0 | FASE: Calibrar Cantos</div>
 
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(err => {
-                alert("Não foi possível acessar a câmera: " + err);
-            });
+<div id="camera-container">
+    <video id="video" autoplay playsinline></video>
+    <canvas id="canvas"></canvas>
+</div>
 
-        video.addEventListener('loadeddata', ajustarCanvas);
-        window.addEventListener('resize', ajustarCanvas);
+<div class="controls">
+    <button class="btn" onclick="reiniciar()">REINICIAR TUDO</button>
+</div>
 
-        function ajustarCanvas() {
-            if (video.videoWidth === 0 || video.videoHeight === 0) return;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            desenhar();
+<script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const statusBar = document.getElementById('status-bar');
+
+    let cantos = [];
+    let bolas = [];
+    let cliques = 0;
+
+    // Iniciar Câmera
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(s => video.srcObject = s)
+        .catch(e => alert("Erro câmera: " + e));
+
+    function redimensionar() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    }
+    window.addEventListener('resize', redimensionar);
+    redimensionar();
+
+    // Captura de toque universal
+    function handleInteraction(e) {
+        e.preventDefault();
+        cliques++;
+        
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+
+        if (cantos.length < 4) {
+            cantos.push({x, y});
+        } else {
+            bolas.push({x, y});
+        }
+        
+        atualizarStatus();
+    }
+
+    canvas.addEventListener('touchstart', handleInteraction, {passive: false});
+    canvas.addEventListener('mousedown', handleInteraction);
+
+    function atualizarStatus() {
+        let fase = cantos.length < 4 ? "Calibrar Cantos" : "Marcar Bolas";
+        statusBar.innerText = `CLIQUES: ${cliques} | FASE: ${fase}`;
+        if (cantos.length === 4) statusBar.style.background = "#4CAF50";
+    }
+
+    function reiniciar() {
+        cantos = []; bolas = []; cliques = 0;
+        statusBar.style.background = "#ff9800";
+        atualizarStatus();
+    }
+
+    // Loop de desenho constante
+    function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Desenhar mesa
+        if (cantos.length > 0) {
+            ctx.beginPath();
+            ctx.strokeStyle = "#0f0";
+            ctx.lineWidth = 3;
+            ctx.moveTo(cantos[0].x, cantos[0].y);
+            cantos.forEach(p => ctx.lineTo(p.x, p.y));
+            if (cantos.length === 4) ctx.closePath();
+            ctx.stroke();
         }
 
-        // Usa pointerdown para garantir funcionamento em toque e clique
-        canvas.addEventListener('pointerdown', function(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-            bolas.push({x, y});
-            desenhar();
-            efeitoClique(x, y);
+        // Desenhar bolas e tabelas
+        bolas.forEach((b, i) => {
+            ctx.beginPath();
+            ctx.fillStyle = i === 0 ? "#fff" : "#f00";
+            ctx.arc(b.x, b.y, 10, 0, Math.PI*2);
+            ctx.fill();
+            
+            if (i === 0 && cantos.length === 4) {
+                desenharSimulacao(b);
+            }
         });
 
-        function limparBolas() {
-            bolas = [];
-            desenhar();
+        requestAnimationFrame(loop);
+    }
+
+    function desenharSimulacao(branca) {
+        ctx.setLineDash([5, 5]);
+        for (let i = 0; i < 4; i++) {
+            let p1 = cantos[i];
+            let p2 = cantos[(i+1)%4];
+            let mx = (p1.x + p2.x) / 2;
+            let my = (p1.y + p2.y) / 2;
+
+            // Linha branca até tabela
+            ctx.beginPath();
+            ctx.strokeStyle = "#0ff";
+            ctx.moveTo(branca.x, branca.y);
+            ctx.lineTo(mx, my);
+            ctx.stroke();
+
+            // Reflexão
+            ctx.beginPath();
+            ctx.strokeStyle = "#ff9800";
+            ctx.moveTo(mx, my);
+            ctx.lineTo(mx + (mx - branca.x), my + (my - branca.y));
+            ctx.stroke();
         }
+        ctx.setLineDash([]);
+    }
 
-        function desenhar() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Desenha bolas
-            for (const bola of bolas) {
-                ctx.beginPath();
-                ctx.arc(bola.x, bola.y, 18, 0, 2 * Math.PI);
-                ctx.fillStyle = "#ff0";
-                ctx.globalAlpha = 0.7;
-                ctx.fill();
-                ctx.globalAlpha = 1;
-                ctx.strokeStyle = "#fff";
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-
-            // Desenha linhas de tabela possíveis
-            for (let i = 0; i < bolas.length; i++) {
-                for (let j = 0; j < bolas.length; j++) {
-                    if (i !== j) {
-                        ctx.beginPath();
-                        ctx.moveTo(bolas[i].x, bolas[i].y);
-                        ctx.lineTo(bolas[j].x, bolas[j].y);
-                        ctx.strokeStyle = "#0ff";
-                        ctx.lineWidth = 2;
-                        ctx.setLineDash([8, 8]);
-                        ctx.stroke();
-                        ctx.setLineDash([]);
-                    }
-                }
-                desenharLinhasTabela(bolas[i]);
-            }
-        }
-
-        function desenharLinhasTabela(bola) {
-            const bordas = [
-                {x: bola.x, y: 0},
-                {x: bola.x, y: canvas.height},
-                {x: 0, y: bola.y},
-                {x: canvas.width, y: bola.y}
-            ];
-            for (const b of bordas) {
-                ctx.beginPath();
-                ctx.moveTo(bola.x, bola.y);
-                ctx.lineTo(b.x, b.y);
-                ctx.strokeStyle = "#ff4800";
-                ctx.lineWidth = 2;
-                ctx.setLineDash([4, 8]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-        }
-
-        // Efeito visual rápido no clique com sombra
-        function efeitoClique(x, y) {
-            const raioInicial = 10;
-            const raioFinal = 30;
-            const duracao = 300;
-            const inicio = performance.now();
-
-            function animar(tempoAtual) {
-                const progresso = Math.min((tempoAtual - inicio) / duracao, 1);
-                const raio = raioInicial + (raioFinal - raioInicial) * progresso;
-
-                desenhar();
-                ctx.beginPath();
-                ctx.arc(x, y, raio, 0, 2 * Math.PI);
-                ctx.strokeStyle = "#0ff";
-                ctx.lineWidth = 2;
-                ctx.shadowColor = "#0ff";
-                ctx.shadowBlur = 8;
-                ctx.globalAlpha = 1 - progresso;
-                ctx.stroke();
-                ctx.globalAlpha = 1;
-                ctx.shadowBlur = 0;
-
-                if (progresso < 1) {
-                    requestAnimationFrame(animar);
-                }
-            }
-            requestAnimationFrame(animar);
-        }
-    </script>
+    loop();
+</script>
 </body>
 </html>
