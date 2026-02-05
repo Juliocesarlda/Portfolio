@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDA - Engenharia de Dados AMCOR</title>
+    <title>Amcor Preditor - Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #00d4ff;
@@ -28,41 +29,39 @@
 
         .container {
             background-color: var(--card);
-            padding: 30px;
+            padding: 25px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             text-align: center;
             border: 1px solid #333;
         }
 
-        h2 { color: var(--primary); margin-bottom: 25px; text-transform: uppercase; font-size: 1.2rem; }
+        h2 { color: var(--primary); margin-bottom: 20px; text-transform: uppercase; font-size: 1rem; letter-spacing: 2px; }
 
         .btn-upload {
             background: transparent;
             border: 2px dashed #444;
-            padding: 10px;
-            width: 95%;
+            padding: 15px;
+            width: 100%;
             border-radius: 10px;
             color: #888;
             cursor: pointer;
-            transition: 0.3s;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: block;
+            box-sizing: border-box;
         }
-
-        .btn-upload:hover { border-color: var(--primary); color: var(--primary); }
 
         input[type="number"] {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             margin: 10px 0;
             border-radius: 10px;
             border: 1px solid #333;
             background: #252525;
             color: white;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             box-sizing: border-box;
             text-align: center;
         }
@@ -75,20 +74,26 @@
             border-radius: 10px;
             color: white;
             font-weight: bold;
-            font-size: 1rem;
             cursor: pointer;
-            margin-top: 10px;
         }
 
         #result-box {
-            margin-top: 30px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 15px;
             background: #252525;
             border-radius: 15px;
         }
 
         .result-val { font-size: 2.5rem; font-weight: bold; color: var(--success); display: block; }
-        .confianca { font-size: 0.9rem; color: #888; margin-top: 10px; }
+
+        .chart-container {
+            margin-top: 25px;
+            background: #252525;
+            border-radius: 15px;
+            padding: 15px;
+            height: 300px;
+            box-sizing: border-box;
+        }
         
         input[type="file"] { display: none; }
     </style>
@@ -96,138 +101,118 @@
 <body>
 
 <div class="container">
-    <h2>🛡️ EDA - Engenharia de Dados AMCOR</h2>
+    <h2>📊 Amcor - Análise de Perda</h2>
     
-    <label class="btn-upload" for="excelFile" id="dropzone">
-        1. Selecionar Planilha (.xlsx ou .csv)
-    </label>
+    <label class="btn-upload" for="excelFile" id="dropzone">Clique para carregar planilha</label>
     <input type="file" id="excelFile" accept=".xlsx, .xls, .csv">
 
-    <p id="fileInfo" style="font-size: 0.8rem; color: var(--success);"></p>
-
-    <div style="text-align: left; font-size: 0.9rem; margin-bottom: 5px; color: #aaa;">Velocidade da Máquina:</div>
-    <input type="number" id="velocidadeInput" value="120">
-
-    <button class="calculate" onclick="prever()">2. CALCULAR DESPERDÍCIO</button>
+    <input type="number" id="velocidadeInput" value="120" placeholder="Velocidade Atual">
+    <button class="calculate" onclick="prever()">CALCULAR E COMPARAR</button>
 
     <div id="result-box">
+        <div style="font-size: 0.8rem; color: #888;">Previsão de Desperdício:</div>
         <span id="lblResultado" class="result-val">---</span>
-        <div id="lblConfianca" class="confianca">Aguardando dados...</div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="graficoBarras"></canvas>
     </div>
 </div>
 
 <script>
     let listaVel = [];
     let listaDesp = [];
+    let chartInstance = null;
 
-    // Conversão robusta para lidar com qualquer formato (vírgula, ponto ou número puro)
-    function purificarNumero(valor) {
-        if (valor === undefined || valor === null || valor === "") return NaN;
-        let texto = valor.toString().trim().replace(',', '.');
-        let num = parseFloat(texto);
-        return isNaN(num) ? NaN : num;
+    function purificar(v) {
+        let n = parseFloat(v.toString().replace(',', '.'));
+        return (isNaN(n) || n > 2000) ? NaN : n;
     }
 
     document.getElementById('excelFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
         const reader = new FileReader();
-
         reader.onload = function(event) {
             const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: 'array' });
-            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            const workbook = XLSX.read(data, { type: 'array', raw: false });
+            const matriz = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
             
-            // Lemos como matriz simples para identificar as colunas pelo nome
-            const matriz = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
-            if (matriz.length < 2) return;
-
-            // BUSCA DINÂMICA DE COLUNAS (Para evitar ler a coluna errada)
-            const cabecalho = matriz[0];
-            let idxVel = cabecalho.indexOf("Velocidade_Producao");
-            let idxDesp = cabecalho.indexOf("Desperdicio_Kg");
-
-            // Se não achou pelo nome exato, tenta os índices fixos que vimos na foto (4 e 5)
-            if (idxVel === -1) idxVel = 4;
-            if (idxDesp === -1) idxDesp = 5;
-
             listaVel = [];
             listaDesp = [];
 
             for (let i = 1; i < matriz.length; i++) {
-                const linha = matriz[i];
-                if (!linha) continue;
-
-                const v = purificarNumero(linha[idxVel]);
-                const d = purificarNumero(linha[idxDesp]);
-
+                const v = purificar(matriz[i][4]);
+                const d = purificar(matriz[i][5]);
                 if (!isNaN(v) && !isNaN(d)) {
                     listaVel.push(v);
                     listaDesp.push(d);
                 }
             }
-
-            document.getElementById('fileInfo').innerText = listaVel.length + " linhas válidas detectadas!";
-            document.getElementById('dropzone').innerText = "✅ Banco de Dados Atualizado";
-            
-            // TESTE DE SANIDADE: Mostra no console o que foi lido
-            console.log("Velocidades lidas:", listaVel);
-            console.log("Desperdícios lidos:", listaDesp);
+            document.getElementById('dropzone').innerText = "✅ Dados Carregados";
+            prever();
         };
-        reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(e.target.files[0]);
     });
 
     function prever() {
-        if (listaVel.length < 2) {
-            alert("A planilha não foi lida corretamente ou está vazia.");
-            return;
-        }
+        if (listaVel.length < 2) return;
 
+        // Lógica de Regressão
         const n = listaVel.length;
         let sX = 0, sY = 0, sXY = 0, sX2 = 0;
-
         for (let i = 0; i < n; i++) {
-            sX += listaVel[i];
-            sY += listaDesp[i];
-            sXY += listaVel[i] * listaDesp[i];
-            sX2 += Math.pow(listaVel[i], 2);
+            sX += listaVel[i]; sY += listaDesp[i];
+            sXY += listaVel[i] * listaDesp[i]; sX2 += Math.pow(listaVel[i], 2);
         }
-
-        const den = (n * sX2 - Math.pow(sX, 2));
-        if (den === 0) return;
-
-        const b = (n * sXY - sX * sY) / den;
+        const b = (n * sXY - sX * sY) / (n * sX2 - Math.pow(sX, 2));
         const a = (sY - b * sX) / n;
 
-        // R² para conferir a precisão
-        let sRes = 0, sTot = 0;
-        const mediaY = sY / n;
-        for (let i = 0; i < n; i++) {
-            const yPred = a + (b * listaVel[i]);
-            sRes += Math.pow(listaDesp[i] - yPred, 2);
-            sTot += Math.pow(listaDesp[i] - mediaY, 2);
-        }
-        const r2 = 1 - (sRes / sTot);
+        const vEntrada = parseFloat(document.getElementById('velocidadeInput').value);
+        let resultado = a + (b * vEntrada);
+        if (resultado < 0) resultado = 0;
 
-        const entrada = parseFloat(document.getElementById('velocidadeInput').value);
-        let resultado = a + (b * entrada);
+        document.getElementById('lblResultado').innerText = resultado.toFixed(2) + " Kg";
 
-        // Trava para não mostrar valores negativos e nem absurdos
-        const lblRes = document.getElementById('lblResultado');
-        const lblConf = document.getElementById('lblConfianca');
+        gerarGraficoBarras(vEntrada, resultado);
+    }
 
-        if (resultado <= 0) {
-            lblRes.innerText = "0.00 Kg";
-            lblRes.style.color = "var(--primary)";
-            lblConf.innerText = "Otimização Máxima Atiginda";
-        } else {
-            lblRes.innerText = resultado.toFixed(2) + " Kg";
-            lblRes.style.color = "var(--success)";
-            const nivel = (r2 > 0.7) ? "ALTA" : (r2 > 0.4) ? "MÉDIA" : "BAIXA";
-            lblConf.innerText = `Confiança: ${(r2 * 100).toFixed(1)}% (${nivel})`;
-        }
+    function gerarGraficoBarras(vAtual, pAtual) {
+        const ctx = document.getElementById('graficoBarras').getContext('2d');
+        
+        // Criamos labels combinando Velocidade e Desperdício para as barras
+        const labels = listaVel.map(v => v + " RPM");
+        const valores = [...listaDesp];
+
+        // Adicionamos a PREVISÃO ATUAL como uma barra de cor diferente
+        labels.push("PREVISÃO");
+        valores.push(pAtual);
+
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Desperdício (Kg)',
+                    data: valores,
+                    backgroundColor: valores.map((v, i) => i === valores.length - 1 ? '#ffab00' : '#00d4ff'),
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Histórico vs Previsão Atual', color: '#eee' }
+                },
+                scales: {
+                    y: { grid: { color: '#333' }, ticks: { color: '#aaa' } },
+                    x: { grid: { display: false }, ticks: { color: '#aaa' } }
+                }
+            }
+        });
     }
 </script>
-
 </body>
 </html>
