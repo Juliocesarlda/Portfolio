@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caminho da Virtude</title>
+    <style>
+        :root {
+            --igreja-blue: #2c3e50;
+            --health-green: #2ecc71;
+            --warning-orange: #f39c12;
+            --danger-red: #e74c3c;
+            --bg-light: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        #game-container {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 { color: var(--igreja-blue); margin-top: 0; font-size: 1.5rem; }
+
+        #health-container {
+            width: 100%;
+            height: 20px;
+            background: #eee;
+            border-radius: 10px;
+            margin: 20px 0 10px 0;
+            border: 1px solid #ddd;
+            overflow: hidden;
+        }
+
+        #health-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--health-green);
+            transition: width 0.6s ease;
+        }
+
+        .health-label {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        #status-msg {
+            font-size: 0.8rem;
+            color: var(--igreja-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        #pergunta-texto {
+            font-size: 1.1rem;
+            line-height: 1.4;
+            margin: 15px 0;
+            min-height: 60px;
+            font-weight: 500;
+        }
+
+        .btn-escolha {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1.5px solid var(--igreja-blue);
+            border-radius: 10px;
+            background: white;
+            color: var(--igreja-blue);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .btn-escolha:hover:not(:disabled) {
+            background: var(--igreja-blue);
+            color: white;
+        }
+
+        .btn-escolha:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #feedback-texto {
+            font-size: 0.9rem;
+            font-style: italic;
+            color: #e67e22;
+            margin-top: 15px;
+            min-height: 40px;
+        }
+
+        .footer-info {
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="status-msg">Carregando Jornada...</div>
+        <h2>✨ Caminho da Virtude ✨</h2>
+        
+        <div id="health-container">
+            <div id="health-bar"></div>
+        </div>
+        <div class="health-label">Saúde Emocional/Espiritual: <span id="health-pct">100</span>%</div>
+
+        <div id="quiz-section">
+            <p id="pergunta-texto"></p>
+            <div id="botoes-respostas"></div>
+            <p id="feedback-texto"></p>
+        </div>
+
+        <div class="footer-info">Projeto de Extensão - Engenharia de Software</div>
+    </div>
+
+    <script>
+        let saude = 100;
+        let diaAtual = 0;
+
+        const jornada = [
+            {
+                q: "1. Um irmão da igreja te criticou duramente na frente de outros. Como você reage?",
+                opcoes: [
+                    { t: "Respondo à altura imediatamente", p: -15, f: "O conflito direto feriu sua paz." },
+                    { t: "Fico em silêncio mas guardo rancor", p: -8, f: "Mágoa guardada é um peso na saúde." },
+                    { t: "Ignoro e finjo que nada aconteceu", p: -5, f: "Evitar o problema não resolve o estresse." },
+                    { t: "Busco perdoar e conversar em particular", p: 0, f: "O perdão manteve sua saúde intacta!" },
+                    { t: "N.D.A. (Apenas me afasto da igreja)", p: -12, f: "O isolamento prejudicou sua jornada." }
+                ]
+            },
+            {
+                q: "2. Você percebe que um jovem está se afastando e parece triste. Qual sua atitude?",
+                opcoes: [
+                    { t: "Acho que é drama e não me envolvo", p: -10, f: "A falta de empatia endurece o coração." },
+                    { t: "Espero que o pastor resolva", p: -5, f: "A omissão sobrecarrega a comunidade." },
+                    { t: "Mando apenas uma mensagem automática", p: -2, f: "Gestos superficiais ajudam pouco." },
+                    { t: "Ofereço meu tempo para ouvir e apoiar", p: 0, f: "Ajudar o próximo renova suas forças!" },
+                    { t: "N.D.A. (Não é minha responsabilidade)", p: -8, f: "Viver só para si drena o propósito." }
+                ]
+            },
+            {
+                q: "3. Você recebeu uma tarefa voluntária cansativa para o final de semana. Como encara?",
+                opcoes: [
+                    { t: "Faço reclamando para todos ouvirem", p: -10, f: "A reclamação intoxica o seu bem-estar." },
+                    { t: "Invento uma desculpa para não ir", p: -7, f: "Faltar ao compromisso gerou culpa." },
+                    { t: "Faço o mínimo possível para acabar logo", p: -4, f: "A mediocridade não traz satisfação." },
+                    { t: "Faço com alegria e foco no benefício social", p: 0, f: "O serviço voluntário gerou dopamina!" },
+                    { t: "N.D.A. (Vou mas fico mexendo no celular)", p: -6, f: "Estar presente sem foco gera cansaço." }
+                ]
+            },
+            {
+                q: "4. Como você lida com pensamentos de ansiedade sobre o futuro?",
+                opcoes: [
+                    { t: "Fico remoendo até perder o sono", p: -15, f: "O estresse afetou seu sistema nervoso." },
+                    { t: "Tento me distrair com vícios ou excessos", p: -12, f: "Fugas rápidas cobram um preço alto." },
+                    { t: "Descarrego minha frustração nos outros", p: -10, f: "Conflitos externos aumentam o estresse." },
+                    { t: "Pratico meditação, oração e busco foco", p: 0, f: "O equilíbrio mental foi preservado!" },
+                    { t: "N.D.A. (Simplesmente aceito o sofrimento)", p: -8, f: "A passividade não ajuda na resiliência." }
+                ]
+            },
+            {
+                q: "5. Uma fofoca sobre um amigo chega até você. O que você faz?",
+                opcoes: [
+                    { t: "Passo adiante só para uma pessoa", p: -15, f: "A fofoca quebra a confiança e a paz." },
+                    { t: "Tento descobrir mais detalhes", p: -10, f: "A curiosidade maliciosa drena a energia." },
+                    { t: "Fico em dúvida se é verdade ou não", p: -3, f: "A incerteza gera uma leve ansiedade." },
+                    { t: "Interrompo o assunto e defendo o amigo", p: 0, f: "Sua integridade protegeu sua mente!" },
+                    { t: "N.D.A. (Fico ouvindo mas não falo nada)", p: -7, f: "Ser cúmplice do erro gera desconforto." }
+                ]
+            },
+            {
+                q: "6. Você errou em um relatório e alguém te corrigiu. Como reage?",
+                opcoes: [
+                    { t: "Fico na defensiva e justifico o erro", p: -10, f: "O orgulho impede o aprendizado." },
+                    { t: "Fico me culpando e me achando incapaz", p: -12, f: "A autocrítica excessiva fere a saúde." },
+                    { t: "Ignoro a correção e continuo igual", p: -5, f: "A estagnação não traz evolução." },
+                    { t: "Agradeço e busco corrigir o erro", p: 0, f: "A humildade gera paz de espírito!" },
+                    { t: "N.D.A. (Penso em desistir da função)", p: -15, f: "Fugir dos desafios enfraquece a mente." }
+                ]
+            },
+            {
+                q: "7. O ambiente em sua casa está tenso com muitas discussões. O que você faz?",
+                opcoes: [
+                    { t: "Aumento o tom de voz para me impor", p: -15, f: "O grito aumentou o cortisol no corpo." },
+                    { t: "Me tranco no quarto e me isolo", p: -8, f: "O isolamento pode aumentar a tristeza." },
+                    { t: "Fico jogando a culpa nos outros", p: -12, f: "A acusação gera um ciclo de estresse." },
+                    { t: "Busco ser o pacificador e ouvir todos", p: 0, f: "Promover a paz renova as energias!" },
+                    { t: "N.D.A. (Saio de casa para não resolver)", p: -10, f: "A fuga não traz a solução do problema." }
+                ]
+            },
+            {
+                q: "8. Você percebe que está viciado em redes sociais e isso te faz mal.",
+                opcoes: [
+                    { t: "Continuo usando mesmo me sentindo mal", p: -15, f: "A dependência digital afeta o foco." },
+                    { t: "Digo que amanhã eu paro", p: -8, f: "A procrastinação gera frustração." },
+                    { t: "Fico comparando minha vida com a dos outros", p: -12, f: "A comparação é a ladra da alegria." },
+                    { t: "Estabeleço limites e faço um detox digital", p: 0, f: "O controle do tempo trouxe alívio!" },
+                    { t: "N.D.A. (Acho que o problema é a internet)", p: -5, f: "Terceirizar a culpa não resolve o hábito." }
+                ]
+            },
+            {
+                q: "9. Alguém pede um favor financeiro que você não pode cumprir agora.",
+                opcoes: [
+                    { t: "Minto dizendo que estou sem nada", p: -10, f: "A mentira gera uma carga de estresse." },
+                    { t: "Empresto mesmo sem poder e me aperto", p: -12, f: "O desequilíbrio financeiro gera pânico." },
+                    { t: "Ignoro as mensagens da pessoa", p: -7, f: "A esquiva gera uma preocupação latente." },
+                    { t: "Sou honesto, digo não e ajudo de outra forma", p: 0, f: "A verdade e o limite preservam a paz!" },
+                    { t: "N.D.A. (Fico com raiva da pessoa pedir)", p: -10, f: "A raiva gratuita drena sua saúde." }
+                ]
+            },
+            {
+                q: "10. Ao final desses 10 dias, como você se sente em relação a suas escolhas?",
+                opcoes: [
+                    { t: "Acho que sou uma vítima do destino", p: -15, f: "A falta de protagonismo gera desânimo." },
+                    { t: "Sinto que nada vai mudar", p: -12, f: "A falta de esperança é tóxica." },
+                    { t: "Acho que fiz o que deu para fazer", p: -5, f: "Uma visão limitada impede o brilho." },
+                    { t: "Reconheço que minhas escolhas definem minha paz", p: 0, f: "A consciência é o primeiro passo da cura!" },
+                    { t: "N.D.A. (Não refleti sobre o processo)", p: -10, f: "Viver sem refletir impede a evolução." }
+                ]
+            }
+        ];
+
+        function carregarDia() {
+            if (diaAtual >= jornada.length) {
+                finalizarJogo();
+                return;
+            }
+            
+            document.getElementById('status-msg').innerText = `Jornada: Dia ${diaAtual + 1} de 10`;
+            document.getElementById('pergunta-texto').innerText = jornada[diaAtual].q;
+            document.getElementById('feedback-texto').innerText = "";
+            
+            const areaBotoes = document.getElementById('botoes-respostas');
+            areaBotoes.innerHTML = "";
+            
+            jornada[diaAtual].opcoes.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "btn-escolha";
+                btn.innerText = opt.t;
+                btn.onclick = () => escolher(index);
+                areaBotoes.appendChild(btn);
+            });
+        }
+
+        function escolher(index) {
+            const opcao = jornada[diaAtual].opcoes[index];
+            saude += opcao.p;
+            if (saude < 0) saude = 0;
+            if (saude > 100) saude = 100;
+
+            document.getElementById('feedback-texto').innerText = opcao.f;
+            atualizarBarra();
+
+            const botoes = document.querySelectorAll('.btn-escolha');
+            botoes.forEach(b => b.disabled = true);
+            
+            setTimeout(() => {
+                diaAtual++;
+                carregarDia();
+            }, 2500);
+        }
+
+        function atualizarBarra() {
+            const bar = document.getElementById('health-bar');
+            const pct = document.getElementById('health-pct');
+            bar.style.width = saude + "%";
+            pct.innerText = Math.floor(saude);
+
+            if (saude < 50) bar.style.background = "var(--danger-red)";
+            else if (saude < 85) bar.style.background = "var(--warning-orange)";
+            else bar.style.background = "var(--health-green)";
+        }
+
+        function finalizarJogo() {
+            const final = saude >= 90 ? "Incrível! Você atingiu a meta de 90%. Sua resiliência é um exemplo!" : "Jornada concluída! Que tal tentar novamente e buscar escolhas que preservem mais sua saúde?";
+            document.getElementById('quiz-section').innerHTML = `
+                <div style="margin-top:20px;">
+                    <h3>Resultado Final: ${Math.floor(saude)}%</h3>
+                    <p>${final}</p>
+                    <button class="btn-escolha" style="text-align:center; background:var(--igreja-blue); color:white;" onclick="location.reload()">Recomeçar Jornada</button>
+                </div>
+            `;
+        }
+
+        carregarDia();
+        atualizarBarra();
+    </script>
+</body>
+</html>
