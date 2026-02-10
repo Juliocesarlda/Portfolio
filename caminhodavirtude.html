@@ -11,6 +11,7 @@
             --warning-orange: #f39c12;
             --danger-red: #e74c3c;
             --bg-light: #f4f7f6;
+            --whatsapp-green: #25D366;
         }
 
         body {
@@ -115,6 +116,31 @@
             font-size: 0.75rem;
             color: #999;
         }
+
+        /* BOTÃO WHATSAPP ERROS E SUGESTÕES */
+        .btn-whats {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--whatsapp-green);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .btn-whats:hover {
+            transform: scale(1.05);
+            background-color: #20ba5a;
+        }
     </style>
 </head>
 <body>
@@ -136,6 +162,12 @@
 
         <div class="footer-info">Projeto de Extensão - Engenharia de Software</div>
     </div>
+
+    <a href="https://api.whatsapp.com/send?phone=5543920029039&text=Olá%20Julio!%20Tenho%20uma%20sugestão/erro%20sobre%20o%20app%20Caminho%20da%20Virtude:" 
+       target="_blank" 
+       class="btn-whats">
+        <span>💬 Erros & Sugestões</span>
+    </a>
 
     <script>
         let saude = 100;
