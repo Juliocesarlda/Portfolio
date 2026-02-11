@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amcor SafeQuest: A Jornada Segura (10 Dias)</title>
+    <title>Amcor SafeQuest: A Jornada Segura</title>
 
     <style>
         /* * ----------------------------------------
-         * 1. CSS (Layout Moderno e Arrojado com RESPONSIVIDADE) 
+         * 1. CSS (Layout Modernizado e Integrado) 
          * ----------------------------------------
          */
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
@@ -22,587 +22,325 @@
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f0f0f0;
-            color: #333;
             margin: 0;
             padding: 20px; 
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            text-align: center;
         }
 
         #game-container {
             width: 100%; 
-            max-width: 1200px;
+            max-width: 1100px;
             background-color: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            transition: all 0.3s;
         }
 
-        /* --- Cabeçalho e Status --- */
-        #header-game {
+        /* Cabeçalho */
+        header {
             background-color: var(--amcor-blue);
             color: white;
-            padding: 15px 20px; 
+            padding: 20px 30px;
             display: flex;
-            flex-direction: column; 
-            gap: 10px; 
             justify-content: space-between;
             align-items: center;
-            border-top-left-radius: 20px;
-            border-top-right-radius: 20px;
-        }
-
-        #header-game h1 {
-            margin: 0;
-            font-size: 1.5em; 
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
         #status-bar {
             display: flex;
-            flex-wrap: wrap; 
-            justify-content: center; 
-            gap: 10px 15px; 
+            gap: 20px;
+            align-items: center;
             font-weight: bold;
-            font-size: 0.9em;
-        }
-        
-        /* Ajuste do layout para telas maiores */
-        @media (min-width: 600px) {
-            #header-game {
-                flex-direction: row; 
-            }
-            #header-game h1 {
-                font-size: 1.8em;
-            }
-            #status-bar {
-                 justify-content: flex-end; 
-                 gap: 20px;
-                 font-size: 1em;
-            }
         }
 
-        /* --- Área Principal do Jogo --- */
-        #game-area {
-            display: flex;
-            flex-direction: column; 
-            padding: 20px; 
-            gap: 30px;
-        }
-
-        #scenario-display {
-            flex-grow: 1;
-            text-align: left;
-            padding-bottom: 20px; 
-        }
-        
-        /* Quebra de layout para telas maiores */
-        @media (min-width: 768px) {
-            #game-area {
-                flex-direction: row; 
-                padding: 30px;
-            }
-            #scenario-display {
-                border-right: 1px solid #ccc; 
-                padding-right: 30px;
-                padding-bottom: 0;
-            }
-        }
-        
-        #scenario-display h2 {
-            color: var(--amcor-red);
-            font-size: 1.4em;
-        }
-        
-        /* --- Inventário --- */
-        #inventory {
-            width: 100%;
-            max-width: 250px;
-            text-align: center;
-            margin: 0 auto;
-        }
-
-        #inventory h3 {
-            margin-top: 0;
-            font-size: 1.2em;
-        }
-
-        #inventory-items {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px; 
-        }
-
-        .epi-item {
-            width: 60px; 
-            height: 60px; 
-            object-fit: contain;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-            border-radius: 10px;
-            border: 3px solid transparent;
-            padding: 5px;
-            background-color: #fff;
-        }
-        
-        @media (min-width: 768px) {
-            .epi-item {
-                 width: 80px; 
-                 height: 80px;
-            }
-        }
-
-        .epi-item:hover {
-            transform: translateY(-3px) scale(1.03);
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
-            opacity: 0.9;
-        }
-
-        /* --- Barra de Saúde (HP) e Botões --- */
+        /* Barra de Saúde */
         #health-bar-container {
-            width: 100px; 
-            height: 15px;
-            background-color: #ddd;
+            width: 130px;
+            height: 18px;
+            background-color: rgba(255,255,255,0.3);
             border-radius: 10px;
             overflow: hidden;
-            border: 1px solid #666;
+            border: 1px solid rgba(255,255,255,0.5);
         }
-        
+
         #health-bar {
             height: 100%;
             background-color: var(--color-correct);
-            transition: width 0.5s ease-in-out, background-color 0.5s;
+            transition: width 0.5s ease;
+            font-size: 0.8em;
             text-align: center;
+            line-height: 18px;
             color: white;
-            line-height: 15px;
-            font-size: 0.7em; 
-        }
-        
-        @media (min-width: 600px) {
-            #health-bar-container {
-                 width: 150px; 
-                 height: 20px;
-            }
-            #health-bar {
-                 line-height: 20px;
-                 font-size: 0.9em;
-            }
         }
 
-        #start-button, #next-day-button {
-            background-color: var(--amcor-red);
-            color: white;
-            padding: 10px 20px; 
-            border: none;
+        main {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
+        @media (min-width: 850px) {
+            main { grid-template-columns: 1fr 320px; }
+        }
+
+        /* Painel de Dicas (Sua nova implementação) */
+        #epi-explanation {
+            margin-bottom: 20px;
+            padding: 18px;
+            background: #f8f9fa;
+            border-left: 5px solid var(--amcor-blue);
             border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        
-        #start-button:hover, #next-day-button:hover {
-            background-color: #a0001e;
-        }
-        
-        /* Estilo para Botões de Múltipla Escolha */
-        .choice-button {
-            background-color: var(--amcor-blue); 
-            color: white; 
-            padding: 12px; 
-            margin: 8px 0; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            transition: background-color 0.3s;
-            display: block; 
-            width: 100%;
+            font-size: 0.95em;
+            line-height: 1.5;
+            min-height: 80px;
             text-align: left;
         }
-        .choice-button:hover {
-            background-color:var(--amcor-red) !important;
-        }
-        .choice-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
+
+        #epi-explanation strong {
+            color: var(--amcor-blue);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
         }
 
-        /* --- Estilos de Feedback --- */
-        .correct { border-color: var(--color-correct) !important; box-shadow: 0 0 10px var(--color-correct); }
-        .incorrect { border-color: var(--color-incorrect) !important; box-shadow: 0 0 10px var(--color-incorrect); }
-        #feedback-area { margin-top: 20px; padding: 15px; border-radius: 8px; font-weight: bold; }
-        .correct-text { background-color: #e8f5e9; color: #2e7d32; padding: 10px; border-radius: 5px; }
-        .incorrect-text { background-color: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; }
-        .hint { font-style: italic; color: #666; margin-top: 15px; }
+        /* Inventário e Itens */
+        .epi-item {
+            width: 70px;
+            height: 70px;
+            cursor: pointer;
+            border: 3px solid #eee;
+            border-radius: 12px;
+            padding: 5px;
+            transition: all 0.2s;
+            background: white;
+            object-fit: contain;
+        }
 
+        .epi-item:hover { 
+            transform: scale(1.1); 
+            border-color: var(--amcor-blue);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .correct { border-color: var(--color-correct) !important; box-shadow: 0 0 15px var(--color-correct); }
+        .incorrect { border-color: var(--color-incorrect) !important; box-shadow: 0 0 15px var(--color-incorrect); }
+
+        /* Botões de Decisão */
+        .choice-button {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            margin: 12px 0;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            transition: 0.3s;
+        }
+
+        .choice-button:hover { 
+            border-color: var(--amcor-blue); 
+            background: #f0f7ff; 
+            transform: translateX(5px);
+        }
+
+        .btn-action {
+            background-color: var(--amcor-red);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(229, 0, 43, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(229, 0, 43, 0.4); }
+
+        #feedback-area { min-height: 50px; margin-top: 20px; font-weight: bold; }
+        .correct-text { color: var(--color-correct); background: #e8f5e9; padding: 10px; border-radius: 8px; }
+        .incorrect-text { color: var(--amcor-red); background: #ffebee; padding: 10px; border-radius: 8px; }
+
+        .welcome-screen { text-align: left; }
+        .welcome-screen h2 { color: var(--amcor-blue); font-size: 2em; margin-top: 0; }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <header id="header-game">
-            <h1>🛡️ Amcor SafeQuest</h1>
-            <div id="status-bar">
-                <span id="day-display">Dia 0</span>
-                <span id="score-display">Pontuação: 0</span>
-                <div id="health-bar-container">
-                    <div id="health-bar" style="width: 100%;">100%</div>
-                </div>
-            </div>
-        </header>
 
-        <main id="game-area">
-            <div id="scenario-display">
-                <h2>Bem-vindo(a) à Jornada Segura (10 Dias)!</h2>
-                <p>Seu objetivo é passar 10 dias de trabalho com uma **Saúde (HP) superior a 90%**.</p>
-                <p>Você tem 100% de HP. Cada erro de segurança ou qualidade reduz sua saúde.</p>
-                <p>Prepare-se para garantir um **Comportamento Seguro** e de **Qualidade**!</p>
-                <button id="start-button">Iniciar 1º Dia</button>
-                <div id="feedback-area"></div>
+<div id="game-container">
+    <header>
+        <h1>🛡️ Amcor SafeQuest</h1>
+        <div id="status-bar">
+            <span id="day-display">Dia 0/10</span>
+            <div id="health-bar-container">
+                <div id="health-bar" style="width: 100%;">100%</div>
+            </div>
+            <span id="score-display">0 pts</span>
+        </div>
+    </header>
+
+    <main id="game-area">
+        <div id="scenario-display" class="welcome-screen">
+            <h2>Bem-vindo à Jornada!</h2>
+            <p>Seu objetivo é completar 10 dias de turno mantendo sua <strong>Saúde (HP) acima de 90%</strong>.</p>
+            <p>Clique nos EPIs ao lado para conhecer suas funções antes de começar ou durante o jogo.</p>
+            <br>
+            <button class="btn-action" id="start-button">Iniciar 1º Dia</button>
+        </div>
+
+        <div id="inventory-panel">
+            <h3 style="margin-top:0">Dica do Especialista</h3>
+            <div id="epi-explanation">
+                Clique em um equipamento para ver sua importância técnica aqui.
             </div>
             
-            <div id="inventory">
-                <h3>Inventário de EPIs</h3>
-                <div id="inventory-items">
-                    <img src="luvaanticorte.png" alt="Luva Anticorte" class="epi-item" data-epi-id="luva-anticorte" title="Luva Anticorte">
-                    <img src="luvalatex.jpg" alt="Luva de Látex Química" class="epi-item" data-epi-id="luva-latex" title="Luva de Látex Química">
-                    <img src="oculosamplavisao.webp" alt="Óculos Ampla Visão" class="epi-item" data-epi-id="oculos-ampla" title="Óculos Ampla Visão (contra respingos)">
-                    <img src="oculosdeseguranca.jpg" alt="Óculos de Segurança" class="epi-item" data-epi-id="oculos-seguranca" title="Óculos de Segurança (básico)">
-                    <img src="bonecasquete.webp" alt="Boné Casquete" class="epi-item" data-epi-id="bone-casquete" title="Boné Casquete (contra impactos leves)">
-                    <img src="luvamangote.jpg" alt="Mangote de Proteção" class="epi-item" data-epi-id="mangote" title="Mangote (Proteção de Antebraço)">
-                </div>
+            <h3>Seu Inventário</h3>
+            <div id="inventory-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                <img src="luvaanticorte.png" class="epi-item" data-epi-id="luva-anticorte" title="Luva Anticorte">
+                <img src="luvalatex.jpg" class="epi-item" data-epi-id="luva-latex" title="Luva-latex">
+                <img src="oculosamplavisao.webp" class="epi-item" data-epi-id="oculos-ampla" title="Ampla Visão">
+                <img src="oculosdeseguranca.jpg" class="epi-item" data-epi-id="oculos-seguranca" title="Óculos Segurança">
+                <img src="bonecasquete.webp" class="epi-item" data-epi-id="bone-casquete" title="Boné Casquete">
+                <img src="luvamangote.jpg" class="epi-item" data-epi-id="mangote" title="Mangote">
             </div>
-        </main>
-    </div>
+            <div id="feedback-area"></div>
+        </div>
+    </main>
+</div>
 
-    <script>
-        /* * ----------------------------------------
-         * 2. JAVASCRIPT (Lógica do Jogo com 10 Dias, HP e Pontuação - CORRIGIDO) 
-         * ----------------------------------------
-         */
+<script>
+    // 1. Banco de Conhecimento de EPIs
+    const epiKnowledge = {
+        "luva-anticorte": { title: "🧤 Luva Anticorte", text: "Proteção mecânica essencial para manuseio de lâminas e bordas de bobinas. Evita lacerações graves." },
+        "luva-latex": { title: "🧪 Luva Química", text: "Impermeável contra solventes e agentes corrosivos. Previne queimaduras químicas e dermatites." },
+        "oculos-ampla": { title: "🥽 Óculos Ampla Visão", text: "Oferece vedação total contra respingos líquidos e vapores químicos. Proteção 360º para os olhos." },
+        "oculos-seguranca": { title: "👓 Óculos de Segurança", text: "Proteção frontal contra projeção de partículas sólidas e poeira durante a operação." },
+        "bone-casquete": { title: "🧢 Boné Casquete", text: "Protege o crânio contra impactos em objetos fixos e quinas. Ideal para áreas com espaço restrito." },
+        "mangote": { title: "🛡️ Mangote de Proteção", text: "Protege o antebraço contra cortes e abrasão em tarefas de abastecimento e manutenção." }
+    };
+
+    // 2. Pool de Situações
+    const situationPool = [
+        { id: 'S1', type: "multiple-choice", title: "Prioridade Amcor", description: "Seu supervisor pede para acelerar a produção, mas isso exige pular o Intervalo de Segurança. O que fazer?", choices: [{ text: "Acelerar para cumprir a meta.", isCorrect: false }, { text: "Parar e realizar o Intervalo de Segurança.", isCorrect: true }], successMessage: "Correto! Segurança em primeiro lugar.", failMessage: "Errado! Produção não justifica riscos. HP -10" },
+        { id: 'S2', type: "epi", title: "Corte de Filme", description: "Você vai realizar o corte lateral de uma bobina de filme. Qual o EPI Vital?", correctEPI: "luva-anticorte", successMessage: "Certo! Mãos protegidas contra cortes.", failMessage: "Risco de corte! Use a Luva Anticorte. HP -10" },
+        { id: 'S3', type: "multiple-choice", title: "Bloqueio LOTO", description: "Ao iniciar a manutenção, qual o passo após bloquear as energias?", choices: [{ text: "Iniciar o trabalho.", isCorrect: false }, { text: "Realizar o Teste de Energia Zero.", isCorrect: true }], successMessage: "Seguro! Energia Zero confirmada.", failMessage: "Perigo! Sempre realize o teste zero. HP -15" },
+        { id: 'S4', type: "epi", title: "Manuseio de Solventes", description: "Preparando solução de limpeza líquida. Qual proteção veda contra respingos nos olhos?", correctEPI: "oculos-ampla", successMessage: "Ótima escolha! Vedação total.", failMessage: "Respingos atingiriam seus olhos! Use Ampla Visão. HP -10" }
+    ];
+
+    // 3. Lógica do Jogo
+    let state = { day: 1, hp: 100, score: 0, current: null, count: 0 };
+
+    document.getElementById('start-button').onclick = startGame;
+
+    function startGame() {
+        state.day = 1; state.hp = 100; state.score = 0;
+        updateUI();
+        nextSituation();
+    }
+
+    function nextSituation() {
+        if (state.hp <= 0) return end(false);
+        if (state.day > 10) return end(true);
+
+        state.current = situationPool[Math.floor(Math.random() * situationPool.length)];
+        renderSituation();
+    }
+
+    function renderSituation() {
+        const s = state.current;
+        let html = `<h2>Dia ${state.day}/10</h2><p><strong>${s.title}</strong></p><p>${s.description}</p>`;
         
-        // Dados do Jogo (Pool de Situações - Usaremos as 7 originais como um pool)
-        const situationPool = [
-            // Categoria: COMPORTAMENTO / REGRAS
-            {
-                id: 'S1', type: "multiple-choice", 
-                title: "Situação: Produtividade vs. Segurança",
-                description: "Seu supervisor pede para acelerar, mas isso o força a pular o Intervalo de Segurança. O que a regra diz?",
-                choices: [
-                    { text: "Acelerar, pois a produção é urgente.", isCorrect: false, penaltyHP: 3, penaltyScore: 20 },
-                    { text: "Parar o trabalho e realizar o Intervalo de Segurança antes de prosseguir.", isCorrect: true, rewardScore: 30 },
-                ],
-                successMessage: "Correto! **Urgências e produtividade não justificam ações inseguras.**",
-                failMessage: "Erro! Você deve **Parar e Corrigir** antes de prosseguir. HP -3."
-            },
-            {
-                id: 'S2', type: "multiple-choice", 
-                title: "Situação: Intervenção",
-                description: "Você vê um colega usando o EPI errado. O que você faz, seguindo o Comportamento Seguro?",
-                choices: [
-                    { text: "Avisar o supervisor por rádio para que ele resolva.", isCorrect: false, penaltyHP: 2, penaltyScore: 10 },
-                    { text: "Intervir imediatamente, corrigindo a ação insegura.", isCorrect: true, rewardScore: 25 },
-                ],
-                successMessage: "Correto! **Comportamento seguro** exige perceber e prevenir riscos. Você interviu!",
-                failMessage: "Erro! Deixar o risco acontecer é falhar na intervenção. HP -2."
-            },
-            // Categoria: EPI
-            {
-                id: 'S3', type: "epi", 
-                title: "Situação: Manutenção com Fiapos",
-                description: "Você precisa inspecionar e limpar uma máquina que produz pequenos fiapos, mas sem produtos químicos. Qual é a proteção ocular MÍNIMA e ADEQUADA?",
-                correctEPI: "oculos-seguranca",
-                hint: "Proteção básica contra partículas.",
-                successMessage: "Correto! O Óculos de Segurança básico é suficiente para partículas. Pontos +15.",
-                failMessage: "Erro! Você negligenciou a proteção ocular. HP -2."
-            },
-            {
-                id: 'S4', type: "epi", 
-                title: "Situação: Movimentação de Caixas",
-                description: "Você está ajudando a organizar o estoque, movimentando caixas leves. Qual EPI protege sua cabeça contra esbarrões em prateleiras?",
-                correctEPI: "bone-casquete",
-                hint: "Proteção contra impactos leves, não contra quedas de objetos pesados.",
-                successMessage: "Correto! O Boné Casquete é ideal para proteção contra impactos leves em áreas baixas. Pontos +15.",
-                failMessage: "Erro! Sem proteção de cabeça (casquete ou capacete), você corre o risco de lesões por impacto leve. HP -1."
-            },
-            // Categoria: LOTO / PROCEDIMENTO
-            {
-                id: 'S5', type: "multiple-choice", 
-                title: "Situação: LOTO",
-                description: "O Líder de Bloqueio está prestes a fazer o Teste Zero. Qual é o passo anterior, segundo o Caminho Seguro do LOTO?",
-                choices: [
-                    { text: "Bloquear as energias.", isCorrect: true, rewardScore: 30 },
-                    { text: "Remover os dispositivos de bloqueio (errado).", isCorrect: false, penaltyHP: 5, penaltyScore: 30 },
-                ],
-                successMessage: "Correto! O Bloqueio das Energias (Passo 3) é essencial antes do Teste Zero (Passo 4).",
-                failMessage: "Erro Grave! Errar a sequência LOTO pode causar um acidente. HP -5."
-            },
-            {
-                id: 'S6', type: "multiple-choice", 
-                title: "Situação: Qualidade e Padrão",
-                description: "O PNC de um produto está desatualizado. Você deve segui-lo ou reportar?",
-                choices: [
-                    { text: "Seguir o PNC, mesmo que esteja errado.", isCorrect: false, penaltyHP: 2, penaltyScore: 10 },
-                    { text: "Parar, não realizar a tarefa e reportar a não conformidade para revisão (Melhoria Contínua).", isCorrect: true, rewardScore: 25 },
-                ],
-                successMessage: "Correto! Parar e reportar garante a Qualidade e a Segurança do processo.",
-                failMessage: "Erro! Seguir um padrão incorreto leva a problemas de qualidade e segurança. HP -2."
-            },
-            {
-                id: 'S7', type: "epi", 
-                title: "Situação: Proteção Química Mão",
-                description: "Você está manuseando um agente de limpeza líquido com alto pH. Qual a proteção para as mãos?",
-                correctEPI: "luva-latex",
-                hint: "Proteção contra produtos químicos e líquidos.",
-                successMessage: "Correto! A Luva de Látex (ou nitrílica/PVC) é ideal para agentes químicos. Pontos +15.",
-                failMessage: "Erro! Agentes químicos causam irritação e queimaduras sem a luva química correta. HP -3."
-            },
-        ];
-
-        // Variáveis do Jogo
-        const totalDays = 10;
-        const situationsPerDay = 5;
-
-        let currentDay = 0;
-        let situationCount = 0;
-        let playerHP = 100;
-        let score = 0;
-        let dailySituations = [];
-        let currentSituationData = null;
-
-        // Elementos DOM
-        const startButton = document.getElementById('start-button');
-        const scenarioDisplay = document.getElementById('scenario-display');
-        const scoreDisplay = document.getElementById('score-display');
-        const dayDisplay = document.getElementById('day-display');
-        const healthBar = document.getElementById('health-bar');
-        const feedbackArea = document.getElementById('feedback-area');
-        const epiItems = document.querySelectorAll('.epi-item');
-        const inventoryItemsDiv = document.getElementById('inventory-items');
-
-        startButton.addEventListener('click', startGame);
-
-        // --- Funções de Controle do Jogo ---
-
-        function startGame() {
-            startButton.style.display = 'none';
-            currentDay = 1;
-            playerHP = 100;
-            score = 0;
-            
-            // CORREÇÃO: Chamamos updateHP(100) para garantir que o display inicial esteja correto (100% e verde)
-            updateHP(100); 
-            updateScore(0);
-            startDay();
-        }
-
-        function startDay() {
-            situationCount = 0;
-            dayDisplay.textContent = `Dia ${currentDay}/${totalDays}`;
-            
-            // Seleciona 5 situações aleatórias para o dia
-            dailySituations = selectRandomSituations(situationPool, situationsPerDay);
-            loadNextSituation();
-        }
-
-        function loadNextSituation() {
-            if (situationCount >= situationsPerDay) {
-                endDay();
-                return;
-            }
-
-            currentSituationData = dailySituations[situationCount];
-            situationCount++;
-
-            // Reset visual dos EPIs e listeners
-            epiItems.forEach(item => {
-                item.classList.remove('correct', 'incorrect');
-                item.removeEventListener('click', handleEPISelection);
+        if (s.type === 'multiple-choice') {
+            s.choices.forEach((c, i) => {
+                html += `<button class="choice-button" onclick="evaluateChoice(${c.isCorrect})">${c.text}</button>`;
             });
-            
-            feedbackArea.innerHTML = '';
+        } else {
+            html += `<p style="color:var(--amcor-red)"><strong>Selecione o EPI correto no inventário lateral.</strong></p>`;
+            enableEPISelection();
+        }
+        document.getElementById('scenario-display').innerHTML = html;
+        document.getElementById('feedback-area').innerHTML = '';
+    }
 
-            let scenarioHTML = `
-                <h2>Dia ${currentDay}, Situação ${situationCount}/${situationsPerDay}</h2>
-                <p><strong>${currentSituationData.title}</strong></p>
-                <p>${currentSituationData.description}</p>
-            `;
+    function enableEPISelection() {
+        document.querySelectorAll('.epi-item').forEach(img => {
+            img.onclick = () => {
+                const id = img.dataset.epiId;
+                showEPIInfo(id);
+                evaluateChoice(id === state.current.correctEPI, img);
+            };
+        });
+    }
 
-            if (currentSituationData.type === "multiple-choice") {
-                scenarioHTML += '<div id="choices-container" style="margin-top: 20px;">';
-                currentSituationData.choices.forEach((choice, index) => {
-                    scenarioHTML += `<button class="choice-button" data-index="${index}">${choice.text}</button>`;
-                });
-                scenarioHTML += '</div>';
-                scenarioDisplay.innerHTML = scenarioHTML;
-                
-                document.querySelectorAll('.choice-button').forEach(button => {
-                    button.addEventListener('click', handleMultipleChoice);
-                });
-                // Esconde inventário para perguntas de múltipla escolha
-                document.getElementById('inventory').style.display = 'none';
+    // Função que mostra a explicação (a alma da sua implementação)
+    function showEPIInfo(id) {
+        const info = epiKnowledge[id];
+        const box = document.getElementById('epi-explanation');
+        box.innerHTML = `<strong>${info.title}</strong>${info.text}`;
+        box.style.background = "#e3f2fd";
+        setTimeout(() => box.style.background = "#f8f9fa", 500);
+    }
 
-            } else { // Type: epi
-                scenarioHTML += `<p class="hint">Clique no EPI que você usaria.</p>`;
-                scenarioDisplay.innerHTML = scenarioHTML;
-                epiItems.forEach(item => item.addEventListener('click', handleEPISelection));
-                // Mostra inventário para perguntas de EPI
-                document.getElementById('inventory').style.display = 'block';
-            }
+    // Listeners iniciais para a tela de boas-vindas
+    document.querySelectorAll('.epi-item').forEach(img => {
+        img.addEventListener('click', () => showEPIInfo(img.dataset.epiId));
+    });
+
+    function evaluateChoice(isCorrect, element = null) {
+        const feedback = document.getElementById('feedback-area');
+        disableAll();
+
+        if (isCorrect) {
+            state.score += 20;
+            if (element) element.classList.add('correct');
+            feedback.innerHTML = `<div class="correct-text">✔ ${state.current.successMessage}</div>`;
+        } else {
+            state.hp -= 10;
+            if (element) element.classList.add('incorrect');
+            feedback.innerHTML = `<div class="incorrect-text">✘ ${state.current.failMessage}</div>`;
         }
 
-        function endDay() {
-            if (currentDay >= totalDays) {
-                endGame();
-                return;
-            }
+        state.day++;
+        updateUI();
+        setTimeout(nextSituation, 3500);
+    }
 
-            scenarioDisplay.innerHTML = `
-                <h2>Fim do Dia ${currentDay}!</h2>
-                <p>HP atual: <strong>${playerHP}%</strong> | Pontuação: **${score}**</p>
-                <p>Você resolveu ${situationsPerDay} situações. Prepare-se para o próximo turno!</p>
-                <button id="next-day-button">Iniciar Dia ${currentDay + 1}</button>
-            `;
-            document.getElementById('inventory').style.display = 'none';
-            document.getElementById('next-day-button').addEventListener('click', () => {
-                currentDay++;
-                startDay();
-            });
-        }
+    function updateUI() {
+        document.getElementById('day-display').innerText = `Dia ${Math.min(state.day, 10)}/10`;
+        document.getElementById('score-display').innerText = `${state.score} pts`;
+        const hb = document.getElementById('health-bar');
+        hb.style.width = `${state.hp}%`;
+        hb.innerText = `${state.hp}%`;
+        hb.style.backgroundColor = state.hp > 60 ? 'var(--color-correct)' : (state.hp > 30 ? '#ffc107' : 'var(--amcor-red)');
+    }
 
-        function endGame() {
-            let finalMessage = '';
-            let finalTitle = '';
+    function disableAll() {
+        document.querySelectorAll('.epi-item').forEach(i => i.onclick = null);
+        document.querySelectorAll('.choice-button').forEach(b => b.disabled = true);
+    }
 
-            if (playerHP >= 90) {
-                finalTitle = "🏆 VITÓRIA! JORNADA SEGURA CONCLUÍDA!";
-                finalMessage = `Parabéns, Líder de Segurança! Você completou 10 dias de trabalho com uma Saúde (HP) de **${playerHP}%** e Pontuação de **${score}**. Seu compromisso com a segurança e qualidade é um exemplo!`;
-            } else {
-                finalTitle = "❌ FALHA NA MISSÃO: HP ABAIXO DE 90%";
-                finalMessage = `Você concluiu os 10 dias, mas sua Saúde (HP) final foi de **${playerHP}%**. O objetivo de 90% não foi atingido devido a erros críticos. Revise suas escolhas de segurança.`;
-            }
+    function end(won) {
+        const result = won && state.hp >= 90 ? "🏆 GUARDIÃO AMCOR" : (won ? "✅ CONCLUÍDO" : "❌ TENTE NOVAMENTE");
+        document.getElementById('game-area').innerHTML = `
+            <div style="text-align:center; padding:40px; grid-column: 1 / span 2;">
+                <h1>${result}</h1>
+                <p>Você terminou com ${state.hp}% de HP e ${state.score} pontos.</p>
+                <button class="btn-action" onclick="window.location.reload()">Recomeçar</button>
+            </div>`;
+    }
+</script>
 
-            scenarioDisplay.innerHTML = `
-                <h2>${finalTitle}</h2>
-                <p>${finalMessage}</p>
-                <button onclick="window.location.reload()" id="start-button">Jogar Novamente</button>
-            `;
-            document.getElementById('inventory').style.display = 'none';
-        }
-
-
-        // --- Funções de Resposta ---
-
-        function handleMultipleChoice(event) {
-            const selectedIndex = parseInt(event.target.getAttribute('data-index'));
-            const choice = currentSituationData.choices[selectedIndex];
-            
-            // Desativa todos os botões de escolha
-            document.querySelectorAll('.choice-button').forEach(btn => {
-                btn.disabled = true;
-                btn.removeEventListener('click', handleMultipleChoice);
-            });
-
-            if (choice.isCorrect) {
-                event.target.style.backgroundColor = varColor('correct');
-                updateScore(score + (choice.rewardScore || 15));
-                displayFeedback(true, currentSituationData.successMessage);
-            } else {
-                event.target.style.backgroundColor = varColor('incorrect');
-                
-                // Marca a correta
-                const correctButton = Array.from(document.querySelectorAll('.choice-button')).find(btn => 
-                    currentSituationData.choices[parseInt(btn.getAttribute('data-index'))].isCorrect
-                );
-                if (correctButton) correctButton.style.backgroundColor = varColor('correct');
-
-                // APLICAÇÃO DA PENALIDADE CORRETA
-                updateHP(playerHP - (choice.penaltyHP || 2)); 
-                updateScore(score - (choice.penaltyScore || 10)); 
-                displayFeedback(false, currentSituationData.failMessage);
-            }
-
-            setTimeout(loadNextSituation, 3000); 
-        }
-
-        function handleEPISelection(event) {
-            const selectedEPI = event.target.getAttribute('data-epi-id');
-            const isCorrect = Array.isArray(currentSituationData.correctEPI) 
-                ? currentSituationData.correctEPI.includes(selectedEPI)
-                : selectedEPI === currentSituationData.correctEPI;
-
-            // Desativa temporariamente a seleção de EPIs
-            epiItems.forEach(item => item.removeEventListener('click', handleEPISelection));
-
-            if (isCorrect) {
-                event.target.classList.add('correct');
-                updateScore(score + 15);
-                displayFeedback(true, currentSituationData.successMessage);
-            } else {
-                event.target.classList.add('incorrect');
-                
-                // Marca a correta
-                const correctEPIElement = document.querySelector(`[data-epi-id="${currentSituationData.correctEPI}"]`);
-                if (correctEPIElement) {
-                    correctEPIElement.classList.add('correct');
-                }
-
-                // APLICAÇÃO DA PENALIDADE CORRETA
-                updateHP(playerHP - 3); 
-                updateScore(score - 10);
-                displayFeedback(false, currentSituationData.failMessage);
-            }
-            
-            setTimeout(loadNextSituation, 3000); 
-        }
-
-        // --- Funções de Utilitário e Display ---
-
-        function updateHP(newHP) {
-            // CORREÇÃO: Apenas atribui o novo valor limitado, resolvendo o problema de inicialização/decremento.
-            playerHP = Math.max(0, Math.min(100, newHP));
-            
-            healthBar.style.width = `${playerHP}%`;
-            healthBar.textContent = `${playerHP}%`;
-            
-            if (playerHP < 20) {
-                healthBar.style.backgroundColor = varColor('incorrect');
-            } else if (playerHP < 50) {
-                healthBar.style.backgroundColor = '#FFC107'; // Amarelo
-            } else {
-                healthBar.style.backgroundColor = varColor('correct');
-            }
-        }
-
-        function updateScore(newScore) {
-            score = Math.max(0, newScore);
-            scoreDisplay.textContent = `Pontuação: ${score}`;
-        }
-
-        function displayFeedback(isCorrect, message) {
-            feedbackArea.innerHTML = `<p class="${isCorrect ? 'correct-text' : 'incorrect-text'}">${message}</p>`;
-        }
-        
-        function varColor(type) {
-             return type === 'correct' ? '#4CAF50' : '#f44336';
-        }
-
-        function selectRandomSituations(pool, count) {
-            // Função para selecionar N situações aleatórias do pool
-            const shuffled = [...pool].sort(() => 0.5 - Math.random());
-            return shuffled.slice(0, count);
-        }
-    </script>
-    <a href="https://api.whatsapp.com/send?phone=5543920029039&text=Oi%20Julio!%20Encontrei%20um%20bug%20ou%20tenho%20uma%20sugestao%20para%20o%20SafeQuest:" 
-        target="_blank"
-        style="position:fixed; bottom:20px; right:20px; background:#25D366; color:white; padding:12px 20px; border-radius:50px; text-decoration:none; font-family:Arial, sans-serif; font-weight:bold; font-size:14px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index:10000; display:flex; align-items:center; gap:8px;">
-        <span>Reportar Bug (ERRO)
-        </span> 🐛
-    </a>
-</body>
-</html>
 </body>
 </html>
