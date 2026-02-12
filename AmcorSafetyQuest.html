@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MISSÃO DANO ZERO - Amcor</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+        /* --- ESTILOS DO LOADING SCANNER --- */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(circle, #001a33 0%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000000;
+            color: #5de6ff;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .scanner-container { text-align: center; }
+
+        .scanner-box {
+            position: relative;
+            width: 250px;
+            height: 150px;
+            border: 2px solid #5de6ff;
+            background: rgba(93, 230, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin: 20px auto;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(93, 230, 255, 0.2);
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: #5de6ff;
+            box-shadow: 0 0 15px #5de6ff, 0 0 5px #fff;
+            top: 0;
+            animation: scan-move 2s infinite ease-in-out;
+        }
+
+        #scan-icon { font-size: 40px; margin-bottom: 10px; }
+        #scan-text { font-weight: bold; letter-spacing: 2px; font-size: 14px; }
+
+        #scan-status-container {
+            width: 250px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        #scan-status-bar {
+            width: 0%;
+            height: 100%;
+            background: #5de6ff;
+            box-shadow: 0 0 10px #5de6ff;
+            transition: width 0.3s;
+        }
+
+        @keyframes scan-move {
+            0% { top: 0%; }
+            50% { top: 100%; }
+            100% { top: 0%; }
+        }
+
+        /* --- ANIMAÇÃO DE ERRO --- */
+        .flash-error {
+            animation: flash-red 0.5s ease-in-out;
+        }
+
+        @keyframes flash-red {
+            0% { background-color: #f0f0f0; }
+            50% { background-color: rgba(229, 0, 43, 0.5); }
+            100% { background-color: #f0f0f0; }
+        }
+
+        /* --- ESTILOS DO JOGO --- */
+        :root {
+            --amcor-blue: #004d99;
+            --amcor-red: #e5002b;
+            --color-correct: #4CAF50;
+            --color-incorrect: #f44336;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100%; 
+            max-width: 1100px;
+            background-color: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--amcor-blue);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #status-bar { display: flex; gap: 20px; align-items: center; font-weight: bold; }
+
+        #health-bar-container {
+            width: 130px; height: 18px;
+            background-color: rgba(255,255,255,0.3);
+            border-radius: 10px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+
+        #health-bar {
+            height: 100%; background-color: var(--color-correct);
+            transition: width 0.5s ease; font-size: 0.8em;
+            text-align: center; line-height: 18px; color: white;
+        }
+
+        main { padding: 30px; display: grid; grid-template-columns: 1fr; gap: 30px; }
+        @media (min-width: 850px) { main { grid-template-columns: 1fr 320px; } }
+
+        /* PAINEL DE DICAS ESTILIZADO */
+        #epi-explanation {
+            margin-bottom: 20px; padding: 18px; background: #f8f9fa;
+            border-left: 5px solid var(--amcor-blue); border-radius: 8px;
+            font-size: 0.95em; line-height: 1.5; min-height: 80px;
+        }
+
+        .explanation-popup {
+            background: #e3f2fd;
+            border: 2px solid var(--amcor-blue);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            animation: slideUp 0.5s ease-out;
+            text-align: left;
+            color: #333;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .epi-item {
+            width: 70px; height: 70px; cursor: pointer;
+            border: 3px solid #eee; border-radius: 12px;
+            padding: 5px; transition: all 0.2s; background: white; object-fit: contain;
+        }
+        .epi-item:hover { transform: scale(1.1); border-color: var(--amcor-blue); }
+        .correct { border-color: var(--color-correct) !important; box-shadow: 0 0 15px var(--color-correct); }
+        .incorrect { border-color: var(--color-incorrect) !important; box-shadow: 0 0 15px var(--color-incorrect); }
+
+        .choice-button {
+            display: block; width: 100%; padding: 16px; margin: 12px 0;
+            background: #fff; border: 2px solid #ddd; border-radius: 12px;
+            cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif;
+        }
+
+        .btn-action {
+            background-color: var(--amcor-red); color: white;
+            padding: 18px 40px; border: none; border-radius: 50px;
+            font-weight: bold; cursor: pointer; text-transform: uppercase;
+        }
+
+        #feedback-area { min-height: 50px; margin-top: 20px; font-weight: bold; }
+        .correct-text { color: var(--color-correct); background: #e8f5e9; padding: 10px; border-radius: 8px; }
+        .incorrect-text { color: var(--amcor-red); background: #ffebee; padding: 10px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="scanner-container">
+            <div id="start-scan-wrapper">
+                <button id="btn-iniciar-scan" class="btn-action" style="background-color: #5de6ff; color: #000; box-shadow: 0 0 20px #5de6ff;">
+                    INICIAR SCANNER DE EPIs 🛡️
+                </button>
+            </div>
+            <div id="scanner-main-content" style="display: none;">
+                <div class="scanner-box">
+                    <div class="scan-line"></div>
+                    <div class="scanner-content">
+                        <span id="scan-icon">🛡️</span>
+                        <p id="scan-text">INICIALIZANDO...</p>
+                    </div>
+                </div>
+                <div id="scan-status-container">
+                    <div id="scan-status-bar"></div>
+                </div>
+            </div>
+            <p style="font-size: 10px; margin-top: 15px; opacity: 0.7; color: #5de6ff;">SISTEMA DE SEGURANÇA AMCOR v2.0</p>
+        </div>
+    </div>
+
+    <audio id="som-loading" src="carregandomissaodanozero.mp3" loop></audio>
+    <audio id="som-clique-start" src="https://codeskulptor-demos.commondatastorage.googleapis.com/descent/gotitem.mp3"></audio>
+
+    <div id="game-container">
+        <header>
+            <h1>🛡️ Amcor Missão Dano Zero</h1>
+            <div id="status-bar">
+                <span id="day-display">Dia 0/10</span>
+                <div id="health-bar-container">
+                    <div id="health-bar" style="width: 100%;">100%</div>
+                </div>
+                <span id="score-display">0 pts</span>
+            </div>
+        </header>
+
+        <main id="game-area">
+            <div id="scenario-display">
+                <h2>Bem-vindo à Jornada!</h2>
+                <p>Seu objetivo é completar 10 dias de turno mantendo sua <strong>Saúde (HP) acima de 90%</strong>.</p>
+                <p>Clique nos EPIs ao lado para conhecer suas funções antes de começar.</p>
+                <br>
+                <button class="btn-action" id="start-button">Iniciar 1º Dia</button>
+            </div>
+
+            <div id="inventory-panel">
+                <div id="epi-explanation-wrapper">
+                    <h3 style="margin-top:0">Dica do Especialista</h3>
+                    <div id="epi-explanation">Clique em um equipamento para ver sua importância técnica aqui antes de começar.</div>
+                </div>
+                
+                <h3>Seu Inventário</h3>
+                <div id="inventory-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                    <img src="luvaanticorte.png" class="epi-item" data-epi-id="luva-anticorte" title="Luva Anticorte">
+                    <img src="luvalatex.jpg" class="epi-item" data-epi-id="luva-latex" title="Luva Latex">
+                    <img src="oculosamplavisao.webp" class="epi-item" data-epi-id="oculos-ampla" title="Ampla Visão">
+                    <img src="oculosdeseguranca.jpg" class="epi-item" data-epi-id="oculos-seguranca" title="Óculos Segurança">
+                    <img src="bonecasquete.webp" class="epi-item" data-epi-id="bone-casquete" title="Boné Casquete">
+                    <img src="luvamangote.jpg" class="epi-item" data-epi-id="mangote" title="Mangote">
+                </div>
+                <div id="feedback-area"></div>
+            </div>
+        </main>
+    </div>
+
+    <a href="https://api.whatsapp.com/send?phone=5543920029039&text=Bug%20Report:" target="_blank" style="position:fixed; bottom:20px; right:20px; background:#25D366; color:white; padding:12px 20px; border-radius:50px; text-decoration:none; font-family:sans-serif; font-weight:bold; font-size:14px; z-index:10000; display:flex; align-items:center; gap:8px;">
+        <span>REPORTAR ERROS OU ENVIAR SUGESTÕES</span> 🐛
+    </a>
+
+<script>
+    const audioErro = new Audio('errou.mp3'); 
+    const audioAcerto = new Audio('acertou.mp3'); // Som de sucesso/conquista
+    let state = { day: 1, hp: 100, score: 0, current: null, gameActive: false };
+
+    // Lógica do Loading
+    window.addEventListener('load', function() {
+        const btnIniciar = document.getElementById('btn-iniciar-scan');
+        const somLoading = document.getElementById('som-loading');
+        btnIniciar.onclick = function() {
+            document.getElementById('start-scan-wrapper').style.display = 'none';
+            document.getElementById('scanner-main-content').style.display = 'block';
+            somLoading.volume = 0.4;
+            somLoading.play();
+            let step = 0;
+            const etapas = [{p:25, t:"CONECTANDO..."}, {p:50, t:"LENDO EPIs..."}, {p:75, t:"SISTEMA AMCOR..."}, {p:100, t:"PRONTO!"}];
+            const interval = setInterval(() => {
+                if(step < etapas.length){
+                    document.getElementById('scan-status-bar').style.width = etapas[step].p + "%";
+                    document.getElementById('scan-text').innerText = etapas[step].t;
+                    step++;
+                } else {
+                    clearInterval(interval);
+                    document.getElementById('loading-screen').style.opacity = "0";
+                    setTimeout(() => { document.getElementById('loading-screen').style.display = "none"; somLoading.pause(); }, 800);
+                }
+            }, 800);
+        };
+    });
+
+    const epiKnowledge = {
+        "luva-anticorte": { title: "🧤 Luva Anticorte", text: "Proteção mecânica essencial para manuseio de lâminas e bordas de bobinas." },
+        "luva-latex": { title: "🧪 Luva Química", text: "Impermeável contra solventes e agentes corrosivos." },
+        "oculos-ampla": { title: "🥽 Óculos Ampla Visão", text: "Vedação total contra respingos líquidos e vapores químicos." },
+        "oculos-seguranca": { title: "👓 Óculos de Segurança", text: "Proteção frontal contra projeção de partículas sólidas." },
+        "bone-casquete": { title: "🧢 Boné Casquete", text: "Protege o crânio contra impactos em objetos fixos e quinas." },
+        "mangote": { title: "🛡️ Mangote de Proteção", text: "Protege o antebraço contra cortes e abrasão." }
+    };
+
+// 2. Pool de Situações Expandido (20 situações para máxima variedade)
+    const situationPool = [
+    { 
+        id: 'S1', type: "multiple-choice", title: "Prioridade Amcor", 
+        description: "O supervisor pede pressa e sugere pular o Intervalo de Segurança. O que fazer?", 
+        choices: [{ text: "Acelerar produção.", isCorrect: false }, { text: "Fazer o Intervalo de Segurança.", isCorrect: true }], 
+        successMessage: "Correto! Segurança em 1º lugar.", failMessage: "Errado! Produção não justifica riscos. HP -10" 
+    },
+    { 
+        id: 'S2', type: "epi", title: "Corte de Filme", 
+        description: "Você vai realizar o corte lateral de uma bobina. Qual o EPI Vital para as mãos?", 
+        correctEPI: "luva-anticorte", 
+        successMessage: "Certo! Mãos protegidas contra cortes.", failMessage: "Risco de corte! O EPI correto era a Luva Anticorte. HP -10" 
+    },
+    { 
+        id: 'S3', type: "multiple-choice", title: "Bloqueio LOTO", 
+        description: "Após bloquear as energias em uma manutenção, qual o próximo passo obrigatório?", 
+        choices: [{ text: "Iniciar o trabalho.", isCorrect: false }, { text: "Testar Energia Zero.", isCorrect: true }], 
+        successMessage: "Seguro! Energia Zero confirmada.", failMessage: "Perigo! Sempre teste o zero antes de tocar na máquina. HP -15" 
+    },
+    { 
+        id: 'S4', type: "epi", title: "Troca de Cilindro", 
+        description: "Você precisa trocar um cilindro pesado e há risco de bater a cabeça em partes baixas da máquina. O que usar?", 
+        correctEPI: "bone-casquete", 
+        successMessage: "Boa! O casquete protege contra impactos em objetos fixos.", failMessage: "Cuidado! Bater a cabeça pode ser fatal. Use o Casquete. HP -10" 
+    },
+    { 
+        id: 'S5', type: "multiple-choice", title: "Postura Ergonômica", 
+        description: "Ao levantar uma caixa pesada do chão, qual a postura correta?", 
+        choices: [{ text: "Dobrar a coluna.", isCorrect: false }, { text: "Dobrar os joelhos e manter a coluna reta.", isCorrect: true }], 
+        successMessage: "Correto! Preserve sua coluna.", failMessage: "Errado! Isso causa lesões graves na lombar. HP -10" 
+    },
+    { 
+        id: 'S6', type: "epi", title: "Limpeza de Clichê", 
+        description: "Você usará solventes para limpar as chapas de impressão. Qual proteção ocular veda contra vapores e respingos?", 
+        correctEPI: "oculos-ampla", 
+        successMessage: "Perfeito! A vedação 360º protege contra respingos químicos.", failMessage: "Risco químico! Óculos comuns não vedam contra vapores. HP -15" 
+    },
+    { 
+        id: 'S7', type: "multiple-choice", title: "Área de Empilhadeiras", 
+        description: "Você está atravessando a fábrica e uma empilhadeira se aproxima. Qual o procedimento?", 
+        choices: [{ text: "Manter contato visual com o operador e esperar.", isCorrect: true }, { text: "Passar correndo na frente dela.", isCorrect: false }], 
+        successMessage: "Seguro! O contato visual garante que você foi visto.", failMessage: "Perigo! Jamais presuma que o operador te viu. HP -20" 
+    },
+    { 
+        id: 'S8', type: "epi", title: "Abastecimento de Tinta", 
+        description: "Ao despejar tinta líquida no balde, há risco de respingos químicos nos braços. O que usar?", 
+        correctEPI: "mangote", 
+        successMessage: "Correto! O mangote protege seus antebraços contra absorção química.", failMessage: "Atenção! Sua pele absorve contaminantes. Use o Mangote. HP -10" 
+    },
+    { 
+        id: 'S9', type: "multiple-choice", title: "Derramamento", 
+        description: "Você encontrou um pequeno vazamento de óleo no piso. O que fazer imediatamente?", 
+        choices: [{ text: "Sinalizar a área e limpar o local.", isCorrect: true }, { text: "Ignorar, pois não foi você quem sujou.", isCorrect: false }], 
+        successMessage: "Atitude Proativa! Evitou uma queda.", failMessage: "Risco de queda! Óleo no chão é um perigo crítico. HP -10" 
+    },
+    { 
+        id: 'S10', type: "epi", title: "Preparação Química", 
+        description: "Você vai misturar aditivos químicos que podem causar dermatite em contato direto. Qual a luva certa?", 
+        correctEPI: "luva-latex", 
+        successMessage: "Isso aí! Luvas impermeáveis para proteção química.", failMessage: "Queimadura química! Luvas de pano não protegem contra líquidos. HP -10" 
+    },
+    { 
+        id: 'S11', type: "multiple-choice", title: "Botão de Emergência", 
+        description: "Você viu um colega com a mão presa em um rolo. Qual a primeira ação?", 
+        choices: [{ text: "Gritar por socorro.", isCorrect: false }, { text: "Acionar o botão de emergência mais próximo.", isCorrect: true }], 
+        successMessage: "Rápido e certeiro! Parar a máquina é a prioridade.", failMessage: "Tempo perdido! O botão de emergência deve ser a 1ª ação. HP -20" 
+    },
+    { 
+        id: 'S12', type: "epi", title: "Inspeção de Máquina", 
+        description: "Inspecionando a área de engrenagens durante o setup. Proteja seus olhos contra partículas que podem saltar.", 
+        correctEPI: "oculos-seguranca", 
+        successMessage: "Correto! Proteção frontal contra partículas volantes.", failMessage: "Risco ocular! Partículas podem atingir seus olhos sem proteção. HP -10" 
+    },
+    { 
+        id: 'S13', type: "multiple-choice", title: "Uso de Celular", 
+        description: "Você precisa responder uma mensagem urgente no WhatsApp enquanto caminha pela área produtiva.", 
+        choices: [{ text: "Parar em local seguro fora da rota para usar.", isCorrect: true }, { text: "Responder enquanto caminha.", isCorrect: false }], 
+        successMessage: "Foco total! Evitou uma colisão ou queda.", failMessage: "Distração fatal! Celular em áreas produtivas causa acidentes graves. HP -10" 
+    },
+    { 
+        id: 'S14', type: "epi", title: "Limpeza de Rolo Aniloc", 
+        description: "Manuseando solventes fortes para a limpeza profunda dos cilindros. Qual luva garante a impermeabilidade?", 
+        correctEPI: "luva-latex", 
+        successMessage: "Excelente! A luva química evita o contato dérmico nocivo.", failMessage: "Erro perigoso! Luvas comuns absorvem o produto e pioram a queimadura. HP -10" 
+    },
+    { 
+        id: 'S15', type: "multiple-choice", title: "Ferramenta Manual", 
+        description: "Você percebe que o estilete de segurança está com a lâmina gasta e travando.", 
+        choices: [{ text: "Continuar usando com mais força.", isCorrect: false }, { text: "Substituir a lâmina imediatamente.", isCorrect: true }], 
+        successMessage: "Segurança primeiro! Ferramenta cega exige força e causa escape.", failMessage: "Risco de escape! Ferramenta ruim é um acidente anunciado. HP -10" 
+    },
+    { 
+        id: 'S16', type: "epi", title: "Acesso a Painel Energizado", 
+        description: "Você vai abrir um painel para conferir uma fiação. Embora não vá tocar, há risco de arcos. O que usar nos olhos?", 
+        correctEPI: "oculos-seguranca", 
+        successMessage: "Correto! Óculos de proteção são o mínimo para inspeção visual.", failMessage: "Risco de projeção! Proteja sempre seus olhos. HP -10" 
+    },
+    { 
+        id: 'S17', type: "multiple-choice", title: "Fumar na Fábrica", 
+        description: "Onde é permitido fumar dentro da unidade Amcor?", 
+        choices: [{ text: "Em qualquer lugar aberto.", isCorrect: false }, { text: "Apenas nos fumódromos sinalizados.", isCorrect: true }], 
+        successMessage: "Respeito às normas! Evitou riscos de incêndio.", failMessage: "Perigo de Incêndio! Respeite as áreas restritas. HP -15" 
+    },
+    { 
+        id: 'S18', type: "epi", title: "Ajuste de Bobina", 
+        description: "Ao ajustar as bordas do filme plástico em movimento, seus braços ficam próximos a partes cortantes. Use:", 
+        correctEPI: "mangote", 
+        successMessage: "Seguro! O mangote protege contra cortes acidentais no antebraço.", failMessage: "Risco de laceração! Seus braços estão expostos. HP -10" 
+    },
+    { 
+        id: 'S19', type: "multiple-choice", title: "Organização (5S)", 
+        description: "Você terminou o setup e sobraram restos de fita e plástico no chão.", 
+        choices: [{ text: "Limpar e descartar nos coletores corretos.", isCorrect: true }, { text: "Deixar para a equipe da limpeza.", isCorrect: false }], 
+        successMessage: "Ambiente limpo é ambiente seguro! Parabéns.", failMessage: "Desorganização gera tropeços. O 5S é responsabilidade de todos. HP -10" 
+    },
+    { 
+        id: 'S20', type: "epi", title: "Retirada de Rebarba", 
+        description: "Usando uma espátula para retirar rebarbas plásticas rígidas que podem voar no seu rosto. Qual o EPI?", 
+        correctEPI: "oculos-seguranca", 
+        successMessage: "Isso! Proteção contra impactos de partículas sólidas.", failMessage: "Cuidado! Rebarbas rígidas podem causar lesões oculares sérias. HP -10" 
+    }
+    ];
+    document.getElementById('start-button').onclick = startGame;
+
+    function startGame() {
+        document.getElementById('som-clique-start').play();
+        state.gameActive = true;
+        state.day = 1; state.hp = 100; state.score = 0;
+        document.getElementById('epi-explanation-wrapper').style.display = 'none'; // Esconde dica ao começar
+        updateUI();
+        nextSituation();
+    }
+
+function nextSituation() {
+        if (state.hp <= 0) return end(false);
+        if (state.day > 10) return end(true);
+        
+        // Sorteia uma nova situação
+        state.current = situationPool[Math.floor(Math.random() * situationPool.length)];
+        
+        // LIMPEZA DAS MARCAÇÕES VISUAIS: Remove as bordas dos EPIs antes de renderizar a nova tela
+        document.querySelectorAll('.epi-item').forEach(img => {
+            img.classList.remove('correct', 'incorrect');
+        });
+
+        renderSituation();
+    }
+
+    function renderSituation() {
+        const s = state.current;
+        let html = `<h2>Dia ${state.day}/10</h2><p><strong>${s.title}</strong></p><p>${s.description}</p>`;
+        
+        if (s.type === 'multiple-choice') {
+            s.choices.forEach(c => {
+                html += `<button class="choice-button" onclick="evaluateChoice(${c.isCorrect})">${c.text}</button>`;
+            });
+        } else {
+            html += `<p style="color:var(--amcor-red)"><strong>Selecione o EPI no inventário lateral.</strong></p>`;
+            enableEPISelection();
+        }
+        
+        document.getElementById('scenario-display').innerHTML = html;
+        document.getElementById('feedback-area').innerHTML = '';
+    }
+
+function evaluateChoice(isCorrect, element = null) {
+    const feedback = document.getElementById('feedback-area');
+    disableAll();
+
+    let infoHTML = '';
+    if (state.current.type === 'epi') {
+        const info = epiKnowledge[state.current.correctEPI];
+        infoHTML = `<div class="explanation-popup"><strong>💡 DICA TÉCNICA:</strong><br>${info.title}: ${info.text}</div>`;
+    }
+
+    if (isCorrect) {
+        state.score += 20;
+        if (element) element.classList.add('correct');
+        
+        // TOCAR SOM DE ACERTO
+        audioAcerto.currentTime = 0; // Reinicia o som caso clique rápido
+        audioAcerto.play().catch(() => {}); 
+
+        feedback.innerHTML = `<div class="correct-text">✔ ${state.current.successMessage}</div>${infoHTML}`;
+    } else {
+        state.hp -= 10;
+        if (element) element.classList.add('incorrect');
+        
+        // TOCAR SOM DE ERRO
+        audioErro.currentTime = 0;
+        audioErro.play().catch(() => {});
+
+        feedback.innerHTML = `<div class="incorrect-text">✘ ${state.current.failMessage}</div>${infoHTML}`;
+        document.body.classList.add('flash-error');
+        setTimeout(() => document.body.classList.remove('flash-error'), 500);
+    }
+
+    state.day++;
+    updateUI();
+    setTimeout(nextSituation, 5000); 
+}
+
+function updateUI() {
+        document.getElementById('day-display').innerText = `Dia ${Math.min(state.day, 10)}/10`;
+        document.getElementById('score-display').innerText = `${state.score} pts`;
+        const hb = document.getElementById('health-bar');
+        hb.style.width = `${state.hp}%`;
+        hb.innerText = `${state.hp}%`;
+        hb.style.backgroundColor = state.hp > 60 ? 'var(--color-correct)' : (state.hp > 30 ? '#ffc107' : 'var(--amcor-red)');
+    }
+
+    function enableEPISelection() {
+        document.querySelectorAll('.epi-item').forEach(img => {
+            img.onclick = () => evaluateChoice(img.dataset.epiId === state.current.correctEPI, img);
+        });
+    }
+
+    // Estudo inicial (apenas quando o jogo não começou)
+    document.querySelectorAll('.epi-item').forEach(img => {
+        img.addEventListener('click', () => {
+            if(!state.gameActive) {
+                const info = epiKnowledge[img.dataset.epiId];
+                document.getElementById('epi-explanation').innerHTML = `<strong>${info.title}</strong><br>${info.text}`;
+            }
+        });
+    });
+
+    function disableAll() {
+        document.querySelectorAll('.epi-item').forEach(i => i.onclick = null);
+        document.querySelectorAll('.choice-button').forEach(b => b.disabled = true);
+    }
+
+    function end(won) {
+        const result = won && state.hp >= 90 ? "🏆 GUARDIÃO AMCOR" : (won ? "✅ CONCLUÍDO" : "❌ TENTE NOVAMENTE");
+        document.getElementById('game-area').innerHTML = `
+            <div style="text-align:center; padding:40px;">
+                <h1>${result}</h1>
+                <p>HP Final: ${state.hp}% | Pontos: ${state.score}</p>
+                <button class="btn-action" onclick="window.location.reload()">Recomeçar</button>
+            </div>`;
+    }
+</script>
+</body>
+</html>
