@@ -366,7 +366,7 @@
                 html += `<button class="choice-button" onclick="evaluateChoice(${c.isCorrect})">${c.text}</button>`;
             });
         } else {
-            html += `<p style="color:var(--amcor-red); font-weight:bold; animation: pulse 1s infinite;">⚠️ SELECIONE O EPI NO PAINEL AO LADO!</p>`;
+            html += `<p style="color:var(--amcor-red); font-weight:bold; animation: pulse 1s infinite;">⚠️ SELECIONE O EPI NO PAINEL DE INVENTARIO!</p>`;
             enableEPISelection();
         }
         document.getElementById('scenario-display').innerHTML = html;
