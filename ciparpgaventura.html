@@ -15,6 +15,56 @@
             100% { opacity: 0.4; }
         }
 
+        /* Estilos do Ranking e Formulário Final */
+.ranking-container {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 15px;
+    margin-top: 20px;
+    border: 1px solid #ddd;
+}
+
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--amcor-blue);
+}
+
+.input-group input, .input-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+}
+
+.ranking-table th {
+    background: var(--amcor-blue);
+    color: white;
+    padding: 10px;
+}
+
+.ranking-table td {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.ranking-table tr:nth-child(even) { background: #f2f2f2; }
+
         /* --- ESTILOS DO LOADING SCANNER --- */
         #loading-screen {
             position: fixed;
@@ -446,18 +496,119 @@
         document.querySelectorAll('.choice-button').forEach(b => b.disabled = true);
     }
 
-    function end(won) {
-        toggleInventory(false);
-        const result = won && state.hp >= 90 ? "🏆 GUARDIÃO AMCOR" : (won ? "✅ CONCLUÍDO" : "❌ TENTE NOVAMENTE");
-        if(won && state.hp >= 90) lancarConfetes(); 
-        document.getElementById('game-area').innerHTML = `
-            <div style="text-align:center; padding:40px;">
-                <h1>${result}</h1>
-                <p>HP Final: ${state.hp}% | Pontos: ${state.score}</p>
-                <button class="btn-action" onclick="window.location.reload()">Recomeçar</button>
-            </div>`;
+// Substitua sua função end(won) por esta:
+function end(won) {
+    toggleInventory(false);
+    const result = won && state.hp >= 90 ? "🏆 GUARDIÃO AMCOR" : (won ? "✅ CONCLUÍDO" : "❌ TENTE NOVAMENTE");
+    if(won && state.hp >= 90) lancarConfetes(); 
+    
+    document.getElementById('game-area').innerHTML = `
+        <div style="text-align:center; padding:20px;">
+            <h1>${result}</h1>
+            <p style="font-size: 1.2em;">HP Final: <strong>${state.hp}%</strong> | Pontos: <strong>${state.score}</strong></p>
+            
+            <div id="save-score-area" class="ranking-container">
+                <h3>Registrar no Placar de Líderes</h3>
+                <div class="input-group">
+                    <label>Seu Nome:</label>
+                    <input type="text" id="player-name" placeholder="Digite seu nome">
+                </div>
+                <div class="input-group">
+                    <label>Seu Setor:</label>
+                    <select id="player-sector">
+                        <option value="Produção">Produção</option>
+                        <option value="Logística">Logística</option>
+                        <option value="Qualidade">Qualidade</option>
+                        <option value="Manutenção">Manutenção</option>
+                        <option value="Administrativo">Administrativo</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Seu Turno:</label>
+                    <select id="player-shift">
+                        <option value="1º Turno">Turno A</option>
+                        <option value="2º Turno">Turno B</option>
+                        <option value="3º Turno">Turno C</option>
+                        <option value="Comercial">Comercial</option>
+                    </select>
+                </div>
+                <button class="btn-action" onclick="saveRanking()">SALVAR E VER RANKING</button>
+            </div>
+
+            <div id="leaderboard-area" style="display:none;">
+                <h3>📊 Ranking de Segurança</h3>
+                <table class="ranking-table" id="ranking-list">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Nome</th>
+                            <th>Setor</th>
+                            <th>Turno</th>
+                            <th>Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <br>
+                <button class="btn-action" onclick="window.location.reload()">Jogar Novamente</button>
+            </div>
+        </div>`;
+}
+
+// Funções para gerenciar o Ranking no LocalStorage
+function saveRanking() {
+    const name = document.getElementById('player-name').value;
+    const sector = document.getElementById('player-sector').value;
+    const shift = document.getElementById('player-shift').value;
+
+    if (!name) {
+        alert("Por favor, digite seu nome!");
+        return;
     }
 
+    const entry = {
+        name: name,
+        sector: sector,
+        shift: shift,
+        score: state.score,
+        hp: state.hp,
+        date: new Date().toLocaleDateString()
+    };
+
+    // Pega os dados existentes ou cria um array vazio
+    let leaderboard = JSON.parse(localStorage.getItem('amcor_leaderboard')) || [];
+    leaderboard.push(entry);
+
+    // Ordena por Pontos (descendente) e depois por HP (descendente)
+    leaderboard.sort((a, b) => b.score - a.score || b.hp - a.hp);
+
+    // Salva apenas os top 10
+    leaderboard = leaderboard.slice(0, 10);
+    localStorage.setItem('amcor_leaderboard', JSON.stringify(leaderboard));
+
+    displayLeaderboard();
+}
+
+function displayLeaderboard() {
+    document.getElementById('save-score-area').style.display = 'none';
+    document.getElementById('leaderboard-area').style.display = 'block';
+    
+    const leaderboard = JSON.parse(localStorage.getItem('amcor_leaderboard')) || [];
+    const tbody = document.querySelector('#ranking-list tbody');
+    tbody.innerHTML = '';
+
+    leaderboard.forEach((data, index) => {
+        const row = `
+            <tr>
+                <td>${index + 1}º</td>
+                <td>${data.name}</td>
+                <td>${data.sector}</td>
+                <td>${data.shift}</td>
+                <td><strong>${data.score}</strong></td>
+            </tr>`;
+        tbody.innerHTML += row;
+    });
+}
     // --- LÓGICA DE ÁUDIO E TRANSIÇÃO ---
     const introScreen = document.getElementById('intro-screen');
     const somIntroducao = new Audio('missaodanozero.mp3'); 
