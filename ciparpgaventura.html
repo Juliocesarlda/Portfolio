@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MISSÃO DANO ZERO - Amcor</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-    @keyframes pulse {
-        0% { opacity: 0.4; }
-        50% { opacity: 1; }
-        100% { opacity: 0.4; }
-    }
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
 
         /* --- ESTILOS DO LOADING SCANNER --- */
         #loading-screen {
@@ -149,7 +150,22 @@
         main { padding: 30px; display: grid; grid-template-columns: 1fr; gap: 30px; }
         @media (min-width: 850px) { main { grid-template-columns: 1fr 320px; } }
 
-        /* PAINEL DE DICAS ESTILIZADO */
+        /* PAINEL DE INVENTÁRIO (ESCONDIDO POR PADRÃO) */
+        #inventory-panel {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ddd;
+        }
+
+        #inventory-panel.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         #epi-explanation {
             margin-bottom: 20px; padding: 18px; background: #f8f9fa;
             border-left: 5px solid var(--amcor-blue); border-radius: 8px;
@@ -201,8 +217,8 @@
 <body>
 
     <div id="intro-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000 url('missaodanozero.png') no-repeat center center; background-size: contain; z-index: 3000000; cursor: pointer; display: flex; justify-content: center; align-items: flex-end;">
-    <p style="color: white; font-family: 'Montserrat', sans-serif; margin-bottom: 30px; text-shadow: 2px 2px 10px #000; font-weight: bold; animation: pulse 1.5s infinite;">CLIQUE PARA INICIAR</p>
-</div>
+        <p style="color: white; font-family: 'Montserrat', sans-serif; margin-bottom: 30px; text-shadow: 2px 2px 10px #000; font-weight: bold; animation: pulse 1.5s infinite;">CLIQUE PARA INICIAR</p>
+    </div>
 
     <div id="loading-screen">
         <div class="scanner-container">
@@ -277,247 +293,127 @@
 
 <script>
     const audioErro = new Audio('errou.mp3'); 
-    const audioAcerto = new Audio('acertou.mp3'); // Som de sucesso/conquista
-    let state = { day: 1, hp: 100, score: 0, current: null, gameActive: false };
-
-    // Lógica do Loading
-    window.addEventListener('load', function() {
-        const btnIniciar = document.getElementById('btn-iniciar-scan');
-        const somLoading = document.getElementById('som-loading');
-        btnIniciar.onclick = function() {
-            document.getElementById('start-scan-wrapper').style.display = 'none';
-            document.getElementById('scanner-main-content').style.display = 'block';
-            somLoading.volume = 0.4;
-            somLoading.play();
-            let step = 0;
-            const etapas = [{p:25, t:"CONECTANDO..."}, {p:50, t:"LENDO EPIs..."}, {p:75, t:"SISTEMA AMCOR..."}, {p:100, t:"PRONTO!"}];
-            const interval = setInterval(() => {
-                if(step < etapas.length){
-                    document.getElementById('scan-status-bar').style.width = etapas[step].p + "%";
-                    document.getElementById('scan-text').innerText = etapas[step].t;
-                    step++;
-                } else {
-                    clearInterval(interval);
-                    document.getElementById('loading-screen').style.opacity = "0";
-                    setTimeout(() => { document.getElementById('loading-screen').style.display = "none"; somLoading.pause(); }, 800);
-                }
-            }, 800);
-        };
-    });
+    const audioAcerto = new Audio('acertou.mp3'); 
+    let state = { day: 1, hp: 100, score: 0, current: null, gameActive: false, questionsRemaining: [] };
 
     const epiKnowledge = {
         "luva-anticorte": { title: "🧤 Luva Anticorte", text: "Proteção mecânica essencial para manuseio de lâminas e bordas de bobinas." },
-        "luva-latex": { title: "🧪 Luva Química", text: "Impermeável contra solventes e agentes corrosivos." },
+        "luva-latex": { title: "🧪 Luva-latex", text: "Impermeável contra solventes e agentes corrosivos." },
         "oculos-ampla": { title: "🥽 Óculos Ampla Visão", text: "Vedação total contra respingos líquidos e vapores químicos." },
         "oculos-seguranca": { title: "👓 Óculos de Segurança", text: "Proteção frontal contra projeção de partículas sólidas." },
         "bone-casquete": { title: "🧢 Boné Casquete", text: "Protege o crânio contra impactos em objetos fixos e quinas." },
         "mangote": { title: "🛡️ Mangote de Proteção", text: "Protege o antebraço contra cortes e abrasão." }
     };
 
-// 2. Pool de Situações Expandido (20 situações para máxima variedade)
     const situationPool = [
-    { 
-        id: 'S1', type: "multiple-choice", title: "Prioridade Amcor", 
-        description: "O supervisor pede pressa e sugere pular o Intervalo de Segurança. O que fazer?", 
-        choices: [{ text: "Acelerar produção.", isCorrect: false }, { text: "Fazer o Intervalo de Segurança.", isCorrect: true }], 
-        successMessage: "Correto! Segurança em 1º lugar.", failMessage: "Errado! Produção não justifica riscos. HP -10" 
-    },
-    { 
-        id: 'S2', type: "epi", title: "Corte de Filme", 
-        description: "Você vai realizar o corte lateral de uma bobina. Qual o EPI Vital para as mãos?", 
-        correctEPI: "luva-anticorte", 
-        successMessage: "Certo! Mãos protegidas contra cortes.", failMessage: "Risco de corte! O EPI correto era a Luva Anticorte. HP -10" 
-    },
-    { 
-        id: 'S3', type: "multiple-choice", title: "Bloqueio LOTO", 
-        description: "Após bloquear as energias em uma manutenção, qual o próximo passo obrigatório?", 
-        choices: [{ text: "Iniciar o trabalho.", isCorrect: false }, { text: "Testar Energia Zero.", isCorrect: true }], 
-        successMessage: "Seguro! Energia Zero confirmada.", failMessage: "Perigo! Sempre teste o zero antes de tocar na máquina. HP -15" 
-    },
-    { 
-        id: 'S4', type: "epi", title: "Troca de Cilindro", 
-        description: "Você precisa trocar um cilindro pesado e há risco de bater a cabeça em partes baixas da máquina. O que usar?", 
-        correctEPI: "bone-casquete", 
-        successMessage: "Boa! O casquete protege contra impactos em objetos fixos.", failMessage: "Cuidado! Bater a cabeça pode ser fatal. Use o Casquete. HP -10" 
-    },
-    { 
-        id: 'S5', type: "multiple-choice", title: "Postura Ergonômica", 
-        description: "Ao levantar uma caixa pesada do chão, qual a postura correta?", 
-        choices: [{ text: "Dobrar a coluna.", isCorrect: false }, { text: "Dobrar os joelhos e manter a coluna reta.", isCorrect: true }], 
-        successMessage: "Correto! Preserve sua coluna.", failMessage: "Errado! Isso causa lesões graves na lombar. HP -10" 
-    },
-    { 
-        id: 'S6', type: "epi", title: "Limpeza de Clichê", 
-        description: "Você usará solventes para limpar as chapas de impressão. Qual proteção ocular veda contra vapores e respingos?", 
-        correctEPI: "oculos-ampla", 
-        successMessage: "Perfeito! A vedação 360º protege contra respingos químicos.", failMessage: "Risco químico! Óculos comuns não vedam contra vapores. HP -15" 
-    },
-    { 
-        id: 'S7', type: "multiple-choice", title: "Área de Empilhadeiras", 
-        description: "Você está atravessando a fábrica e uma empilhadeira se aproxima. Qual o procedimento?", 
-        choices: [{ text: "Manter contato visual com o operador e esperar.", isCorrect: true }, { text: "Passar correndo na frente dela.", isCorrect: false }], 
-        successMessage: "Seguro! O contato visual garante que você foi visto.", failMessage: "Perigo! Jamais presuma que o operador te viu. HP -20" 
-    },
-    { 
-        id: 'S8', type: "epi", title: "Abastecimento de Tinta", 
-        description: "Ao despejar tinta líquida no balde, há risco de respingos químicos nos braços. O que usar?", 
-        correctEPI: "mangote", 
-        successMessage: "Correto! O mangote protege seus antebraços contra absorção química.", failMessage: "Atenção! Sua pele absorve contaminantes. Use o Mangote. HP -10" 
-    },
-    { 
-        id: 'S9', type: "multiple-choice", title: "Derramamento", 
-        description: "Você encontrou um pequeno vazamento de óleo no piso. O que fazer imediatamente?", 
-        choices: [{ text: "Sinalizar a área e limpar o local.", isCorrect: true }, { text: "Ignorar, pois não foi você quem sujou.", isCorrect: false }], 
-        successMessage: "Atitude Proativa! Evitou uma queda.", failMessage: "Risco de queda! Óleo no chão é um perigo crítico. HP -10" 
-    },
-    { 
-        id: 'S10', type: "epi", title: "Preparação Química", 
-        description: "Você vai misturar aditivos químicos que podem causar dermatite em contato direto. Qual a luva certa?", 
-        correctEPI: "luva-latex", 
-        successMessage: "Isso aí! Luvas impermeáveis para proteção química.", failMessage: "Queimadura química! Luvas de pano não protegem contra líquidos. HP -10" 
-    },
-    { 
-        id: 'S11', type: "multiple-choice", title: "Botão de Emergência", 
-        description: "Você viu um colega com a mão presa em um rolo. Qual a primeira ação?", 
-        choices: [{ text: "Gritar por socorro.", isCorrect: false }, { text: "Acionar o botão de emergência mais próximo.", isCorrect: true }], 
-        successMessage: "Rápido e certeiro! Parar a máquina é a prioridade.", failMessage: "Tempo perdido! O botão de emergência deve ser a 1ª ação. HP -20" 
-    },
-    { 
-        id: 'S12', type: "epi", title: "Inspeção de Máquina", 
-        description: "Inspecionando a área de engrenagens durante o setup. Proteja seus olhos contra partículas que podem saltar.", 
-        correctEPI: "oculos-seguranca", 
-        successMessage: "Correto! Proteção frontal contra partículas volantes.", failMessage: "Risco ocular! Partículas podem atingir seus olhos sem proteção. HP -10" 
-    },
-    { 
-        id: 'S13', type: "multiple-choice", title: "Uso de Celular", 
-        description: "Você precisa responder uma mensagem urgente no WhatsApp enquanto caminha pela área produtiva.", 
-        choices: [{ text: "Parar em local seguro fora da rota para usar.", isCorrect: true }, { text: "Responder enquanto caminha.", isCorrect: false }], 
-        successMessage: "Foco total! Evitou uma colisão ou queda.", failMessage: "Distração fatal! Celular em áreas produtivas causa acidentes graves. HP -10" 
-    },
-    { 
-        id: 'S14', type: "epi", title: "Limpeza de Rolo Aniloc", 
-        description: "Manuseando solventes fortes para a limpeza profunda dos cilindros. Qual luva garante a impermeabilidade?", 
-        correctEPI: "luva-latex", 
-        successMessage: "Excelente! A luva química evita o contato dérmico nocivo.", failMessage: "Erro perigoso! Luvas comuns absorvem o produto e pioram a queimadura. HP -10" 
-    },
-    { 
-        id: 'S15', type: "multiple-choice", title: "Ferramenta Manual", 
-        description: "Você percebe que o estilete de segurança está com a lâmina gasta e travando.", 
-        choices: [{ text: "Continuar usando com mais força.", isCorrect: false }, { text: "Substituir a lâmina imediatamente.", isCorrect: true }], 
-        successMessage: "Segurança primeiro! Ferramenta cega exige força e causa escape.", failMessage: "Risco de escape! Ferramenta ruim é um acidente anunciado. HP -10" 
-    },
-    { 
-        id: 'S16', type: "epi", title: "Acesso a Painel Energizado", 
-        description: "Você vai abrir um painel para conferir uma fiação. Embora não vá tocar, há risco de arcos. O que usar nos olhos?", 
-        correctEPI: "oculos-seguranca", 
-        successMessage: "Correto! Óculos de proteção são o mínimo para inspeção visual.", failMessage: "Risco de projeção! Proteja sempre seus olhos. HP -10" 
-    },
-    { 
-        id: 'S17', type: "multiple-choice", title: "Fumar na Fábrica", 
-        description: "Onde é permitido fumar dentro da unidade Amcor?", 
-        choices: [{ text: "Em qualquer lugar aberto.", isCorrect: false }, { text: "Apenas nos fumódromos sinalizados.", isCorrect: true }], 
-        successMessage: "Respeito às normas! Evitou riscos de incêndio.", failMessage: "Perigo de Incêndio! Respeite as áreas restritas. HP -15" 
-    },
-    { 
-        id: 'S18', type: "epi", title: "Ajuste de Bobina", 
-        description: "Ao ajustar as bordas do filme plástico em movimento, seus braços ficam próximos a partes cortantes. Use:", 
-        correctEPI: "mangote", 
-        successMessage: "Seguro! O mangote protege contra cortes acidentais no antebraço.", failMessage: "Risco de laceração! Seus braços estão expostos. HP -10" 
-    },
-    { 
-        id: 'S19', type: "multiple-choice", title: "Organização (5S)", 
-        description: "Você terminou o setup e sobraram restos de fita e plástico no chão.", 
-        choices: [{ text: "Limpar e descartar nos coletores corretos.", isCorrect: true }, { text: "Deixar para a equipe da limpeza.", isCorrect: false }], 
-        successMessage: "Ambiente limpo é ambiente seguro! Parabéns.", failMessage: "Desorganização gera tropeços. O 5S é responsabilidade de todos. HP -10" 
-    },
-    { 
-        id: 'S20', type: "epi", title: "Retirada de Rebarba", 
-        description: "Usando uma espátula para retirar rebarbas plásticas rígidas que podem voar no seu rosto. Qual o EPI?", 
-        correctEPI: "oculos-seguranca", 
-        successMessage: "Isso! Proteção contra impactos de partículas sólidas.", failMessage: "Cuidado! Rebarbas rígidas podem causar lesões oculares sérias. HP -10" 
-    }
+        { id: 'S1', type: "multiple-choice", title: "Prioridade Amcor", description: "O supervisor pede pressa e sugere pular o Intervalo de Segurança. O que fazer?", choices: [{ text: "Acelerar produção.", isCorrect: false }, { text: "Fazer o Intervalo de Segurança.", isCorrect: true }], successMessage: "Correto! Segurança em 1º lugar.", failMessage: "Errado! Produção não justifica riscos. HP -10" },
+        { id: 'S2', type: "epi", title: "Corte de Filme", description: "Você vai realizar o corte lateral de uma bobina. Qual o EPI Vital para as mãos?", correctEPI: "luva-anticorte", successMessage: "Certo! Mãos protegidas contra cortes.", failMessage: "Risco de corte! O EPI correto era a Luva Anticorte. HP -10" },
+        { id: 'S3', type: "multiple-choice", title: "Bloqueio LOTO", description: "Após bloquear as energias em uma manutenção, qual o próximo passo obrigatório?", choices: [{ text: "Iniciar o trabalho.", isCorrect: false }, { text: "Testar Energia Zero.", isCorrect: true }], successMessage: "Seguro! Energia Zero confirmada.", failMessage: "Perigo! Sempre teste o zero antes de tocar na máquina. HP -15" },
+        { id: 'S4', type: "epi", title: "Troca de Cilindro", description: "Você precisa trocar um cilindro pesado e há risco de bater a cabeça em partes baixas da máquina. O que usar?", correctEPI: "bone-casquete", successMessage: "Boa! O casquete protege contra impactos em objetos fixos.", failMessage: "Cuidado! Bater a cabeça pode ser fatal. Use o Casquete. HP -10" },
+        { id: 'S5', type: "multiple-choice", title: "Postura Ergonômica", description: "Ao levantar uma caixa pesada do chão, qual a postura correta?", choices: [{ text: "Dobrar a coluna.", isCorrect: false }, { text: "Dobrar os joelhos e manter a coluna reta.", isCorrect: true }], successMessage: "Correto! Preserve sua coluna.", failMessage: "Errado! Isso causa lesões graves na lombar. HP -10" },
+        { id: 'S6', type: "epi", title: "Limpeza de Clichê", description: "Você usará solventes para limpar as chapas de impressão. Qual proteção ocular veda contra vapores e respingos?", correctEPI: "oculos-ampla", successMessage: "Perfeito! A vedação 360º protege contra respingos químicos.", failMessage: "Risco químico! Óculos comuns não vedam contra vapores. HP -15" },
+        { id: 'S7', type: "multiple-choice", title: "Área de Empilhadeiras", description: "Você está atravessando a fábrica e uma empilhadeira se aproxima. Qual o procedimento?", choices: [{ text: "Manter contato visual com o operador e esperar.", isCorrect: true }, { text: "Passar correndo na frente dela.", isCorrect: false }], successMessage: "Seguro! O contato visual garante que você foi visto.", failMessage: "Perigo! Jamais presuma que o operador te viu. HP -20" },
+        { id: 'S8', type: "epi", title: "Abastecimento de Tinta", description: "Ao despejar tinta líquida no balde, há risco de respingos químicos nos braços. O que usar?", correctEPI: "mangote", successMessage: "Correto! O mangote protege seus antebraços contra absorção química.", failMessage: "Atenção! Sua pele absorve contaminantes. Use o Mangote. HP -10" },
+        { id: 'S9', type: "multiple-choice", title: "Derramamento", description: "Você encontrou um pequeno vazamento de óleo no piso. O que fazer imediatamente?", choices: [{ text: "Sinalizar a área e limpar o local.", isCorrect: true }, { text: "Ignorar, pois não foi você quem sujou.", isCorrect: false }], successMessage: "Atitude Proativa! Evitou uma queda.", failMessage: "Risco de queda! Óleo no chão é um perigo crítico. HP -10" },
+        { id: 'S10', type: "epi", title: "Preparação Química", description: "Você vai misturar aditivos químicos que podem causar dermatite em contato direto. Qual a luva certa?", correctEPI: "luva-latex", successMessage: "Isso aí! Luvas impermeáveis para proteção química.", failMessage: "Queimadura química! Luvas de pano não protegem contra líquidos. HP -10" }
     ];
+
     document.getElementById('start-button').onclick = startGame;
+
+    // --- LÓGICA DE VISIBILIDADE DO INVENTÁRIO ---
+    function toggleInventory(show) {
+        const panel = document.getElementById('inventory-panel');
+        if(show) {
+            panel.classList.add('visible');
+        } else {
+            panel.classList.remove('visible');
+        }
+    }
 
     function startGame() {
         document.getElementById('som-clique-start').play();
         state.gameActive = true;
         state.day = 1; state.hp = 100; state.score = 0;
-        document.getElementById('epi-explanation-wrapper').style.display = 'none'; // Esconde dica ao começar
+        state.questionsRemaining = [...situationPool].sort(() => Math.random() - 0.5);
+        document.getElementById('epi-explanation-wrapper').style.display = 'none'; 
+        
+        // Antes do jogo começar, o inventário é visível para estudo. Ao dar start, ele some até ser necessário.
+        toggleInventory(false); 
         updateUI();
         nextSituation();
     }
 
-function nextSituation() {
+    function nextSituation() {
         if (state.hp <= 0) return end(false);
         if (state.day > 10) return end(true);
+        if (state.questionsRemaining.length === 0) state.questionsRemaining = [...situationPool].sort(() => Math.random() - 0.5);
         
-        // Sorteia uma nova situação
-        state.current = situationPool[Math.floor(Math.random() * situationPool.length)];
+        state.current = state.questionsRemaining.shift(); 
         
-        // LIMPEZA DAS MARCAÇÕES VISUAIS: Remove as bordas dos EPIs antes de renderizar a nova tela
-        document.querySelectorAll('.epi-item').forEach(img => {
-            img.classList.remove('correct', 'incorrect');
-        });
-
+        document.querySelectorAll('.epi-item').forEach(img => img.classList.remove('correct', 'incorrect'));
+        
+        // --- MOSTRA OU ESCONDE BASEADO NA PERGUNTA ---
+        toggleInventory(state.current.type === 'epi');
+        
         renderSituation();
     }
 
     function renderSituation() {
         const s = state.current;
         let html = `<h2>Dia ${state.day}/10</h2><p><strong>${s.title}</strong></p><p>${s.description}</p>`;
-        
         if (s.type === 'multiple-choice') {
             s.choices.forEach(c => {
                 html += `<button class="choice-button" onclick="evaluateChoice(${c.isCorrect})">${c.text}</button>`;
             });
         } else {
-            html += `<p style="color:var(--amcor-red)"><strong>Selecione o EPI no inventário lateral.</strong></p>`;
+            html += `<p style="color:var(--amcor-red); font-weight:bold; animation: pulse 1s infinite;">⚠️ SELECIONE O EPI NO PAINEL AO LADO!</p>`;
             enableEPISelection();
         }
-        
         document.getElementById('scenario-display').innerHTML = html;
         document.getElementById('feedback-area').innerHTML = '';
     }
 
-function evaluateChoice(isCorrect, element = null) {
-    const feedback = document.getElementById('feedback-area');
-    disableAll();
-
-    let infoHTML = '';
-    if (state.current.type === 'epi') {
-        const info = epiKnowledge[state.current.correctEPI];
-        infoHTML = `<div class="explanation-popup"><strong>💡 DICA TÉCNICA:</strong><br>${info.title}: ${info.text}</div>`;
+    function lancarConfetes() {
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#004d99', '#e5002b', '#ffffff', '#5de6ff'] });
     }
 
-    if (isCorrect) {
-        state.score += 20;
-        if (element) element.classList.add('correct');
+    function evaluateChoice(isCorrect, element = null) {
+        const feedback = document.getElementById('feedback-area');
+        disableAll();
+        let infoHTML = '';
         
-        // TOCAR SOM DE ACERTO
-        audioAcerto.currentTime = 0; // Reinicia o som caso clique rápido
-        audioAcerto.play().catch(() => {}); 
+        // Se for pergunta de EPI, mostramos a explicação no feedback e mantemos o painel visível para ver o efeito.
+        if (state.current.type === 'epi') {
+            const info = epiKnowledge[state.current.correctEPI];
+            infoHTML = `<div class="explanation-popup"><strong>💡 DICA TÉCNICA:</strong><br>${info.title}: ${info.text}</div>`;
+        }
 
-        feedback.innerHTML = `<div class="correct-text">✔ ${state.current.successMessage}</div>${infoHTML}`;
-    } else {
-        state.hp -= 10;
-        if (element) element.classList.add('incorrect');
+        if (isCorrect) {
+            state.score += 20;
+            if (element) element.classList.add('correct');
+            audioAcerto.currentTime = 0; audioAcerto.play().catch(() => {}); 
+            lancarConfetes();
+            feedback.innerHTML = `<div class="correct-text">✔ ${state.current.successMessage}</div>${infoHTML}`;
+        } else {
+            state.hp -= 10;
+            if (element) element.classList.add('incorrect');
+            audioErro.currentTime = 0; audioErro.play().catch(() => {});
+            feedback.innerHTML = `<div class="incorrect-text">✘ ${state.current.failMessage}</div>${infoHTML}`;
+            document.body.classList.add('flash-error');
+            setTimeout(() => document.body.classList.remove('flash-error'), 500);
+        }
         
-        // TOCAR SOM DE ERRO
-        audioErro.currentTime = 0;
-        audioErro.play().catch(() => {});
-
-        feedback.innerHTML = `<div class="incorrect-text">✘ ${state.current.failMessage}</div>${infoHTML}`;
-        document.body.classList.add('flash-error');
-        setTimeout(() => document.body.classList.remove('flash-error'), 500);
+        state.day++;
+        updateUI();
+        
+        // Após 5 segundos, esconde o inventário para a próxima rodada (se for múltipla escolha)
+        setTimeout(() => {
+            toggleInventory(false);
+            nextSituation();
+        }, 5000); 
     }
 
-    state.day++;
-    updateUI();
-    setTimeout(nextSituation, 5000); 
-}
-
-function updateUI() {
+    function updateUI() {
         document.getElementById('day-display').innerText = `Dia ${Math.min(state.day, 10)}/10`;
         document.getElementById('score-display').innerText = `${state.score} pts`;
         const hb = document.getElementById('health-bar');
@@ -532,7 +428,7 @@ function updateUI() {
         });
     }
 
-    // Estudo inicial (apenas quando o jogo não começou)
+    // Estudo inicial (antes do jogo)
     document.querySelectorAll('.epi-item').forEach(img => {
         img.addEventListener('click', () => {
             if(!state.gameActive) {
@@ -540,6 +436,9 @@ function updateUI() {
                 document.getElementById('epi-explanation').innerHTML = `<strong>${info.title}</strong><br>${info.text}`;
             }
         });
+        // Garante que o inventário esteja visível na tela inicial para estudo
+        document.getElementById('inventory-panel').classList.add('visible');
+        document.getElementById('inventory-panel').style.pointerEvents = "auto";
     });
 
     function disableAll() {
@@ -548,7 +447,9 @@ function updateUI() {
     }
 
     function end(won) {
+        toggleInventory(false);
         const result = won && state.hp >= 90 ? "🏆 GUARDIÃO AMCOR" : (won ? "✅ CONCLUÍDO" : "❌ TENTE NOVAMENTE");
+        if(won && state.hp >= 90) lancarConfetes(); 
         document.getElementById('game-area').innerHTML = `
             <div style="text-align:center; padding:40px;">
                 <h1>${result}</h1>
@@ -557,40 +458,52 @@ function updateUI() {
             </div>`;
     }
 
-    // Lógica da Tela de Introdução
-const introScreen = document.getElementById('intro-screen');
-const somIntroducao = new Audio('missaodanozero.mp3'); // Usando a mesma música ou outra de sua preferência
+    // --- LÓGICA DE ÁUDIO E TRANSIÇÃO ---
+    const introScreen = document.getElementById('intro-screen');
+    const somIntroducao = new Audio('missaodanozero.mp3'); 
+    let introFinalizada = false;
 
-let introFinalizada = false;
+    function finalizarIntro() {
+        if (introFinalizada) return;
+        introFinalizada = true;
+        introScreen.style.transition = "opacity 0.8s";
+        introScreen.style.opacity = "0";
+        setTimeout(() => { introScreen.style.display = "none"; }, 800);
+    }
 
-function finalizarIntro() {
-    if (introFinalizada) return;
-    introFinalizada = true;
-    
-    introScreen.style.transition = "opacity 0.8s";
-    introScreen.style.opacity = "0";
-    
-    setTimeout(() => {
-        introScreen.style.display = "none";
-        // Opcional: Se quiser que a música pare ao entrar no scanner, descomente a linha abaixo
-        // somIntroducao.pause(); 
-    }, 800);
-}
-
-// Iniciar música ao carregar a página (alguns navegadores exigem interação prévia)
-window.addEventListener('load', () => {
-    somIntroducao.play().catch(() => {
-        console.log("Aguardando interação do usuário para tocar música.");
+    introScreen.addEventListener('click', () => {
+        somIntroducao.play().catch(() => {});
+        finalizarIntro();
     });
 
-    // Auto-pular após 3 segundos
-    setTimeout(finalizarIntro, 6000);
-});
-
-// Pular ao clicar ou tocar
-introScreen.addEventListener('click', finalizarIntro);
-introScreen.addEventListener('touchstart', finalizarIntro);
-
+    window.addEventListener('load', function() {
+        const btnIniciar = document.getElementById('btn-iniciar-scan');
+        const somLoading = document.getElementById('som-loading');
+        btnIniciar.onclick = function() {
+            document.getElementById('start-scan-wrapper').style.display = 'none';
+            document.getElementById('scanner-main-content').style.display = 'block';
+            if(somLoading) { somLoading.volume = 0.4; somLoading.play().catch(() => {}); }
+            let step = 0;
+            const etapas = [{p:25, t:"CONECTANDO..."}, {p:50, t:"LENDO EPIs..."}, {p:75, t:"SISTEMA AMCOR..."}, {p:100, t:"PRONTO!"}];
+            const interval = setInterval(() => {
+                if(step < etapas.length){
+                    document.getElementById('scan-status-bar').style.width = etapas[step].p + "%";
+                    document.getElementById('scan-text').innerText = etapas[step].t;
+                    step++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        somIntroducao.pause();
+                        somIntroducao.currentTime = 0;
+                        if(somLoading) somLoading.pause();
+                        document.getElementById('loading-screen').style.transition = "opacity 0.8s";
+                        document.getElementById('loading-screen').style.opacity = "0";
+                        setTimeout(() => { document.getElementById('loading-screen').style.display = "none"; }, 800);
+                    }, 3000); 
+                }
+            }, 800);
+        };
+    });     
 </script>
 </body>
 </html>
