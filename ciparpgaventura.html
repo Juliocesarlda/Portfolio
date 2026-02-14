@@ -262,7 +262,41 @@
         #feedback-area { min-height: 50px; margin-top: 20px; font-weight: bold; }
         .correct-text { color: var(--color-correct); background: #e8f5e9; padding: 10px; border-radius: 8px; }
         .incorrect-text { color: var(--amcor-red); background: #ffebee; padding: 10px; border-radius: 8px; }
-    </style>
+    
+    /* --- RESPONSIVIDADE DO RANKING (MOBILE) --- */
+@media (max-width: 600px) {
+    .ranking-container {
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    .ranking-table th, .ranking-table td {
+        padding: 6px 4px;
+        font-size: 11px; /* Diminui a fonte para caber tudo na horizontal */
+    }
+
+    .ranking-table th:nth-child(3), 
+    .ranking-table td:nth-child(3) {
+        display: none; /* Esconde a coluna 'Setor' em telas muito pequenas para dar espaço */
+    }
+
+    .input-group input, .input-group select {
+        font-size: 14px; /* Evita o zoom automático do iOS ao clicar no input */
+        padding: 12px;
+    }
+
+    #save-score-area h3, #leaderboard-area h3 {
+        font-size: 1.1em;
+    }
+
+    .btn-action {
+        width: 100%; /* Botões ocupam a largura toda no celular */
+        padding: 15px 10px;
+        font-size: 14px;
+    }
+}
+
+</style>
 </head>
 <body>
 
