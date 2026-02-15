@@ -2,344 +2,409 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caminho da Virtude</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Equilíbrio: Telltale Edition</title>
     <style>
         :root {
-            --igreja-blue: #2c3e50;
-            --health-green: #2ecc71;
-            --warning-orange: #f39c12;
-            --danger-red: #e74c3c;
-            --bg-light: #f4f7f6;
-            --whatsapp-green: #25D366;
+            --telltale-red: #e74c3c;
+            --text-white: #ffffff;
+            --timer-speed: 20s;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-light);
+        /* TELA DE INTRODUÇÃO */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 2000;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0;
-            padding: 20px;
-            color: #333;
+            justify-content: center;
+            transition: opacity 1s ease;
         }
 
-        #game-container {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 500px;
-            width: 100%;
+        #intro-bg {
+            position: absolute;
+            width: 100%; height: 100%;
+            background-image: url('intro_background.png'); /* COLOQUE O NOME DA SUA IMAGEM AQUI */
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            z-index: -1;
+        }
+
+        .titulo-intro {
+            font-size: 3rem;
+            letter-spacing: 8px;
+            color: var(--telltale-red);
+            text-transform: uppercase;
+            margin-bottom: 20px;
             text-align: center;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
         }
 
-        h2 { color: var(--igreja-blue); margin-top: 0; font-size: 1.5rem; }
+        .btn-play {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            padding: 15px 50px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: 0.3s;
+        }
 
-        #health-container {
+        .btn-play:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            color: var(--text-white);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ÁREA DA IMAGEM AJUSTADA */
+        #container-visual {
+            flex: 1; 
+            position: relative;
             width: 100%;
-            height: 20px;
-            background: #eee;
-            border-radius: 10px;
-            margin: 20px 0 10px 0;
-            border: 1px solid #ddd;
+            background: #000; /* Fundo preto para as bordas da imagem */
+            display: flex;
+            align-items: center;
+            justify-content: center;
             overflow: hidden;
         }
 
-        #health-bar {
+        #bg-image {
             width: 100%;
             height: 100%;
-            background: var(--health-green);
-            transition: width 0.6s ease;
+            /* MUDANÇA CHAVE: 'contain' faz a imagem aparecer inteira */
+            background-size: contain; 
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: brightness(1); /* Imagem com brilho total para melhor visibilidade */
+            transition: background-image 0.5s ease-in-out;
         }
 
-        .health-label {
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 20px;
+        #game-interface {
+            height: 42%; 
+            background: #121212;
+            padding: 15px 30px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 4px solid var(--telltale-red);
+            z-index: 10;
+            box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
         }
 
-        #status-msg {
-            font-size: 0.8rem;
-            color: var(--igreja-blue);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
+        #notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-style: italic;
+            font-size: 1rem;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-bottom: 2px solid var(--telltale-red);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 100;
+            white-space: nowrap;
         }
 
         #pergunta-texto {
-            font-size: 1.1rem;
-            line-height: 1.4;
-            margin: 15px 0;
-            min-height: 60px;
-            font-weight: 500;
+            font-size: 1.25rem;
+            line-height: 1.2;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #fff;
+            text-align: center;
+        }
+
+        #botoes-respostas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            flex-grow: 1;
         }
 
         .btn-escolha {
-            display: block;
-            width: 100%;
+            background: #222;
+            border: 1px solid #444;
+            color: #ddd;
             padding: 12px;
-            margin: 8px 0;
-            border: 1.5px solid var(--igreja-blue);
-            border-radius: 10px;
-            background: white;
-            color: var(--igreja-blue);
+            font-size: 0.85rem;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
             text-align: left;
+            transition: 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-escolha:hover:not(:disabled) {
-            background: var(--igreja-blue);
-            color: white;
+        .btn-escolha:hover {
+            background: var(--text-white);
+            color: #000;
+            border-color: var(--text-white);
+            transform: translateY(-2px);
         }
 
-        .btn-escolha:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        #timer-container {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            margin-top: 10px;
+            border-radius: 2px;
         }
 
-        #feedback-texto {
-            font-size: 0.9rem;
-            font-style: italic;
-            color: #e67e22;
-            margin-top: 15px;
-            min-height: 40px;
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background: var(--telltale-red);
         }
 
-        .footer-info {
-            margin-top: 20px;
-            font-size: 0.75rem;
-            color: #999;
+        .animar-timer {
+            animation: timer-shrink var(--timer-speed) linear forwards;
         }
 
-        /* BOTÃO WHATSAPP ERROS E SUGESTÕES */
-        .btn-whats {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: var(--whatsapp-green);
-            color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: bold;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        @keyframes timer-shrink {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        .final-screen #botoes-respostas {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: transform 0.3s ease;
-            z-index: 1000;
-        }
-
-        .btn-whats:hover {
-            transform: scale(1.05);
-            background-color: #20ba5a;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
+<audio id="bg-music" loop>
+        <source src="sua_musica.mp3" type="audio/mpeg"> </audio>
 
-    <div id="game-container">
-        <div id="status-msg">Carregando Jornada...</div>
-        <h2>✨ Caminho da Virtude ✨</h2>
-        
-        <div id="health-container">
-            <div id="health-bar"></div>
-        </div>
-        <div class="health-label">Saúde Emocional/Espiritual: <span id="health-pct">100</span>%</div>
-
-        <div id="quiz-section">
-            <p id="pergunta-texto"></p>
-            <div id="botoes-respostas"></div>
-            <p id="feedback-texto"></p>
-        </div>
-
-        <div class="footer-info">Projeto de Extensão - Engenharia de Software</div>
+    <div id="intro-screen">
+        <img src="Gemini_Generated_Image_9d2rpq9d2rpq9d2r.png" alt="Equilíbrio" width="300" height="300">
+        <div id="intro-bg"></div>
+        <h1 class="titulo-intro">EQUILÍBRIO</h1>
+        <p style="margin-bottom: 40px; letter-spacing: 2px;">TELLTALE EDITION</p>
+        <button class="btn-play" onclick="comecarJogo()">INICIAR</button>
     </div>
 
-    <a href="https://api.whatsapp.com/send?phone=5543920029039&text=Olá%20Julio!%20Tenho%20uma%20sugestão/erro%20sobre%20o%20app%20Caminho%20da%20Virtude:" 
-       target="_blank" 
-       class="btn-whats">
-        <span>💬 Erros & Sugestões</span>
-    </a>
+    <div id="notification"></div>
 
-    <script>
-        let saude = 100;
-        let diaAtual = 0;
+    <div id="container-visual">
+        <div id="bg-image">
+        </div>
+    </div>
 
-        const jornada = [
+    <div id="game-interface">
+        <div id="pergunta-texto">Iniciando...</div>
+        <div id="botoes-respostas"></div>
+        <div id="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+    </div>
+
+<script>
+function comecarJogo() {
+            // Inicia a música
+            const musica = document.getElementById('bg-music');
+            musica.volume = 0.4; // Volume em 40%
+            musica.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
+
+            // Esconde a tela de intro com transição
+            const intro = document.getElementById('intro-screen');
+            intro.style.opacity = '0';
+            setTimeout(() => {
+                intro.style.display = 'none';
+                carregarCena(); // Inicia a primeira pergunta
+            }, 1000);
+        }
+
+const jornada = [
             {
-                q: "1. Um irmão da igreja te criticou duramente na frente de outros. Como você reage?",
+                q: "Um irmão da igreja te criticou duramente na frente de todos. O que você faz?",
+                img: "Criticou duramente na frente de outros.png",
                 opcoes: [
-                    { t: "Respondo à altura imediatamente", p: -15, f: "O conflito direto feriu sua paz." },
-                    { t: "Fico em silêncio mas guardo rancor", p: -8, f: "Mágoa guardada é um peso na saúde." },
-                    { t: "Ignoro e finjo que nada aconteceu", p: -5, f: "Evitar o problema não resolve o estresse." },
-                    { t: "Busco perdoar e conversar em particular", p: 0, f: "O perdão manteve sua saúde intacta!" },
-                    { t: "N.D.A. (Apenas me afasto da igreja)", p: -12, f: "O isolamento prejudicou sua jornada." }
+                    { t: "Responder à altura", v: "impulsivo", n: "Conflito gerado." },
+                    { t: "Ficar em silêncio", v: "cauteloso", n: "Mágoa guardada." },
+                    { t: "Perdoar em particular", v: "pacificador", n: "Paz preservada." },
+                    { t: "Ignorar", v: "determinado", n: "Indiferença escolhida." }
                 ]
             },
             {
-                q: "2. Você percebe que um jovem está se afastando e parece triste. Qual sua atitude?",
+                q: "Um jovem está se afastando e parece triste. Qual sua atitude?",
+                img: "Jovem está se afastando e parece triste.png",
                 opcoes: [
-                    { t: "Acho que é drama e não me envolvo", p: -10, f: "A falta de empatia endurece o coração." },
-                    { t: "Espero que o pastor resolva", p: -5, f: "A omissão sobrecarrega a comunidade." },
-                    { t: "Mando apenas uma mensagem automática", p: -2, f: "Gestos superficiais ajudam pouco." },
-                    { t: "Ofereço meu tempo para ouvir e apoiar", p: 0, f: "Ajudar o próximo renova suas forças!" },
-                    { t: "N.D.A. (Não é minha responsabilidade)", p: -8, f: "Viver só para si drena o propósito." }
+                    { t: "Não me envolver", v: "cauteloso", n: "Omissão escolhida." },
+                    { t: "Avisar o pastor", v: "determinado", n: "Cuidado delegado." },
+                    { t: "Oferecer apoio", v: "pacificador", n: "Empatia demonstrada." },
+                    { t: "Mandar mensagem", v: "impulsivo", n: "Gesto simples feito." }
                 ]
             },
             {
-                q: "3. Você recebeu uma tarefa voluntária cansativa para o final de semana. Como encara?",
+                q: "Você tem uma tarefa voluntária, mas está exausto. Como encara?",
+                img: "Tarefa voluntária cansativa para o final de semana.png",
                 opcoes: [
-                    { t: "Faço reclamando para todos ouvirem", p: -10, f: "A reclamação intoxica o seu bem-estar." },
-                    { t: "Invento uma desculpa para não ir", p: -7, f: "Faltar ao compromisso gerou culpa." },
-                    { t: "Faço o mínimo possível para acabar logo", p: -4, f: "A mediocridade não traz satisfação." },
-                    { t: "Faço com alegria e foco no benefício social", p: 0, f: "O serviço voluntário gerou dopamina!" },
-                    { t: "N.D.A. (Vou mas fico mexendo no celular)", p: -6, f: "Estar presente sem foco gera cansaço." }
+                    { t: "Fazer reclamando", v: "impulsivo", n: "Espírito pesado." },
+                    { t: "Inventar desculpa", v: "cauteloso", n: "Fuga da responsabilidade." },
+                    { t: "Fazer com alegria", v: "pacificador", n: "Serviço de coração." },
+                    { t: "Fazer o mínimo", v: "determinado", n: "Falta de empenho." }
                 ]
             },
             {
-                q: "4. Como você lida com pensamentos de ansiedade sobre o futuro?",
+                q: "A ansiedade sobre o futuro começa a te dominar agora...",
+                img: "Pensamentos de ansiedade sobre o futuro.png",
                 opcoes: [
-                    { t: "Fico remoendo até perder o sono", p: -15, f: "O estresse afetou seu sistema nervoso." },
-                    { t: "Tento me distrair com vícios ou excessos", p: -12, f: "Fugas rápidas cobram um preço alto." },
-                    { t: "Descarrego minha frustração nos outros", p: -10, f: "Conflitos externos aumentam o estresse." },
-                    { t: "Pratico meditação, oração e busco foco", p: 0, f: "O equilíbrio mental foi preservado!" },
-                    { t: "N.D.A. (Simplesmente aceito o sofrimento)", p: -8, f: "A passividade não ajuda na resiliência." }
+                    { t: "Remoer o medo", v: "impulsivo", n: "Ansiedade alimentada." },
+                    { t: "Buscar oração", v: "pacificador", n: "Foco restabelecido." },
+                    { t: "Se distrair", v: "cauteloso", n: "Fuga temporária." },
+                    { t: "Desabafar", v: "determinado", n: "Peso compartilhado." }
                 ]
             },
             {
-                q: "5. Uma fofoca sobre um amigo chega até você. O que você faz?",
+                q: "Uma fofoca sobre seu amigo chegou até você. O que faz?",
+                img: "Uma fofoca sobre um amigo chega até você.png",
                 opcoes: [
-                    { t: "Passo adiante só para uma pessoa", p: -15, f: "A fofoca quebra a confiança e a paz." },
-                    { t: "Tento descobrir mais detalhes", p: -10, f: "A curiosidade maliciosa drena a energia." },
-                    { t: "Fico em dúvida se é verdade ou não", p: -3, f: "A incerteza gera uma leve ansiedade." },
-                    { t: "Interrompo o assunto e defendo o amigo", p: 0, f: "Sua integridade protegeu sua mente!" },
-                    { t: "N.D.A. (Fico ouvindo mas não falo nada)", p: -7, f: "Ser cúmplice do erro gera desconforto." }
+                    { t: "Passar adiante", v: "impulsivo", n: "Confiança quebrada." },
+                    { t: "Defender o amigo", v: "pacificador", n: "Lealdade provada." },
+                    { t: "Ouvir tudo", v: "cauteloso", n: "Curiosidade nociva." },
+                    { t: "Cortar o assunto", v: "determinado", n: "Integridade mantida." }
                 ]
             },
             {
-                q: "6. Você errou em um relatório e alguém te corrigiu. Como reage?",
+                q: "Você errou em um relatório e alguém te corrigiu severamente.",
+                img: "Você errou em um relatório e alguém te corrigiu.png",
                 opcoes: [
-                    { t: "Fico na defensiva e justifico o erro", p: -10, f: "O orgulho impede o aprendizado." },
-                    { t: "Fico me culpando e me achando incapaz", p: -12, f: "A autocrítica excessiva fere a saúde." },
-                    { t: "Ignoro a correção e continuo igual", p: -5, f: "A estagnação não traz evolução." },
-                    { t: "Agradeço e busco corrigir o erro", p: 0, f: "A humildade gera paz de espírito!" },
-                    { t: "N.D.A. (Penso em desistir da função)", p: -15, f: "Fugir dos desafios enfraquece a mente." }
+                    { t: "Ficar na defensiva", v: "impulsivo", n: "Orgulho ferido." },
+                    { t: "Pedir desculpas", v: "pacificador", n: "Humildade aplicada." },
+                    { t: "Se culpar", v: "cauteloso", n: "Autoestima atingida." },
+                    { t: "Ignorar", v: "determinado", n: "Erro negligenciado." }
                 ]
             },
             {
-                q: "7. O ambiente em sua casa está tenso com muitas discussões. O que você faz?",
+                q: "O ambiente em sua casa está tenso com muitas discussões.",
+                img: "O ambiente em sua casa está tenso com muitas discussões.png",
                 opcoes: [
-                    { t: "Aumento o tom de voz para me impor", p: -15, f: "O grito aumentou o cortisol no corpo." },
-                    { t: "Me tranco no quarto e me isolo", p: -8, f: "O isolamento pode aumentar a tristeza." },
-                    { t: "Fico jogando a culpa nos outros", p: -12, f: "A acusação gera um ciclo de estresse." },
-                    { t: "Busco ser o pacificador e ouvir todos", p: 0, f: "Promover a paz renova as energias!" },
-                    { t: "N.D.A. (Saio de casa para não resolver)", p: -10, f: "A fuga não traz a solução do problema." }
+                    { t: "Gritar também", v: "impulsivo", n: "Caos amplificado." },
+                    { t: "Ser pacificador", v: "pacificador", n: "Luz no ambiente." },
+                    { t: "Se isolar", v: "cauteloso", n: "Distância emocional." },
+                    { t: "Sair de casa", v: "determinado", n: "Evitação do problema." }
                 ]
             },
             {
-                q: "8. Você percebe que está viciado em redes sociais e isso te faz mal.",
+                q: "As redes sociais estão te fazendo mal e viciando.",
+                img: "Está viciado em redes sociais e isso te faz mal.png",
                 opcoes: [
-                    { t: "Continuo usando mesmo me sentindo mal", p: -15, f: "A dependência digital afeta o foco." },
-                    { t: "Digo que amanhã eu paro", p: -8, f: "A procrastinação gera frustração." },
-                    { t: "Fico comparando minha vida com a dos outros", p: -12, f: "A comparação é a ladra da alegria." },
-                    { t: "Estabeleço limites e faço um detox digital", p: 0, f: "O controle do tempo trouxe alívio!" },
-                    { t: "N.D.A. (Acho que o problema é a internet)", p: -5, f: "Terceirizar a culpa não resolve o hábito." }
+                    { t: "Fazer detox", v: "determinado", n: "Saúde mental priorizada." },
+                    { t: "Continuar usando", v: "impulsivo", n: "Hábito mantido." },
+                    { t: "Se comparar", v: "cauteloso", n: "Frustração gerada." },
+                    { t: "Deletar apps", v: "pacificador", n: "Corte radical feito." }
                 ]
             },
             {
-                q: "9. Alguém pede um favor financeiro que você não pode cumprir agora.",
+                q: "Pediram um favor financeiro que você não pode cumprir agora.",
+                img: "Alguém pede um favor financeiro que você não pode cumprir agora..png",
                 opcoes: [
-                    { t: "Minto dizendo que estou sem nada", p: -10, f: "A mentira gera uma carga de estresse." },
-                    { t: "Empresto mesmo sem poder e me aperto", p: -12, f: "O desequilíbrio financeiro gera pânico." },
-                    { t: "Ignoro as mensagens da pessoa", p: -7, f: "A esquiva gera uma preocupação latente." },
-                    { t: "Sou honesto, digo não e ajudo de outra forma", p: 0, f: "A verdade e o limite preservam a paz!" },
-                    { t: "N.D.A. (Fico com raiva da pessoa pedir)", p: -10, f: "A raiva gratuita drena sua saúde." }
+                    { t: "Mentir", v: "cauteloso", n: "Falsidade gerada." },
+                    { t: "Dizer não", v: "determinado", n: "Sinceridade mantida." },
+                    { t: "Se endividar", v: "impulsivo", n: "Imprudência cometida." },
+                    { t: "Não responder", v: "pacificador", n: "Desconsideração." }
                 ]
             },
             {
-                q: "10. Ao final desses 10 dias, como você se sente em relação a suas escolhas?",
+                q: "Como você se sente em relação a suas escolhas nesses 10 dias?",
+                img: "Ao final desses 10 dias, como você se sente em relação a suas escolhas.png",
                 opcoes: [
-                    { t: "Acho que sou uma vítima do destino", p: -15, f: "A falta de protagonismo gera desânimo." },
-                    { t: "Sinto que nada vai mudar", p: -12, f: "A falta de esperança é tóxica." },
-                    { t: "Acho que fiz o que deu para fazer", p: -5, f: "Uma visão limitada impede o brilho." },
-                    { t: "Reconheço que minhas escolhas definem minha paz", p: 0, f: "A consciência é o primeiro passo da cura!" },
-                    { t: "N.D.A. (Não refleti sobre o processo)", p: -10, f: "Viver sem refletir impede a evolução." }
+                    { t: "Vítima", v: "cauteloso", n: "Falta de controle." },
+                    { t: "Aprendiz", v: "pacificador", n: "Desejo de mudança." },
+                    { t: "Conformado", v: "impulsivo", n: "Estagnação." },
+                    { t: "Responsável", v: "determinado", n: "Maturidade alcançada." }
                 ]
             }
         ];
 
-        function carregarDia() {
+        let diaAtual = 0;
+        let timer;
+        let pontuacao = { pacificador: 0, determinado: 0, cauteloso: 0, impulsivo: 0 };
+
+        function mostrarNotificacao(texto) {
+            const n = document.getElementById('notification');
+            n.innerText = texto;
+            n.style.opacity = 1;
+            setTimeout(() => { n.style.opacity = 0; }, 3000);
+        }
+
+        function carregarCena() {
             if (diaAtual >= jornada.length) {
                 finalizarJogo();
                 return;
             }
-            
-            document.getElementById('status-msg').innerText = `Jornada: Dia ${diaAtual + 1} de 10`;
-            document.getElementById('pergunta-texto').innerText = jornada[diaAtual].q;
-            document.getElementById('feedback-texto').innerText = "";
-            
-            const areaBotoes = document.getElementById('botoes-respostas');
-            areaBotoes.innerHTML = "";
-            
-            jornada[diaAtual].opcoes.forEach((opt, index) => {
+
+            const cena = jornada[diaAtual];
+            document.getElementById('bg-image').style.backgroundImage = `url('${cena.img}')`;
+            document.getElementById('pergunta-texto').innerText = cena.q;
+
+            const container = document.getElementById('botoes-respostas');
+            container.innerHTML = "";
+            cena.opcoes.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = "btn-escolha";
                 btn.innerText = opt.t;
-                btn.onclick = () => escolher(index);
-                areaBotoes.appendChild(btn);
+                btn.onclick = () => escolher(opt.n, opt.v);
+                container.appendChild(btn);
             });
+
+            const bar = document.getElementById('timer-bar');
+            bar.classList.remove('animar-timer');
+            void bar.offsetWidth; 
+            bar.classList.add('animar-timer');
+
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                escolher("O silêncio foi sua resposta.", "cauteloso");
+            }, 20000);
         }
 
-        function escolher(index) {
-            const opcao = jornada[diaAtual].opcoes[index];
-            saude += opcao.p;
-            if (saude < 0) saude = 0;
-            if (saude > 100) saude = 100;
-
-            document.getElementById('feedback-texto').innerText = opcao.f;
-            atualizarBarra();
-
-            const botoes = document.querySelectorAll('.btn-escolha');
-            botoes.forEach(b => b.disabled = true);
-            
-            setTimeout(() => {
-                diaAtual++;
-                carregarDia();
-            }, 2500);
-        }
-
-        function atualizarBarra() {
-            const bar = document.getElementById('health-bar');
-            const pct = document.getElementById('health-pct');
-            bar.style.width = saude + "%";
-            pct.innerText = Math.floor(saude);
-
-            if (saude < 50) bar.style.background = "var(--danger-red)";
-            else if (saude < 85) bar.style.background = "var(--warning-orange)";
-            else bar.style.background = "var(--health-green)";
+        function escolher(notificacao, valor) {
+            clearTimeout(timer);
+            if(valor) pontuacao[valor]++;
+            mostrarNotificacao(notificacao);
+            diaAtual++;
+            setTimeout(carregarCena, 2000);
         }
 
         function finalizarJogo() {
-            const final = saude >= 90 ? "Incrível! Você atingiu a meta de 90%. Sua resiliência é um exemplo!" : "Jornada concluída! Que tal tentar novamente e buscar escolhas que preservem mais sua saúde?";
-            document.getElementById('quiz-section').innerHTML = `
-                <div style="margin-top:20px;">
-                    <h3>Resultado Final: ${Math.floor(saude)}%</h3>
-                    <p>${final}</p>
-                    <button class="btn-escolha" style="text-align:center; background:var(--igreja-blue); color:white;" onclick="location.reload()">Recomeçar Jornada</button>
-                </div>
-            `;
+            const perfil = Object.keys(pontuacao).reduce((a, b) => pontuacao[a] > pontuacao[b] ? a : b);
+            
+            const analises = {
+                pacificador: "Sua jornada revela um espírito pacificador e resiliente.\nVocê prioriza a harmonia e o bem-estar coletivo acima do ego.\nSuas decisões mostram maturidade ao enfrentar conflitos com calma.\nAge como um porto seguro para aqueles que estão ao seu redor.\nBusca a cura em vez da culpa, cultivando relacionamentos saudáveis.\nSeu caráter foi moldado pela empatia e pela busca do equilíbrio.",
+                determinado: "Sua jornada revela um caráter firme, focado e determinado.\nVocê não foge da responsabilidade e encara a verdade com clareza.\nSuas escolhas mostram alguém que valoriza a integridade e a ordem.\nAge com pragmatismo, buscando soluções eficientes para os problemas.\nNão se deixa abalar por críticas, mantendo o foco em seus princípios.\nSeu caráter foi moldado pela disciplina e pela autorresponsabilidade.",
+                cauteloso: "Sua jornada revela uma personalidade cautelosa e observadora.\nVocê busca proteção e evita exposições desnecessárias em conflitos.\nSuas decisões mostram um desejo profundo de evitar erros fatais.\nAge com discrição, preferindo o silêncio ao confronto direto agora.\nAinda que guarde medos, sua prudência evita desgastes imediatos.\nSeu caráter foi moldado pela autoproteção e análise do ambiente.",
+                impulsivo: "Sua jornada revela um espírito intenso, prático e reagente.\nVocê age conforme suas emoções e não hesita em se posicionar.\nSuas decisões mostram alguém que vive o agora com muita paixão.\nAge com rapidez, embora isso possa gerar tensões inesperadas.\nSua autenticidade é marcante, mesmo que traga desafios sociais.\nSeu caráter foi moldado pela coragem de agir e pela vivacidade."
+            };
+
+            document.getElementById('game-interface').classList.add('final-screen');
+            document.getElementById('pergunta-texto').style.fontSize = "0.95rem";
+            document.getElementById('pergunta-texto').style.whiteSpace = "pre-line";
+            document.getElementById('pergunta-texto').innerHTML = "<b>ANÁLISE DE PERSONALIDADE:</b>\n\n" + analises[perfil];
+            document.getElementById('botoes-respostas').innerHTML = `<button class="btn-escolha" onclick="location.reload()">REINICIAR</button>`;
+            document.getElementById('timer-container').style.display = 'none';
         }
 
-        carregarDia();
-        atualizarBarra();
-    </script>
+        </script>
 </body>
 </html>
