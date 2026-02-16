@@ -11,6 +11,39 @@
             --timer-speed: 20s;
         }
 
+        /* BOTÃO BUG REPORT */
+        #btn-bug-report {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3000; /* Acima de tudo */
+            background: #25d366; /* Verde WhatsApp */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: transform 0.2s, background 0.2s;
+            border: 2px solid #fff;
+        }
+
+        #btn-bug-report:hover {
+            background: #128c7e;
+            transform: scale(1.05);
+        }
+
+        /* Ocultar o botão na tela final para não atrapalhar o resultado */
+        .final-screen ~ #btn-bug-report {
+            display: none;
+        }
+
         /* TELA DE INTRODUÇÃO */
         #intro-screen {
             position: fixed;
@@ -192,6 +225,9 @@
     </style>
 </head>
 <body>
+    <a id="btn-bug-report" href="https://wa.me/5543920029039?text=Olá! Gostaria de enviar um feedback/relatar um erro no jogo Equilíbrio." target="_blank">
+        <span>⚠️ REPORTAR ERRO / SUGESTÃO</span>
+    </a>
 <audio id="bg-music" loop>
         <source src="mixkit-suspense-mystery-bass-685.mp3" type="audio/mpeg"> </audio>
 
