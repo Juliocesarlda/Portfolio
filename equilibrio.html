@@ -3,444 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Equilíbrio: Telltale Edition</title>
+    <title>Equilíbrio: Cotidiano Jovem - AI Powered</title>
     <style>
-        :root {
-            --telltale-red: #e74c3c;
-            --text-white: #ffffff;
-            --timer-speed: 20s;
-        }
-
-        /* BOTÃO BUG REPORT */
-        #btn-bug-report {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 3000; /* Acima de tudo */
-            background: #25d366; /* Verde WhatsApp */
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            transition: transform 0.2s, background 0.2s;
-            border: 2px solid #fff;
-        }
-
-        #btn-bug-report:hover {
-            background: #128c7e;
-            transform: scale(1.05);
-        }
-
-        /* Ocultar o botão na tela final para não atrapalhar o resultado */
-        .final-screen ~ #btn-bug-report {
-            display: none;
-        }
-
-        /* TELA DE INTRODUÇÃO */
-        #intro-screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1s ease;
-        }
-
-        #intro-bg {
-            position: absolute;
-            width: 100%; height: 100%;
-            background-image: url('nuvensbackground.png'); /* COLOQUE O NOME DA SUA IMAGEM AQUI */
-            background-size: cover;
-            background-position: center;
-            opacity: 0.7;
-            z-index: -1;
-        }
-
-        .titulo-intro {
-            font-size: 3rem;
-            letter-spacing: 8px;
-            color: var(--telltale-red);
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            text-align: center;
-            text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-        }
-
-        .btn-play {
-            background: transparent;
-            border: 2px solid #fff;
-            color: #fff;
-            padding: 15px 50px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            transition: 0.3s;
-        }
-
-        .btn-play:hover {
-            background: #fff;
-            color: #000;
-        }
-
-        body, html {
-            margin: 0; padding: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            font-family: 'Segoe UI', sans-serif;
-            overflow: hidden;
-            color: var(--text-white);
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ÁREA DA IMAGEM AJUSTADA */
-        #container-visual {
-            flex: 1; 
-            position: relative;
-            width: 100%;
-            background: #000; /* Fundo preto para as bordas da imagem */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        #bg-image {
-            width: 100%;
-            height: 100%;
-            /* MUDANÇA CHAVE: 'contain' faz a imagem aparecer inteira */
-            background-size: contain; 
-            background-repeat: no-repeat;
-            background-position: center;
-            filter: brightness(1); /* Imagem com brilho total para melhor visibilidade */
-            transition: background-image 0.5s ease-in-out;
-        }
-
-        #game-interface {
-            height: 42%; 
-            background: #121212;
-            padding: 15px 30px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            border-top: 4px solid var(--telltale-red);
-            z-index: 10;
-            box-shadow: 0 -10px 20px rgba(0,0,0,0.5);
-        }
-
-        #notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-style: italic;
-            font-size: 1rem;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px 20px;
-            border-bottom: 2px solid var(--telltale-red);
-            opacity: 0;
-            transition: opacity 0.5s;
-            z-index: 100;
-            white-space: nowrap;
-        }
-
-        #pergunta-texto {
-            font-size: 1.25rem;
-            line-height: 1.2;
-            margin-bottom: 10px;
-            font-weight: 600;
-            color: #fff;
-            text-align: center;
-        }
-
-        #botoes-respostas {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            flex-grow: 1;
-        }
-
-        .btn-escolha {
-            background: #222;
-            border: 1px solid #444;
-            color: #ddd;
-            padding: 12px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-align: left;
-            transition: 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-escolha:hover {
-            background: var(--text-white);
-            color: #000;
-            border-color: var(--text-white);
-            transform: translateY(-2px);
-        }
-
-        #timer-container {
-            width: 100%;
-            height: 4px;
-            background: #333;
-            margin-top: 10px;
-            border-radius: 2px;
-        }
-
-        #timer-bar {
-            width: 100%;
-            height: 100%;
-            background: var(--telltale-red);
-        }
-
-        .animar-timer {
-            animation: timer-shrink var(--timer-speed) linear forwards;
-        }
-
-        @keyframes timer-shrink {
-            from { width: 100%; }
-            to { width: 0%; }
-        }
-
-        .final-screen #botoes-respostas {
-            display: flex;
-            justify-content: center;
-        }
+        :root { --telltale-red: #e74c3c; --text-white: #ffffff; --timer-speed: 20s; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; color: var(--text-white); display: flex; flex-direction: column; }
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s ease; }
+        #intro-bg { position: absolute; width: 100%; height: 100%; background-image: url('equilibrio.png'); background-size: cover; background-position: center; opacity: 0.8; z-index: -1; }
+        .titulo-intro { font-size: 3rem; letter-spacing: 8px; color: var(--telltale-red); text-transform: uppercase; text-align: center; text-shadow: 0 0 20px rgba(231, 76, 60, 0.5); }
+        .btn-play { background: transparent; border: 2px solid #fff; color: #fff; padding: 15px 50px; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 3px; transition: 0.3s; }
+        .btn-play:hover { background: #fff; color: #000; }
+        #container-visual { flex: 1; position: relative; width: 100%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #bg-image { width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; background-position: center; transition: background-image 0.5s ease-in-out; }
+        #game-interface { height: 42%; background: #121212; padding: 15px 30px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--telltale-red); z-index: 10; box-shadow: 0 -10px 20px rgba(0,0,0,0.5); }
+        #notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-style: italic; background: rgba(0, 0, 0, 0.8); padding: 10px 20px; border-bottom: 2px solid var(--telltale-red); opacity: 0; transition: opacity 0.5s; z-index: 100; }
+        #pergunta-texto { font-size: 1.2rem; line-height: 1.3; font-weight: 600; text-align: center; }
+        #botoes-respostas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-escolha { background: #222; border: 1px solid #444; color: #ddd; padding: 12px; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-escolha:hover { background: #fff; color: #000; transform: translateY(-2px); }
+        #timer-container { width: 100%; height: 4px; background: #333; margin-top: 10px; }
+        #timer-bar { width: 100%; height: 100%; background: var(--telltale-red); }
+        .animar-timer { animation: timer-shrink var(--timer-speed) linear forwards; }
+        @keyframes timer-shrink { from { width: 100%; } to { width: 0%; } }
+        .final-screen #botoes-respostas { display: flex; justify-content: center; }
     </style>
 </head>
 <body>
-    <a id="btn-bug-report" href="https://wa.me/5543920029039?text=Olá! Gostaria de enviar um feedback/relatar um erro no jogo Equilíbrio." target="_blank">
-        <span>⚠️ REPORTAR ERRO / SUGESTÃO</span>
-    </a>
-<audio id="bg-music" loop>
-        <source src="mixkit-suspense-mystery-bass-685.mp3" type="audio/mpeg"> </audio>
+    <audio id="bg-music" loop><source src="mixkit-mysterious-long-swell-2671.mp3" type="audio/mpeg"></audio>
 
     <div id="intro-screen">
-        <img src="intro_background.png" alt="Equilíbrio" width="300" height="300">
         <div id="intro-bg"></div>
-        <h1 class="titulo-intro">EQUILÍBRIO</h1>
-        <p style="margin-bottom: 40px; letter-spacing: 2px;">TELLTALE EDITION</p>
+        <!-- <h1 class="titulo-intro">EQUILÍBRIO</h1> -->
+         <br><br><br><br><br><br><br><br><br><br><br><br>
+        <p style="margin-bottom: 40px; letter-spacing: 2px;">(IA POWERED)</p>
         <button class="btn-play" onclick="comecarJogo()">INICIAR</button>
     </div>
 
     <div id="notification"></div>
-
-    <div id="container-visual">
-        <div id="bg-image">
-        </div>
-    </div>
-
+    <div id="container-visual"><div id="bg-image"></div></div>
     <div id="game-interface">
-        <div id="pergunta-texto">Iniciando...</div>
+        <div id="pergunta-texto">Iniciando diagnóstico comportamental...</div>
         <div id="botoes-respostas"></div>
-        <div id="timer-container">
-            <div id="timer-bar"></div>
-        </div>
+        <div id="timer-container"><div id="timer-bar"></div></div>
     </div>
 
-<script>
-function comecarJogo() {
-            // Inicia a música
-            const musica = document.getElementById('bg-music');
-            musica.volume = 0.4; // Volume em 40%
-            musica.play().catch(e => console.log("Áudio bloqueado pelo navegador"));
+    <script>
+        const modeloIA = {
+            pacificador: { pacificador: 0.85, determinado: 0.10, cauteloso: 0.03, impulsivo: 0.02 },
+            determinado: { pacificador: 0.05, determinado: 0.85, cauteloso: 0.05, impulsivo: 0.05 },
+            cauteloso:   { pacificador: 0.10, determinado: 0.05, cauteloso: 0.80, impulsivo: 0.05 },
+            impulsivo:   { pacificador: 0.02, determinado: 0.08, cauteloso: 0.10, impulsivo: 0.80 }
+        };
 
-            // Esconde a tela de intro com transição
-            const intro = document.getElementById('intro-screen');
-            intro.style.opacity = '0';
-            setTimeout(() => {
-                intro.style.display = 'none';
-                carregarCena(); // Inicia a primeira pergunta
-            }, 1000);
-        }
-
-const jornada = [
-            {
-                q: "Um irmão da igreja te criticou duramente na frente de todos. O que você faz?",
-                img: "Criticou duramente na frente de outros.png",
-                opcoes: [
-                    { t: "Responder à altura", v: "impulsivo", n: "Conflito gerado." },
-                    { t: "Ficar em silêncio", v: "cauteloso", n: "Mágoa guardada." },
-                    { t: "Perdoar em particular", v: "pacificador", n: "Paz preservada." },
-                    { t: "Ignorar", v: "determinado", n: "Indiferença escolhida." }
-                ]
-            },
-            {
-                q: "Um jovem está se afastando e parece triste. Qual sua atitude?",
-                img: "Jovem está se afastando e parece triste.png",
-                opcoes: [
-                    { t: "Não me envolver", v: "cauteloso", n: "Omissão escolhida." },
-                    { t: "Avisar o pastor", v: "determinado", n: "Cuidado delegado." },
-                    { t: "Oferecer apoio", v: "pacificador", n: "Empatia demonstrada." },
-                    { t: "Mandar mensagem", v: "impulsivo", n: "Gesto simples feito." }
-                ]
-            },
-            {
-                q: "Você tem uma tarefa voluntária, mas está exausto. Como encara?",
-                img: "Tarefa voluntária cansativa para o final de semana.png",
-                opcoes: [
-                    { t: "Fazer reclamando", v: "impulsivo", n: "Espírito pesado." },
-                    { t: "Inventar desculpa", v: "cauteloso", n: "Fuga da responsabilidade." },
-                    { t: "Fazer com alegria", v: "pacificador", n: "Serviço de coração." },
-                    { t: "Fazer o mínimo", v: "determinado", n: "Falta de empenho." }
-                ]
-            },
-            {
-                q: "A ansiedade sobre o futuro começa a te dominar agora...",
-                img: "Pensamentos de ansiedade sobre o futuro.png",
-                opcoes: [
-                    { t: "Remoer o medo", v: "impulsivo", n: "Ansiedade alimentada." },
-                    { t: "Buscar oração", v: "pacificador", n: "Foco restabelecido." },
-                    { t: "Se distrair", v: "cauteloso", n: "Fuga temporária." },
-                    { t: "Desabafar", v: "determinado", n: "Peso compartilhado." }
-                ]
-            },
-            {
-                q: "Uma fofoca sobre seu amigo chegou até você. O que faz?",
-                img: "Uma fofoca sobre um amigo chega até você.png",
-                opcoes: [
-                    { t: "Passar adiante", v: "impulsivo", n: "Confiança quebrada." },
-                    { t: "Defender o amigo", v: "pacificador", n: "Lealdade provada." },
-                    { t: "Ouvir tudo", v: "cauteloso", n: "Curiosidade nociva." },
-                    { t: "Cortar o assunto", v: "determinado", n: "Integridade mantida." }
-                ]
-            },
-            {
-                q: "Você errou em um relatório e alguém te corrigiu severamente.",
-                img: "Você errou em um relatório e alguém te corrigiu.png",
-                opcoes: [
-                    { t: "Ficar na defensiva", v: "impulsivo", n: "Orgulho ferido." },
-                    { t: "Pedir desculpas", v: "pacificador", n: "Humildade aplicada." },
-                    { t: "Se culpar", v: "cauteloso", n: "Autoestima atingida." },
-                    { t: "Ignorar", v: "determinado", n: "Erro negligenciado." }
-                ]
-            },
-            {
-                q: "O ambiente em sua casa está tenso com muitas discussões.",
-                img: "O ambiente em sua casa está tenso com muitas discussões.png",
-                opcoes: [
-                    { t: "Gritar também", v: "impulsivo", n: "Caos amplificado." },
-                    { t: "Ser pacificador", v: "pacificador", n: "Luz no ambiente." },
-                    { t: "Se isolar", v: "cauteloso", n: "Distância emocional." },
-                    { t: "Sair de casa", v: "determinado", n: "Evitação do problema." }
-                ]
-            },
-            {
-                q: "As redes sociais estão te fazendo mal e viciando.",
-                img: "Está viciado em redes sociais e isso te faz mal.png",
-                opcoes: [
-                    { t: "Fazer detox", v: "determinado", n: "Saúde mental priorizada." },
-                    { t: "Continuar usando", v: "impulsivo", n: "Hábito mantido." },
-                    { t: "Se comparar", v: "cauteloso", n: "Frustração gerada." },
-                    { t: "Deletar apps", v: "pacificador", n: "Corte radical feito." }
-                ]
-            },
-            {
-                q: "Pediram um favor financeiro que você não pode cumprir agora.",
-                img: "Alguém pede um favor financeiro que você não pode cumprir agora..png",
-                opcoes: [
-                    { t: "Mentir", v: "cauteloso", n: "Falsidade gerada." },
-                    { t: "Dizer não", v: "determinado", n: "Sinceridade mantida." },
-                    { t: "Se endividar", v: "impulsivo", n: "Imprudência cometida." },
-                    { t: "Não responder", v: "pacificador", n: "Desconsideração." }
-                ]
-            },
-            {
-                q: "Como você se sente em relação a suas escolhas nesses 10 dias?",
-                img: "Ao final desses 10 dias, como você se sente em relação a suas escolhas.png",
-                opcoes: [
-                    { t: "Vítima", v: "cauteloso", n: "Falta de controle." },
-                    { t: "Aprendiz", v: "pacificador", n: "Desejo de mudança." },
-                    { t: "Conformado", v: "impulsivo", n: "Estagnação." },
-                    { t: "Responsável", v: "determinado", n: "Maturidade alcançada." }
-                ]
-            }
-        ];
-
+        let dadosTreinamento = []; 
         let diaAtual = 0;
         let timer;
-        let pontuacao = { pacificador: 0, determinado: 0, cauteloso: 0, impulsivo: 0 };
 
-        function mostrarNotificacao(texto) {
-            const n = document.getElementById('notification');
-            n.innerText = texto;
-            n.style.opacity = 1;
-            setTimeout(() => { n.style.opacity = 0; }, 3000);
+        const jornada = [
+    { q: "Um amigo postou algo que te ofendeu indiretamente nos Stories. O que você faz?", img: "situação_1.png", 
+      opcoes: [{ t: "Responder no privado", v: "impulsivo", n: "Confronto imediato." }, { t: "Apenas silenciar", v: "cauteloso", n: "Evitação passiva." }, { t: "Conversar pessoalmente", v: "pacificador", n: "Busca por diálogo." }, { t: "Ignorar e seguir", v: "determinado", n: "Foco no próprio dia." }] },
+    
+    { q: "Você vê alguém sendo excluído em uma roda de amigos. Qual sua atitude?", img: "situação_2.png", 
+      opcoes: [{ t: "Observar de longe", v: "cauteloso", n: "Receio de se envolver." }, { t: "Puxar assunto com ela", v: "pacificador", n: "Inclusão promovida." }, { t: "Chamar no canto depois", v: "determinado", n: "Apoio estratégico." }, { t: "Fazer uma piada", v: "impulsivo", n: "Tentativa de quebrar gelo." }] },
+    
+    { q: "O prazo de um trabalho importante acaba hoje e você não começou.", img: "situação_3.png", 
+      opcoes: [{ t: "Trabalhar sob pressão", v: "impulsivo", n: "Adrenalina e risco." }, { t: "Pedir adiamento", v: "cauteloso", n: "Medo do fracasso." }, { t: "Focar e fazer o melhor", v: "determinado", n: "Execução pragmática." }, { t: "Pedir ajuda a alguém", v: "pacificador", n: "Colaboração buscada." }] },
+    
+    { q: "Você recebeu um feedback negativo sobre um projeto autoral seu.", img: "situação_4.png", 
+      opcoes: [{ t: "Ficar na defensiva", v: "impulsivo", n: "Ego ferido." }, { t: "Anotar e melhorar", v: "determinado", n: "Evolução técnica." }, { t: "Se sentir incapaz", v: "cauteloso", n: "Insegurança gerada." }, { t: "Agradecer e refletir", v: "pacificador", n: "Maturidade emocional." }] },
+    
+    { q: "Seus pais discordam totalmente da carreira que você quer seguir.", img: "situação_5.png", 
+      opcoes: [{ t: "Discutir e impor", v: "impulsivo", n: "Atrito familiar." }, { t: "Tentar um acordo", v: "pacificador", n: "Mediação buscada." }, { t: "Fazer escondido", v: "cauteloso", n: "Ocultação de planos." }, { t: "Apresentar fatos", v: "determinado", n: "Persuasão lógica." }] },
+    
+    { q: "Você está em um evento cultural e percebe que perdeu o celular.", img: "situação_6.png", 
+      opcoes: [{ t: "Entrar em pânico", v: "impulsivo", n: "Descontrole momentâneo." }, { t: "Pedir ajuda no balcão", v: "determinado", n: "Ação coordenada." }, { t: "Refazer seus passos", v: "cauteloso", n: "Análise retrospectiva." }, { t: "Manter a calma", v: "pacificador", n: "Equilíbrio emocional." }] },
+    
+    { q: "Um colega está espalhando um boato falso sobre você.", img: "situação_7.png", 
+      opcoes: [{ t: "Expor ele publicamente", v: "impulsivo", n: "Vingança escolhida." }, { t: "Chamar para conversa", v: "pacificador", n: "Resolução diplomática." }, { t: "Deixar que esqueçam", v: "cauteloso", n: "Espera passiva." }, { t: "Provar a verdade", v: "determinado", n: "Defesa objetiva." }] },
+    
+    { q: "Você sente que está viciado no celular e isso atrapalha seu sono.", img: "situação_8.png", 
+      opcoes: [{ t: "Desinstalar tudo", v: "determinado", n: "Corte radical." }, { t: "Tentar diminuir", v: "pacificador", n: "Mudança gradual." }, { t: "Aceitar que é assim", v: "impulsivo", n: "Conformismo." }, { t: "Colocar limites", v: "cauteloso", n: "Controle vigiado." }] },
+    
+    { q: "Alguém te pede um favor que vai ocupar todo seu fim de semana.", img: "situação_9.png", 
+      opcoes: [{ t: "Dizer 'não' educadamente", v: "determinado", n: "Limite estabelecido." }, { t: "Dizer 'sim' e sofrer", v: "cauteloso", n: "Auto-sacrifício." }, { t: "Inventar uma desculpa", v: "impulsivo", n: "Fuga criativa." }, { t: "Ajudar com alegria", v: "pacificador", n: "Altruísmo real." }] },
+    
+    { q: "Como você avalia sua capacidade de lidar com imprevistos hoje?", img: "situação_10.png", 
+      opcoes: [{ t: "Sou imprevisível", v: "impulsivo", n: "Instabilidade." }, { t: "Sou resiliente", v: "pacificador", n: "Flexibilidade." }, { t: "Sou metódico", v: "determinado", n: "Organização." }, { t: "Sou inseguro", v: "cauteloso", n: "Dúvida constante." }] }
+    ];
+
+
+
+        function comecarJogo() {
+            const musica = document.getElementById('bg-music');
+            musica.volume = 0.4;
+            musica.play().catch(e => console.log("Áudio bloqueado"));
+            document.getElementById('intro-screen').style.opacity = '0';
+            setTimeout(() => { document.getElementById('intro-screen').style.display = 'none'; carregarCena(); }, 1000);
         }
 
         function carregarCena() {
-            if (diaAtual >= jornada.length) {
-                finalizarJogo();
-                return;
-            }
+    if (diaAtual >= jornada.length) { finalizarJogoIA(); return; }
+    const cena = jornada[diaAtual];
+    
+    // Atualiza a imagem de fundo
+    const bgElement = document.getElementById('bg-image');
+    bgElement.style.backgroundImage = `url('${cena.img}')`;
+    
+    document.getElementById('pergunta-texto').innerText = cena.q;
+    const container = document.getElementById('botoes-respostas');
+    container.innerHTML = "";
+    
+    cena.opcoes.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "btn-escolha";
+        btn.innerText = opt.t;
+        btn.onclick = () => escolher(opt.n, opt.v);
+        container.appendChild(btn);
+    });
 
-            const cena = jornada[diaAtual];
-            document.getElementById('bg-image').style.backgroundImage = `url('${cena.img}')`;
-            document.getElementById('pergunta-texto').innerText = cena.q;
-
-            const container = document.getElementById('botoes-respostas');
-            container.innerHTML = "";
-            cena.opcoes.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.className = "btn-escolha";
-                btn.innerText = opt.t;
-                btn.onclick = () => escolher(opt.n, opt.v);
-                container.appendChild(btn);
-            });
-
-            const bar = document.getElementById('timer-bar');
-            bar.classList.remove('animar-timer');
-            void bar.offsetWidth; 
-            bar.classList.add('animar-timer');
-
-            clearTimeout(timer);
-            timer = setTimeout(() => {
-                escolher("O silêncio foi sua resposta.", "cauteloso");
-            }, 20000);
-        }
+    const bar = document.getElementById('timer-bar');
+    bar.classList.remove('animar-timer');
+    void bar.offsetWidth; 
+    bar.classList.add('animar-timer');
+    clearTimeout(timer);
+    timer = setTimeout(() => escolher("O tempo esgotou.", "cauteloso"), 20000);
+}
 
         function escolher(notificacao, valor) {
             clearTimeout(timer);
-            if(valor) pontuacao[valor]++;
-            mostrarNotificacao(notificacao);
+            dadosTreinamento.push(valor || "cauteloso");
+            const n = document.getElementById('notification');
+            n.innerText = notificacao;
+            n.style.opacity = 1;
+            setTimeout(() => { n.style.opacity = 0; }, 2500);
             diaAtual++;
-            setTimeout(carregarCena, 2000);
+            setTimeout(carregarCena, 1200);
         }
 
-        function finalizarJogo() {
-            const perfil = Object.keys(pontuacao).reduce((a, b) => pontuacao[a] > pontuacao[b] ? a : b);
+        function finalizarJogoIA() {
+            let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25 };
             
-            const analises = {
-                pacificador: "Sua jornada revela um espírito pacificador e resiliente.\nVocê prioriza a harmonia e o bem-estar coletivo acima do ego.\nSuas decisões mostram maturidade ao enfrentar conflitos com calma.\nAge como um porto seguro para aqueles que estão ao seu redor.\nBusca a cura em vez da culpa, cultivando relacionamentos saudáveis.\nSeu caráter foi moldado pela empatia e pela busca do equilíbrio.",
-                determinado: "Sua jornada revela um caráter firme, focado e determinado.\nVocê não foge da responsabilidade e encara a verdade com clareza.\nSuas escolhas mostram alguém que valoriza a integridade e a ordem.\nAge com pragmatismo, buscando soluções eficientes para os problemas.\nNão se deixa abalar por críticas, mantendo o foco em seus princípios.\nSeu caráter foi moldado pela disciplina e pela autorresponsabilidade.",
-                cauteloso: "Sua jornada revela uma personalidade cautelosa e observadora.\nVocê busca proteção e evita exposições desnecessárias em conflitos.\nSuas decisões mostram um desejo profundo de evitar erros fatais.\nAge com discrição, preferindo o silêncio ao confronto direto agora.\nAinda que guarde medos, sua prudência evita desgastes imediatos.\nSeu caráter foi moldado pela autoproteção e análise do ambiente.",
-                impulsivo: "Sua jornada revela um espírito intenso, prático e reagente.\nVocê age conforme suas emoções e não hesita em se posicionar.\nSuas decisões mostram alguém que vive o agora com muita paixão.\nAge com rapidez, embora isso possa gerar tensões inesperadas.\nSua autenticidade é marcante, mesmo que traga desafios sociais.\nSeu caráter foi moldado pela coragem de agir e pela vivacidade."
+            dadosTreinamento.forEach(escolha => {
+                for (let perfil in probs) {
+                    probs[perfil] *= modeloIA[escolha][perfil];
+                }
+                let total = Object.values(probs).reduce((a, b) => a + b);
+                for (let perfil in probs) probs[perfil] /= total;
+            });
+
+            const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
+            const confianca = Math.round(probs[perfilFinal] * 100);
+
+            const analisesIA = {
+                pacificador: "O modelo estatístico detectou um algoritmo de harmonia social.\nVocê busca o equilíbrio entre as partes, priorizando a diplomacia no cotidiano.",
+                determinado: "O classificador identifica um padrão de foco e resolução.\nSuas decisões são práticas e voltadas para resultados concretos nas tarefas diárias.",
+                cauteloso: "A IA detectou um padrão de análise de risco e autopreservação.\nVocê prefere observar e calcular antes de agir em situações de incerteza social.",
+                impulsivo: "Seu perfil indica alta reatividade aos estímulos do ambiente.\nVocê toma decisões rápidas baseadas na intuição e no momento presente."
             };
 
             document.getElementById('game-interface').classList.add('final-screen');
-            document.getElementById('pergunta-texto').style.fontSize = "0.95rem";
-            document.getElementById('pergunta-texto').style.whiteSpace = "pre-line";
-            document.getElementById('pergunta-texto').innerHTML = "<b>ANÁLISE DE PERSONALIDADE:</b>\n\n" + analises[perfil];
+            const txt = document.getElementById('pergunta-texto');
+            txt.style.fontSize = "0.95rem";
+            txt.style.whiteSpace = "pre-line";
+            txt.innerHTML = `<b>DIAGNÓSTICO COMPORTAMENTAL (IA):</b>\nConfiança do Algoritmo: ${confianca}%\n\n${analisesIA[perfilFinal]}`;
+            
             document.getElementById('botoes-respostas').innerHTML = `<button class="btn-escolha" onclick="location.reload()">REINICIAR</button>`;
             document.getElementById('timer-container').style.display = 'none';
         }
-
-        </script>
+    </script>
 </body>
 </html>
