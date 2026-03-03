@@ -32,8 +32,7 @@
 
     <div id="intro-screen">
         <div id="intro-bg"></div>
-        <!-- <h1 class="titulo-intro">EQUILÍBRIO</h1> -->
-         <br><br><br><br><br><br><br><br><br><br><br><br>
+        <br><br><br><br><br><br><br><br><br><br><br><br>
         <p style="margin-bottom: 40px; letter-spacing: 2px;">(IA POWERED)</p>
         <button class="btn-play" onclick="comecarJogo()">INICIAR</button>
     </div>
@@ -59,74 +58,63 @@
         let timer;
 
         const jornada = [
-    { q: "Um amigo postou algo que te ofendeu indiretamente nos Stories. O que você faz?", img: "situação_1.png", 
-      opcoes: [{ t: "Responder no privado", v: "impulsivo", n: "Confronto imediato." }, { t: "Apenas silenciar", v: "cauteloso", n: "Evitação passiva." }, { t: "Conversar pessoalmente", v: "pacificador", n: "Busca por diálogo." }, { t: "Ignorar e seguir", v: "determinado", n: "Foco no próprio dia." }] },
-    
-    { q: "Você vê alguém sendo excluído em uma roda de amigos. Qual sua atitude?", img: "situação_2.png", 
-      opcoes: [{ t: "Observar de longe", v: "cauteloso", n: "Receio de se envolver." }, { t: "Puxar assunto com ela", v: "pacificador", n: "Inclusão promovida." }, { t: "Chamar no canto depois", v: "determinado", n: "Apoio estratégico." }, { t: "Fazer uma piada", v: "impulsivo", n: "Tentativa de quebrar gelo." }] },
-    
-    { q: "O prazo de um trabalho importante acaba hoje e você não começou.", img: "situação_3.png", 
-      opcoes: [{ t: "Trabalhar sob pressão", v: "impulsivo", n: "Adrenalina e risco." }, { t: "Pedir adiamento", v: "cauteloso", n: "Medo do fracasso." }, { t: "Focar e fazer o melhor", v: "determinado", n: "Execução pragmática." }, { t: "Pedir ajuda a alguém", v: "pacificador", n: "Colaboração buscada." }] },
-    
-    { q: "Você recebeu um feedback negativo sobre um projeto autoral seu.", img: "situação_4.png", 
-      opcoes: [{ t: "Ficar na defensiva", v: "impulsivo", n: "Ego ferido." }, { t: "Anotar e melhorar", v: "determinado", n: "Evolução técnica." }, { t: "Se sentir incapaz", v: "cauteloso", n: "Insegurança gerada." }, { t: "Agradecer e refletir", v: "pacificador", n: "Maturidade emocional." }] },
-    
-    { q: "Seus pais discordam totalmente da carreira que você quer seguir.", img: "situação_5.png", 
-      opcoes: [{ t: "Discutir e impor", v: "impulsivo", n: "Atrito familiar." }, { t: "Tentar um acordo", v: "pacificador", n: "Mediação buscada." }, { t: "Fazer escondido", v: "cauteloso", n: "Ocultação de planos." }, { t: "Apresentar fatos", v: "determinado", n: "Persuasão lógica." }] },
-    
-    { q: "Você está em um evento cultural e percebe que perdeu o celular.", img: "situação_6.png", 
-      opcoes: [{ t: "Entrar em pânico", v: "impulsivo", n: "Descontrole momentâneo." }, { t: "Pedir ajuda no balcão", v: "determinado", n: "Ação coordenada." }, { t: "Refazer seus passos", v: "cauteloso", n: "Análise retrospectiva." }, { t: "Manter a calma", v: "pacificador", n: "Equilíbrio emocional." }] },
-    
-    { q: "Um colega está espalhando um boato falso sobre você.", img: "situação_7.png", 
-      opcoes: [{ t: "Expor ele publicamente", v: "impulsivo", n: "Vingança escolhida." }, { t: "Chamar para conversa", v: "pacificador", n: "Resolução diplomática." }, { t: "Deixar que esqueçam", v: "cauteloso", n: "Espera passiva." }, { t: "Provar a verdade", v: "determinado", n: "Defesa objetiva." }] },
-    
-    { q: "Você sente que está viciado no celular e isso atrapalha seu sono.", img: "situação_8.png", 
-      opcoes: [{ t: "Desinstalar tudo", v: "determinado", n: "Corte radical." }, { t: "Tentar diminuir", v: "pacificador", n: "Mudança gradual." }, { t: "Aceitar que é assim", v: "impulsivo", n: "Conformismo." }, { t: "Colocar limites", v: "cauteloso", n: "Controle vigiado." }] },
-    
-    { q: "Alguém te pede um favor que vai ocupar todo seu fim de semana.", img: "situação_9.png", 
-      opcoes: [{ t: "Dizer 'não' educadamente", v: "determinado", n: "Limite estabelecido." }, { t: "Dizer 'sim' e sofrer", v: "cauteloso", n: "Auto-sacrifício." }, { t: "Inventar uma desculpa", v: "impulsivo", n: "Fuga criativa." }, { t: "Ajudar com alegria", v: "pacificador", n: "Altruísmo real." }] },
-    
-    { q: "Como você avalia sua capacidade de lidar com imprevistos hoje?", img: "situação_10.png", 
-      opcoes: [{ t: "Sou imprevisível", v: "impulsivo", n: "Instabilidade." }, { t: "Sou resiliente", v: "pacificador", n: "Flexibilidade." }, { t: "Sou metódico", v: "determinado", n: "Organização." }, { t: "Sou inseguro", v: "cauteloso", n: "Dúvida constante." }] }
-    ];
-
-
+            { q: "Um amigo postou algo que te ofendeu indiretamente nos Stories. O que você faz?", img: "situação_1.png", 
+              opcoes: [{ t: "Responder no privado", v: "impulsivo", n: "Confronto imediato." }, { t: "Apenas silenciar", v: "cauteloso", n: "Evitação passiva." }, { t: "Conversar pessoalmente", v: "pacificador", n: "Busca por diálogo." }, { t: "Ignorar e seguir", v: "determinado", n: "Foco no próprio dia." }] },
+            { q: "Você vê alguém sendo excluído em uma roda de amigos. Qual sua atitude?", img: "situação_2.png", 
+              opcoes: [{ t: "Observar de longe", v: "cauteloso", n: "Receio de se envolver." }, { t: "Puxar assunto com ela", v: "pacificador", n: "Inclusão promovida." }, { t: "Chamar no canto depois", v: "determinado", n: "Apoio estratégico." }, { t: "Fazer uma piada", v: "impulsivo", n: "Tentativa de quebrar gelo." }] },
+            { q: "O prazo de um trabalho importante acaba hoje e você não começou.", img: "situação_3.png", 
+              opcoes: [{ t: "Trabalhar sob pressão", v: "impulsivo", n: "Adrenalina e risco." }, { t: "Pedir adiamento", v: "cauteloso", n: "Medo do fracasso." }, { t: "Focar e fazer o melhor", v: "determinado", n: "Execução pragmática." }, { t: "Pedir ajuda a alguém", v: "pacificador", n: "Colaboração buscada." }] },
+            { q: "Você recebeu um feedback negativo sobre um projeto autoral seu.", img: "situação_4.png", 
+              opcoes: [{ t: "Ficar na defensiva", v: "impulsivo", n: "Ego ferido." }, { t: "Anotar e melhorar", v: "determinado", n: "Evolução técnica." }, { t: "Se sentir incapaz", v: "cauteloso", n: "Insegurança gerada." }, { t: "Agradecer e refletir", v: "pacificador", n: "Maturidade emocional." }] },
+            { q: "Seus pais discordam totalmente da carreira que você quer seguir.", img: "situação_5.png", 
+              opcoes: [{ t: "Discutir e impor", v: "impulsivo", n: "Atrito familiar." }, { t: "Tentar um acordo", v: "pacificador", n: "Mediação buscada." }, { t: "Fazer escondido", v: "cauteloso", n: "Ocultação de planos." }, { t: "Apresentar fatos", v: "determinado", n: "Persuasão lógica." }] },
+            { q: "Você está em um evento cultural e percebe que perdeu o celular.", img: "situação_6.png", 
+              opcoes: [{ t: "Entrar em pânico", v: "impulsivo", n: "Descontrole momentâneo." }, { t: "Pedir ajuda no balcão", v: "determinado", n: "Ação coordenada." }, { t: "Refazer seus passos", v: "cauteloso", n: "Análise retrospectiva." }, { t: "Manter a calma", v: "pacificador", n: "Equilíbrio emocional." }] },
+            { q: "Um colega está espalhando um boato falso sobre você.", img: "situação_7.png", 
+              opcoes: [{ t: "Expor ele publicamente", v: "impulsivo", n: "Vingança escolhida." }, { t: "Chamar para conversa", v: "pacificador", n: "Resolução diplomática." }, { t: "Deixar que esqueçam", v: "cauteloso", n: "Espera passiva." }, { t: "Provar a verdade", v: "determinado", n: "Defesa objetiva." }] },
+            { q: "Você sente que está viciado no celular e isso atrapalha seu sono.", img: "situação_8.png", 
+              opcoes: [{ t: "Desinstalar tudo", v: "determinado", n: "Corte radical." }, { t: "Tentar diminuir", v: "pacificador", n: "Mudança gradual." }, { t: "Aceitar que é assim", v: "impulsivo", n: "Conformismo." }, { t: "Colocar limites", v: "cauteloso", n: "Controle vigiado." }] },
+            { q: "Alguém te pede um favor que vai ocupar todo seu fim de semana.", img: "situação_9.png", 
+              opcoes: [{ t: "Dizer 'não' educadamente", v: "determinado", n: "Limite estabelecido." }, { t: "Dizer 'sim' e sofrer", v: "cauteloso", n: "Auto-sacrifício." }, { t: "Inventar uma desculpa", v: "impulsivo", n: "Fuga criativa." }, { t: "Ajudar com alegria", v: "pacificador", n: "Altruísmo real." }] },
+            { q: "Como você avalia sua capacidade de lidar com imprevistos hoje?", img: "situação_10.png", 
+              opcoes: [{ t: "Sou imprevisível", v: "impulsivo", n: "Instabilidade." }, { t: "Sou resiliente", v: "pacificador", n: "Flexibilidade." }, { t: "Sou metódico", v: "determinado", n: "Organização." }, { t: "Sou inseguro", v: "cauteloso", n: "Dúvida constante." }] }
+        ];
 
         function comecarJogo() {
             const musica = document.getElementById('bg-music');
             musica.volume = 0.4;
-            musica.play().catch(e => console.log("Áudio bloqueado"));
+            // A música começa a tocar aqui, no momento do clique
+            musica.play().catch(e => console.log("Erro ao tocar áudio:", e));
+            
             document.getElementById('intro-screen').style.opacity = '0';
-            setTimeout(() => { document.getElementById('intro-screen').style.display = 'none'; carregarCena(); }, 1000);
+            setTimeout(() => { 
+                document.getElementById('intro-screen').style.display = 'none'; 
+                carregarCena(); 
+            }, 1000);
         }
 
         function carregarCena() {
-    if (diaAtual >= jornada.length) { finalizarJogoIA(); return; }
-    const cena = jornada[diaAtual];
-    
-    // Atualiza a imagem de fundo
-    const bgElement = document.getElementById('bg-image');
-    bgElement.style.backgroundImage = `url('${cena.img}')`;
-    
-    document.getElementById('pergunta-texto').innerText = cena.q;
-    const container = document.getElementById('botoes-respostas');
-    container.innerHTML = "";
-    
-    cena.opcoes.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = "btn-escolha";
-        btn.innerText = opt.t;
-        btn.onclick = () => escolher(opt.n, opt.v);
-        container.appendChild(btn);
-    });
-
-    const bar = document.getElementById('timer-bar');
-    bar.classList.remove('animar-timer');
-    void bar.offsetWidth; 
-    bar.classList.add('animar-timer');
-    clearTimeout(timer);
-    timer = setTimeout(() => escolher("O tempo esgotou.", "cauteloso"), 20000);
-}
+            if (diaAtual >= jornada.length) { finalizarJogoIA(); return; }
+            const cena = jornada[diaAtual];
+            const bgElement = document.getElementById('bg-image');
+            bgElement.style.backgroundImage = `url('${cena.img}')`;
+            document.getElementById('pergunta-texto').innerText = cena.q;
+            const container = document.getElementById('botoes-respostas');
+            container.innerHTML = "";
+            cena.opcoes.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "btn-escolha";
+                btn.innerText = opt.t;
+                btn.onclick = () => escolher(opt.n, opt.v);
+                container.appendChild(btn);
+            });
+            const bar = document.getElementById('timer-bar');
+            bar.classList.remove('animar-timer');
+            void bar.offsetWidth; 
+            bar.classList.add('animar-timer');
+            clearTimeout(timer);
+            timer = setTimeout(() => escolher("O tempo esgotou.", "cauteloso"), 20000);
+        }
 
         function escolher(notificacao, valor) {
             clearTimeout(timer);
@@ -141,7 +129,6 @@
 
         function finalizarJogoIA() {
             let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25 };
-            
             dadosTreinamento.forEach(escolha => {
                 for (let perfil in probs) {
                     probs[perfil] *= modeloIA[escolha][perfil];
@@ -149,23 +136,19 @@
                 let total = Object.values(probs).reduce((a, b) => a + b);
                 for (let perfil in probs) probs[perfil] /= total;
             });
-
             const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
             const confianca = Math.round(probs[perfilFinal] * 100);
-
             const analisesIA = {
                 pacificador: "O modelo estatístico detectou um algoritmo de harmonia social.\nVocê busca o equilíbrio entre as partes, priorizando a diplomacia no cotidiano.",
                 determinado: "O classificador identifica um padrão de foco e resolução.\nSuas decisões são práticas e voltadas para resultados concretos nas tarefas diárias.",
                 cauteloso: "A IA detectou um padrão de análise de risco e autopreservação.\nVocê prefere observar e calcular antes de agir em situações de incerteza social.",
                 impulsivo: "Seu perfil indica alta reatividade aos estímulos do ambiente.\nVocê toma decisões rápidas baseadas na intuição e no momento presente."
             };
-
             document.getElementById('game-interface').classList.add('final-screen');
             const txt = document.getElementById('pergunta-texto');
             txt.style.fontSize = "0.95rem";
             txt.style.whiteSpace = "pre-line";
             txt.innerHTML = `<b>DIAGNÓSTICO COMPORTAMENTAL (IA):</b>\nConfiança do Algoritmo: ${confianca}%\n\n${analisesIA[perfilFinal]}`;
-            
             document.getElementById('botoes-respostas').innerHTML = `<button class="btn-escolha" onclick="location.reload()">REINICIAR</button>`;
             document.getElementById('timer-container').style.display = 'none';
         }
