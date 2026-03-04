@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Equilíbrio: Eco-Edition (Greenpeace & AI)</title>
+    <style>
+        :root { --greenpeace-green: #3d7e1f; --greenpeace-yellow: #ffde00; --text-white: #ffffff; --timer-speed: 20s; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Segoe UI', sans-serif; overflow: hidden; color: var(--text-white); display: flex; flex-direction: column; }
+        
+        #intro-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 1s ease; }
+        #intro-bg { position: absolute; width: 100%; height: 100%; background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.7)), url('equilibrioeco.png'); background-size: cover; background-position: center; opacity: 0.8; z-index: -1; }
+        
+        .titulo-intro { font-size: 3rem; letter-spacing: 8px; color: var(--greenpeace-yellow); text-transform: uppercase; text-align: center; text-shadow: 0 0 20px rgba(255, 222, 0, 0.4); margin-bottom: 0; }
+        .subtitulo-intro { margin-bottom: 40px; letter-spacing: 2px; color: var(--greenpeace-green); font-weight: bold; }
+        
+        .btn-play { background: transparent; border: 2px solid var(--greenpeace-yellow); color: var(--greenpeace-yellow); padding: 15px 50px; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; letter-spacing: 3px; transition: 0.3s; }
+        .btn-play:hover { background: var(--greenpeace-yellow); color: #000; }
+        
+        #container-visual { flex: 1; position: relative; width: 100%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #bg-image { width: 100%; height: 100%; background-size: contain; background-repeat: no-repeat; background-position: center; transition: background-image 0.5s ease-in-out; }
+        
+        #game-interface { height: 42%; background: #1a1a1a; padding: 15px 30px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--greenpeace-green); z-index: 10; }
+        
+        #notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-style: italic; background: rgba(61, 126, 31, 0.9); padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.5s; z-index: 100; }
+        
+        #pergunta-texto { font-size: 1.1rem; line-height: 1.4; font-weight: 600; text-align: center; color: #eee; }
+        
+        #botoes-respostas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-escolha { background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 12px; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-escolha:hover { background: var(--greenpeace-green); border-color: var(--greenpeace-yellow); transform: translateY(-2px); }
+        
+        #timer-container { width: 100%; height: 6px; background: #333; margin-top: 10px; border-radius: 3px; }
+        #timer-bar { width: 100%; height: 100%; background: var(--greenpeace-yellow); border-radius: 3px; }
+        .animar-timer { animation: timer-shrink var(--timer-speed) linear forwards; }
+        @keyframes timer-shrink { from { width: 100%; } to { width: 0%; } }
+        .final-screen #botoes-respostas { display: flex; justify-content: center; }
+    </style>
+</head>
+<body>
+    <audio id="bg-music" loop><source src="mixkit-mysterious-long-swell-2671.mp3" type="audio/mpeg"></audio>
+
+    <div id="intro-screen">
+        <div id="intro-bg"></div>
+        <br><br><br><br><br><br><br><br><br><br>
+        <h1 class="titulo-intro">EQUILÍBRIO</h1>
+        <p class="subtitulo-intro">ECO-EDITION (AI POWERED)</p>
+        <button class="btn-play" onclick="comecarJogo()">INICIAR MISSÃO</button>
+    </div>
+
+    <div id="notification"></div>
+    <div id="container-visual"><div id="bg-image"></div></div>
+    <div id="game-interface">
+        <div id="pergunta-texto">Carregando dados da biosfera...</div>
+        <div id="botoes-respostas"></div>
+        <div id="timer-container"><div id="timer-bar"></div></div>
+    </div>
+
+    <script>
+        const modeloIA = {
+            pacificador: { pacificador: 0.85, determinado: 0.10, cauteloso: 0.03, impulsivo: 0.02 },
+            determinado: { pacificador: 0.05, determinado: 0.85, cauteloso: 0.05, impulsivo: 0.05 },
+            cauteloso:   { pacificador: 0.10, determinado: 0.05, cauteloso: 0.80, impulsivo: 0.05 },
+            impulsivo:   { pacificador: 0.02, determinado: 0.08, cauteloso: 0.10, impulsivo: 0.80 }
+        };
+
+        let dadosTreinamento = []; 
+        let diaAtual = 0;
+        let timer;
+
+        const jornada = [
+            { q: "Você vê uma empresa despejando resíduos químicos num rio local. O que faz?", img: "poluicao_rio.png", 
+              opcoes: [{ t: "Filmar e denunciar", v: "impulsivo", n: "Exposição imediata." }, { t: "Assinar petição", v: "cauteloso", n: "Apoio processual." }, { t: "Dialogar com a empresa", v: "pacificador", n: "Busca por conciliação." }, { t: "Organizar protesto", v: "determinado", n: "Mobilização direta." }] },
+            { q: "Uma área de floresta próxima será derrubada para um shopping. Qual sua reação?", img: "desmatamento.png", 
+              opcoes: [{ t: "Acompanhar leis", v: "cauteloso", n: "Vigilância técnica." }, { t: "Plantar árvores", v: "pacificador", n: "Ação regenerativa." }, { t: "Boicotar o shopping", v: "determinado", n: "Impacto financeiro." }, { t: "Interromper as máquinas", v: "impulsivo", n: "Ativismo radical." }] },
+            { q: "O consumo de plástico descartável na sua faculdade é alarmante.", img: "plastico.png", 
+              opcoes: [{ t: "Sugerir lei interna", v: "determinado", n: "Mudança estrutural." }, { t: "Usar meu próprio copo", v: "cauteloso", n: "Exemplo individual." }, { t: "Fazer oficina de reciclagem", v: "pacificador", n: "Educação coletiva." }, { t: "Recolher o lixo agora", v: "impulsivo", n: "Ação pontual." }] },
+            { q: "Um político nega abertamente as alterações climáticas na TV.", img: "politico_clima.png", 
+              opcoes: [{ t: "Responder com memes", v: "impulsivo", n: "Guerra de narrativa." }, { t: "Enviar dados científicos", v: "pacificador", n: "Tentativa de ensino." }, { t: "Ignorar e votar em outro", v: "cauteloso", n: "Foco eleitoral." }, { t: "Desmentir com fact-check", v: "determinado", n: "Combate à desinformação." }] },
+            { q: "Você tem a chance de virar voluntário no Greenpeace, mas exige tempo.", img: "voluntariado.png", 
+              opcoes: [{ t: "Recusar por agora", v: "cauteloso", n: "Preservação de tempo." }, { t: "Aceitar imediatamente", v: "impulsivo", n: "Entrega total." }, { t: "Ajudar nas redes sociais", v: "pacificador", n: "Apoio digital." }, { t: "Comprometer-se seriamente", v: "determinado", n: "Dedicação focada." }] },
+            { q: "Sua marca de roupa favorita usa mão de obra poluente.", img: "moda_poluente.png", 
+              opcoes: [{ t: "Parar de comprar", v: "determinado", n: "Consumo consciente." }, { t: "Cobrar mudanças", v: "pacificador", n: "Pressão corporativa." }, { t: "Pesquisar alternativas", v: "cauteloso", n: "Busca de mercado." }, { t: "Doar as roupas antigas", v: "impulsivo", n: "Desapego rápido." }] },
+            { q: "O desperdício de comida no refeitório é imenso todos os dias.", img: "desperdicio_comida.png", 
+              opcoes: [{ t: "Reclamar com a gerência", v: "impulsivo", n: "Confronto direto." }, { t: "Propor compostagem", v: "pacificador", n: "Solução sustentável." }, { t: "Comer apenas o necessário", v: "cauteloso", n: "Hábito pessoal." }, { t: "Criar campanha de aviso", v: "determinado", n: "Conscientização." }] },
+            { q: "Um grande banco financia projetos de petróleo no Ártico.", img: "banco_petroleo.png", 
+              opcoes: [{ t: "Trocar de banco", v: "determinado", n: "Desinvestimento." }, { t: "Escrever carta de protesto", v: "pacificador", n: "Voz diplomática." }, { t: "Ler os termos do banco", v: "cauteloso", n: "Análise de contrato." }, { t: "Fechar conta publicamente", v: "impulsivo", n: "Impacto mediático." }] },
+            { q: "Como você se sente sobre o futuro do planeta Terra?", img: "futuro_terra.png", 
+              opcoes: [{ t: "Pessimista/Ansioso", v: "impulsivo", n: "Esgotamento emocional." }, { t: "Esperançoso/Ativo", v: "pacificador", n: "Otimismo crítico." }, { t: "Realista/Preparado", v: "determinado", n: "Pragmatismo." }, { t: "Indiferente/Distante", v: "cauteloso", n: "Desconexão." }] },
+            { q: "Sua cidade sofre com a falta de ciclovias e excesso de carros.", img: "cidade_transito.png", 
+              opcoes: [{ t: "Andar só de bike hoje", v: "impulsivo", n: "Ação de risco." }, { t: "Pressionar a prefeitura", v: "determinado", n: "Ação política." }, { t: "Usar transporte público", v: "cauteloso", n: "Adaptação urbana." }, { t: "Criar grupo de carona", v: "pacificador", n: "Mobilidade partilhada." }] }
+        ];
+
+        function comecarJogo() {
+            const musica = document.getElementById('bg-music');
+            musica.volume = 0.4;
+            musica.play().catch(e => console.log("Áudio bloqueado"));
+            document.getElementById('intro-screen').style.opacity = '0';
+            setTimeout(() => { document.getElementById('intro-screen').style.display = 'none'; carregarCena(); }, 1000);
+        }
+
+        function carregarCena() {
+            if (diaAtual >= jornada.length) { finalizarJogoIA(); return; }
+            const cena = jornada[diaAtual];
+            document.getElementById('bg-image').style.backgroundImage = `url('${cena.img}')`;
+            document.getElementById('pergunta-texto').innerText = cena.q;
+            const container = document.getElementById('botoes-respostas');
+            container.innerHTML = "";
+            cena.opcoes.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "btn-escolha";
+                btn.innerText = opt.t;
+                btn.onclick = () => escolher(opt.n, opt.v);
+                container.appendChild(btn);
+            });
+            const bar = document.getElementById('timer-bar');
+            bar.classList.remove('animar-timer');
+            void bar.offsetWidth; 
+            bar.classList.add('animar-timer');
+            clearTimeout(timer);
+            timer = setTimeout(() => escolher("O tempo acabou.", "cauteloso"), 20000);
+        }
+
+        function escolher(notificacao, valor) {
+            clearTimeout(timer);
+            dadosTreinamento.push(valor || "cauteloso");
+            const n = document.getElementById('notification');
+            n.innerText = notificacao;
+            n.style.opacity = 1;
+            setTimeout(() => { n.style.opacity = 0; }, 2500);
+            diaAtual++;
+            setTimeout(carregarCena, 1200);
+        }
+
+        function finalizarJogoIA() {
+            let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25 };
+            dadosTreinamento.forEach(escolha => {
+                for (let perfil in probs) probs[perfil] *= modeloIA[escolha][perfil];
+                let total = Object.values(probs).reduce((a, b) => a + b);
+                for (let perfil in probs) probs[perfil] /= total;
+            });
+
+            const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
+            const confianca = Math.round(probs[perfilFinal] * 100);
+
+            const analisesIA = {
+                pacificador: "PERFIL: ECO-DIPLOMATA.\nVocê busca o equilíbrio através da educação e diálogo. Acredita que a mudança vem da harmonia entre a sociedade e a natureza.",
+                determinado: "PERFIL: ATIVISTA ESTRATÉGICO.\nFoco total em resultados e mudanças sistêmicas. Suas escolhas priorizam leis, boicotes e impacto real na estrutura.",
+                cauteloso: "PERFIL: OBSERVADOR CONSCIENTE.\nVocê prefere analisar os riscos e agir com cautela, focando em mudanças individuais antes de se expor coletivamente.",
+                impulsivo: "PERFIL: MOBILIZADOR DE IMPACTO.\nReação rápida a injustiças! Você é movido pela urgência climática e não tem medo de agir imediatamente."
+            };
+
+            document.getElementById('game-interface').classList.add('final-screen');
+            const txt = document.getElementById('pergunta-texto');
+            txt.style.fontSize = "0.95rem";
+            txt.style.whiteSpace = "pre-line";
+            txt.innerHTML = `<b>RELATÓRIO DE IMPACTO AMBIENTAL (IA):</b>\nPrecisão do Diagnóstico: ${confianca}%\n\n${analisesIA[perfilFinal]}`;
+            
+            document.getElementById('botoes-respostas').innerHTML = `<button class="btn-escolha" onclick="location.reload()">REINICIAR MISSÃO</button>`;
+            document.getElementById('timer-container').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
