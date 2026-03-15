@@ -22,7 +22,7 @@
         
         #game-interface { height: 42%; background: #1a1a1a; padding: 15px 30px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--greenpeace-green); z-index: 10; }
         
-        #notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-style: italic; background: rgba(61, 126, 31, 0.9); padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.5s; z-index: 100; }
+        #notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-style: italic; background: rgba(61, 126, 31, 0.9); padding: 10px 20px; border-radius: 5px; opacity: 0; transition: opacity 0.5s; z-index: 100; text-align: center; }
         
         #pergunta-texto { font-size: 1.1rem; line-height: 1.4; font-weight: 600; text-align: center; color: #eee; }
         
@@ -38,7 +38,7 @@
     </style>
 </head>
 <body>
-    <audio id="bg-music" loop><source src="mixkit-mysterious-long-swell-2671.mp3" type="audio/mpeg"></audio>
+    <audio id="bg-music" loop><source src="slap-bass-riff-dan-barracuda-1-00-04.mp3" type="audio/mpeg"></audio>
 
     <div id="intro-screen">
         <div id="intro-bg"></div>
@@ -51,17 +51,18 @@
     <div id="notification"></div>
     <div id="container-visual"><div id="bg-image"></div></div>
     <div id="game-interface">
-        <div id="pergunta-texto">Carregando dados da biosfera...</div>
+        <div id="pergunta-texto">Carregando biosfera...</div>
         <div id="botoes-respostas"></div>
         <div id="timer-container"><div id="timer-bar"></div></div>
     </div>
 
     <script>
         const modeloIA = {
-            pacificador: { pacificador: 0.85, determinado: 0.10, cauteloso: 0.03, impulsivo: 0.02 },
-            determinado: { pacificador: 0.05, determinado: 0.85, cauteloso: 0.05, impulsivo: 0.05 },
-            cauteloso:   { pacificador: 0.10, determinado: 0.05, cauteloso: 0.80, impulsivo: 0.05 },
-            impulsivo:   { pacificador: 0.02, determinado: 0.08, cauteloso: 0.10, impulsivo: 0.80 }
+            pacificador: { pacificador: 0.85, determinado: 0.10, cauteloso: 0.03, impulsivo: 0.02, observador: 0.05 },
+            determinado: { pacificador: 0.05, determinado: 0.85, cauteloso: 0.05, impulsivo: 0.05, observador: 0.05 },
+            cauteloso:   { pacificador: 0.10, determinado: 0.05, cauteloso: 0.80, impulsivo: 0.05, observador: 0.10 },
+            impulsivo:   { pacificador: 0.02, determinado: 0.08, cauteloso: 0.10, impulsivo: 0.80, observador: 0.05 },
+            observador:  { pacificador: 0.10, determinado: 0.05, cauteloso: 0.15, impulsivo: 0.05, observador: 0.80 }
         };
 
         let dadosTreinamento = []; 
@@ -69,32 +70,41 @@
         let timer;
 
         const jornada = [
-            { q: "Você vê uma empresa despejando resíduos químicos num rio local. O que faz?", img: "poluicao_rio.png", 
-              opcoes: [{ t: "Filmar e denunciar", v: "impulsivo", n: "Exposição imediata." }, { t: "Assinar petição", v: "cauteloso", n: "Apoio processual." }, { t: "Dialogar com a empresa", v: "pacificador", n: "Busca por conciliação." }, { t: "Organizar protesto", v: "determinado", n: "Mobilização direta." }] },
-            { q: "Uma área de floresta próxima será derrubada para um shopping. Qual sua reação?", img: "desmatamento.png", 
-              opcoes: [{ t: "Acompanhar leis", v: "cauteloso", n: "Vigilância técnica." }, { t: "Plantar árvores", v: "pacificador", n: "Ação regenerativa." }, { t: "Boicotar o shopping", v: "determinado", n: "Impacto financeiro." }, { t: "Interromper as máquinas", v: "impulsivo", n: "Ativismo radical." }] },
-            { q: "O consumo de plástico descartável na sua faculdade é alarmante.", img: "plastico.png", 
-              opcoes: [{ t: "Sugerir lei interna", v: "determinado", n: "Mudança estrutural." }, { t: "Usar meu próprio copo", v: "cauteloso", n: "Exemplo individual." }, { t: "Fazer oficina de reciclagem", v: "pacificador", n: "Educação coletiva." }, { t: "Recolher o lixo agora", v: "impulsivo", n: "Ação pontual." }] },
-            { q: "Um político nega abertamente as alterações climáticas na TV.", img: "politico_clima.png", 
-              opcoes: [{ t: "Responder com memes", v: "impulsivo", n: "Guerra de narrativa." }, { t: "Enviar dados científicos", v: "pacificador", n: "Tentativa de ensino." }, { t: "Ignorar e votar em outro", v: "cauteloso", n: "Foco eleitoral." }, { t: "Desmentir com fact-check", v: "determinado", n: "Combate à desinformação." }] },
-            { q: "Você tem a chance de virar voluntário no Greenpeace, mas exige tempo.", img: "voluntariado.png", 
-              opcoes: [{ t: "Recusar por agora", v: "cauteloso", n: "Preservação de tempo." }, { t: "Aceitar imediatamente", v: "impulsivo", n: "Entrega total." }, { t: "Ajudar nas redes sociais", v: "pacificador", n: "Apoio digital." }, { t: "Comprometer-se seriamente", v: "determinado", n: "Dedicação focada." }] },
-            { q: "Sua marca de roupa favorita usa mão de obra poluente.", img: "moda_poluente.png", 
-              opcoes: [{ t: "Parar de comprar", v: "determinado", n: "Consumo consciente." }, { t: "Cobrar mudanças", v: "pacificador", n: "Pressão corporativa." }, { t: "Pesquisar alternativas", v: "cauteloso", n: "Busca de mercado." }, { t: "Doar as roupas antigas", v: "impulsivo", n: "Desapego rápido." }] },
-            { q: "O desperdício de comida no refeitório é imenso todos os dias.", img: "desperdicio_comida.png", 
-              opcoes: [{ t: "Reclamar com a gerência", v: "impulsivo", n: "Confronto direto." }, { t: "Propor compostagem", v: "pacificador", n: "Solução sustentável." }, { t: "Comer apenas o necessário", v: "cauteloso", n: "Hábito pessoal." }, { t: "Criar campanha de aviso", v: "determinado", n: "Conscientização." }] },
-            { q: "Um grande banco financia projetos de petróleo no Ártico.", img: "banco_petroleo.png", 
-              opcoes: [{ t: "Trocar de banco", v: "determinado", n: "Desinvestimento." }, { t: "Escrever carta de protesto", v: "pacificador", n: "Voz diplomática." }, { t: "Ler os termos do banco", v: "cauteloso", n: "Análise de contrato." }, { t: "Fechar conta publicamente", v: "impulsivo", n: "Impacto mediático." }] },
-            { q: "Como você se sente sobre o futuro do planeta Terra?", img: "futuro_terra.png", 
-              opcoes: [{ t: "Pessimista/Ansioso", v: "impulsivo", n: "Esgotamento emocional." }, { t: "Esperançoso/Ativo", v: "pacificador", n: "Otimismo crítico." }, { t: "Realista/Preparado", v: "determinado", n: "Pragmatismo." }, { t: "Indiferente/Distante", v: "cauteloso", n: "Desconexão." }] },
-            { q: "Sua cidade sofre com a falta de ciclovias e excesso de carros.", img: "cidade_transito.png", 
-              opcoes: [{ t: "Andar só de bike hoje", v: "impulsivo", n: "Ação de risco." }, { t: "Pressionar a prefeitura", v: "determinado", n: "Ação política." }, { t: "Usar transporte público", v: "cauteloso", n: "Adaptação urbana." }, { t: "Criar grupo de carona", v: "pacificador", n: "Mobilidade partilhada." }] }
+            { q: "Ao chegar no local onde o ferry boat costumava ser a única opção, você se depara com um canteiro de obras e precisa decidir como agir:", img: "0_0_pontedeguaratuba.png", 
+              opcoes: [{ t: "Exigir a paralisação da obra", v: "Determinado", n: "Rigor legal e proteção da orla." }, { t: "Propor uma audiência pública", v: "pacificador", n: "Equilíbrio através do diálogo democrático." }, { t: "Documentar para registro histórico do local", v: "cauteloso", n: "Preservação da memória ambiental." }, { t: "Organizar um protesto pacífico", v: "determinado", n: "Mobilização popular urgente." }] },
+            
+            { q: "Você percebe a extração ilegal de palmito juçara em uma trilha no Morro do Cabaraquara.", img: "1_0_extracaoilegaldepalmito.png", 
+              opcoes: [{ t: "Chamar a Polícia Ambiental", v: "determinado", n: "Intervenção legal." }, { t: "Alertar outros trilheiros", v: "pacificador", n: "Rede de proteção." }, { t: "Não confrontar e sair", v: "cauteloso", n: "Segurança pessoal." }, { t: "Tirar fotos dos infratores", v: "impulsivo", n: "Produção de prova." }] },
+            
+            { q: "A Praia Central apresenta bandeira imprópria para banho devido ao esgoto clandestino.", img: "esgotoclandestinoaberto.png", 
+              opcoes: [{ t: "Exigir lacre de esgoto", v: "determinado", n: "Rigor sanitário." }, { t: "Campanha 'Praia Limpa'", v: "pacificador", n: "Conscientização coletiva." }, { t: "Procurar praia mais longe", v: "cauteloso", n: "Adaptação pessoal." }, { t: "Protestar na prefeitura", v: "impulsivo", n: "Cobrança política." }] },
+            
+            { q: "Durante a temporada, o barulho excessivo e lixo afetam a fauna no Morro do Cristo.", img: "morrodocristosomalto.png", 
+              opcoes: [{ t: "Interromper sons altos", v: "impulsivo", n: "Confronto direto." }, { t: "Sugerir guias ambientais", v: "pacificador", n: "Turismo sustentável." }, { t: "Visitar em horários calmos", v: "cauteloso", n: "Impacto reduzido." }, { t: "Pedir cercamento da área", v: "determinado", n: "Proteção estrutural." }] },
+            
+            { q: "O Greenpeace abre vagas para monitorar as tartarugas marinhas no litoral paranaense.", img: "tartaruganapraiadeguaratuba.png", 
+              opcoes: [{ t: "Me inscrever agora", v: "impulsivo", n: "Decisão imediata." }, { t: "Divulgar para amigos", v: "pacificador", n: "Mobilização de rede." }, { t: "Avaliar se tenho tempo", v: "cauteloso", n: "Análise realista." }, { t: "Estudar biologia marinha", v: "determinado", n: "Preparação técnica." }] },
+            
+            { q: "O Mercado Municipal de Guaratuba ainda usa muitas sacolas plásticas não biodegradáveis.", img: "mercadomucipalsacolasplasticas.png", 
+              opcoes: [{ t: "Propor lei de banimento", v: "determinado", n: "Mudança normativa." }, { t: "Levar sacola ecologica", v: "cauteloso", n: "Hábito consciente." }, { t: "Oficina de sacola de papel recilcável", v: "pacificador", n: "Alternativa prática." }, { t: "Reclamar com os boxes", v: "impulsivo", n: "Cobrança direta." }] },
+            
+            { q: "Você vê um animal silvestre (como um bicho-preguiça) tentando atravessar a rodovia PR-412.", img: "bichopreguiçaatravessandoestrada.png", 
+              opcoes: [{ t: "Parar o trânsito na hora", v: "impulsivo", n: "Ação de risco." }, { t: "Chamar o resgate técnico", v: "determinado", n: "Procedimento correto." }, { t: "Sinalizar para trânsito", v: "pacificador", n: "Alerta comunitário." }, { t: "Observar de longe", v: "observador", n: "Registro científico." }] },
+            
+            { q: "O ecossistema de manguezal na Baía de Guaratuba está sendo aterrado ilegalmente.", img: "aterramentoilegal.png", 
+              opcoes: [{ t: "Denunciar ao IAT", v: "determinado", n: "Fiscalização oficial." }, { t: "Postar vídeo do local", v: "impulsivo", n: "Pressão nas redes." }, { t: "Palestras escolares", v: "pacificador", n: "Conscientização base." }, { t: "Acionar a Força Verde", v: "determinado", n: "Intervenção policial." }] },
+            
+            { q: "Obras na orla podem afetar a restinga e as dunas. Como você vê o futuro da nossa costa?", img: "8_0_obrasnasdunaserestinga.png", 
+              opcoes: [{ t: "Preocupado/Urgente", v: "impulsivo", n: "Alerta ambiental." }, { t: "Debater o projeto", v: "pacificador", n: "Equilíbrio urbano." }, { t: "Fiscalizar as licenças", v: "observador", n: "Rigor técnico." }, { t: "Confiar nos engenheiros", v: "pacificador", n: "Postura neutra." }] },
+            
+            { q: "A pesca artesanal em Guaratuba sofre com a poluição por microplásticos.", img: "9_0_baiadeguaratuba.png", 
+              opcoes: [{ t: "Proibir plásticos na baía", v: "determinado", n: "Lei municipal rígida." }, { t: "Apoiar cooperativas", v: "pacificador", n: "Fortalecimento local." }, { t: "Consumir menos plástico", v: "cauteloso", n: "Redução na fonte." }, { t: "Protestar no trapiche", v: "impulsivo", n: "Visibilidade rápida." }] }
         ];
 
         function comecarJogo() {
             const musica = document.getElementById('bg-music');
             musica.volume = 0.4;
-            musica.play().catch(e => console.log("Áudio bloqueado"));
+            musica.play().catch(() => console.log("Áudio bloqueado"));
             document.getElementById('intro-screen').style.opacity = '0';
             setTimeout(() => { document.getElementById('intro-screen').style.display = 'none'; carregarCena(); }, 1000);
         }
@@ -121,19 +131,92 @@
             timer = setTimeout(() => escolher("O tempo acabou.", "cauteloso"), 20000);
         }
 
-        function escolher(notificacao, valor) {
-            clearTimeout(timer);
-            dadosTreinamento.push(valor || "cauteloso");
-            const n = document.getElementById('notification');
-            n.innerText = notificacao;
-            n.style.opacity = 1;
-            setTimeout(() => { n.style.opacity = 0; }, 2500);
-            diaAtual++;
-            setTimeout(carregarCena, 1200);
-        }
+
+function escolher(notificacao, valor) {
+    clearTimeout(timer);
+    dadosTreinamento.push(valor || "cauteloso");
+
+    const n = document.getElementById('notification');
+    const bgImage = document.getElementById('bg-image');
+    const perguntaTextoAtual = jornada[diaAtual].q;
+
+    // --- LÓGICA DE CONSEQUÊNCIAS VISUAIS ---
+    if (perguntaTextoAtual.includes("canteiro de obras")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('0_1_paralizacaodaobra.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('0_2_audienciapublica.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('0_3_documentararea.png')";
+        else bgImage.style.backgroundImage = "url('0_4_organizarprotesto.png')";
+    }
+    else if (perguntaTextoAtual.includes("palmito")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('1_1_chamoupolicia.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('1_2_alertartrilheiros.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('1_3_naoconfrontaresair.png')";
+        else bgImage.style.backgroundImage = "url('1_4_tirarfotodosinfratores.png')";
+    }
+    else if (perguntaTextoAtual.includes("Praia Central")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('2_1_esgotoclandestinolacrado.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('2_2_campanhapraialimpa.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('2_3_procuraroutrapraia.png')";
+        else bgImage.style.backgroundImage = "url('2_4_protestarnaprefeitura.png')";
+    }
+    else if (perguntaTextoAtual.includes("Morro do Cristo")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('3_1_interrompersonsaltos.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('3_2_guiaabiental.png')";
+        else if (valor === 'observador' || valor === 'cauteloso') bgImage.style.backgroundImage = "url('3_3_voltaremhorariosmaiscalmos.png')";
+        else bgImage.style.backgroundImage = "url('3_4_cercaraarea.png')";
+    }
+    else if (perguntaTextoAtual.includes("Greenpeace")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_1_seinscreveragora.png')";
+        else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
+        else bgImage.style.backgroundImage = "url('4_4_estudarbiologiamarinha.png')";
+    }
+    else if (perguntaTextoAtual.includes("Mercado Municipal")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('5_1_leidebanimento.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('5_2_oficinadesacolasdepapel.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('5_3_ecobags.png')";
+        else bgImage.style.backgroundImage = "url('5_4_reclamandocomosboxes.png')";
+    }
+    else if (perguntaTextoAtual.includes("bicho-preguiça")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('6_1_pararotransito.png')";
+        else if (valor === 'determinado') bgImage.style.backgroundImage = "url('6_2_chamarresgate.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('6_3_sinalizandoparaosmotoristas.png')";
+        else bgImage.style.backgroundImage = "url('6_4_observardelonge.png')";
+    }
+    else if (perguntaTextoAtual.includes("manguezal")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('7_1_denunciaparaoiat.png')";
+        else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('7_2_postarvideo.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('7_3_palestrasescolares.png')";
+        else bgImage.style.backgroundImage = "url('7_4_acionarpoliciaambiental.png')";
+    }
+    else if (perguntaTextoAtual.includes("Obras na orla")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('8_1_preocupadourgente.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('8_2_debaterprojeto.png')";
+        else if (valor === 'observador') bgImage.style.backgroundImage = "url('8_3_fiscalizarlicencas.png')";
+        else bgImage.style.backgroundImage = "url('8_4_confiarnosengenheiros.png')";
+    }
+    else if (perguntaTextoAtual.includes("pesca artesanal")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('9_1_proibirplasticosnabaia.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('9_2_apoiarcooperativas.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('9_3_consumirmenosplastico.png')";
+        else bgImage.style.backgroundImage = "url('9_4_protestarnotrapiche.png')";
+    }
+
+    n.innerHTML = `${notificacao}<br><span style="color: var(--greenpeace-yellow); font-weight: bold;">A natureza irá se lembrar disso.</span>`;
+    n.style.opacity = 1;
+
+    const botoes = document.querySelectorAll('.btn-escolha');
+    botoes.forEach(b => b.style.pointerEvents = 'none');
+
+    setTimeout(() => { 
+        n.style.opacity = 0; 
+        diaAtual++;
+        carregarCena();
+    }, 6000); 
+}
 
         function finalizarJogoIA() {
-            let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25 };
+            let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25, observador: 0.25 };
             dadosTreinamento.forEach(escolha => {
                 for (let perfil in probs) probs[perfil] *= modeloIA[escolha][perfil];
                 let total = Object.values(probs).reduce((a, b) => a + b);
@@ -144,18 +227,17 @@
             const confianca = Math.round(probs[perfilFinal] * 100);
 
             const analisesIA = {
-                pacificador: "PERFIL: ECO-DIPLOMATA.\nVocê busca o equilíbrio através da educação e diálogo. Acredita que a mudança vem da harmonia entre a sociedade e a natureza.",
-                determinado: "PERFIL: ATIVISTA ESTRATÉGICO.\nFoco total em resultados e mudanças sistêmicas. Suas escolhas priorizam leis, boicotes e impacto real na estrutura.",
-                cauteloso: "PERFIL: OBSERVADOR CONSCIENTE.\nVocê prefere analisar os riscos e agir com cautela, focando em mudanças individuais antes de se expor coletivamente.",
-                impulsivo: "PERFIL: MOBILIZADOR DE IMPACTO.\nReação rápida a injustiças! Você é movido pela urgência climática e não tem medo de agir imediatamente."
+                pacificador: "PERFIL: ECO-DIPLOMATA.\nBusca o equilíbrio através da educação e diálogo.",
+                determinado: "PERFIL: ATIVISTA ESTRATÉGICO.\nFoco total em resultados e mudanças sistêmicas.",
+                cauteloso: "PERFIL: OBSERVADOR CONSCIENTE.\nPrefere analisar riscos e agir com cautela individual.",
+                impulsivo: "PERFIL: MOBILIZADOR DE IMPACTO.\nMovido pela urgência e ação imediata!",
+                observador: "PERFIL: ANALISTA DA BIOSFERA.\nFoco no monitoramento técnico e coleta de evidências."
             };
 
             document.getElementById('game-interface').classList.add('final-screen');
             const txt = document.getElementById('pergunta-texto');
-            txt.style.fontSize = "0.95rem";
             txt.style.whiteSpace = "pre-line";
-            txt.innerHTML = `<b>RELATÓRIO DE IMPACTO AMBIENTAL (IA):</b>\nPrecisão do Diagnóstico: ${confianca}%\n\n${analisesIA[perfilFinal]}`;
-            
+            txt.innerHTML = `<b>RELATÓRIO DE IMPACTO AMBIENTAL (IA):</b>\nPrecisão: ${confianca}%\n\n${analisesIA[perfilFinal]}`;
             document.getElementById('botoes-respostas').innerHTML = `<button class="btn-escolha" onclick="location.reload()">REINICIAR MISSÃO</button>`;
             document.getElementById('timer-container').style.display = 'none';
         }
