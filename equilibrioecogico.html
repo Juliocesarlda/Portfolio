@@ -71,7 +71,7 @@
 
         const jornada = [
             { q: "Ao chegar no local onde o ferry boat costumava ser a única opção, você se depara com um canteiro de obras e precisa decidir como agir:", img: "0_0_pontedeguaratuba.png", 
-              opcoes: [{ t: "Exigir a paralisação da obra", v: "Determinado", n: "Rigor legal e proteção da orla." }, { t: "Propor uma audiência pública", v: "pacificador", n: "Equilíbrio através do diálogo democrático." }, { t: "Documentar para registro histórico do local", v: "cauteloso", n: "Preservação da memória ambiental." }, { t: "Organizar um protesto pacífico", v: "determinado", n: "Mobilização popular urgente." }] },
+              opcoes: [{ t: "Exigir a paralisação da obra", v: "determinado", n: "Rigor legal e proteção da orla." }, { t: "Propor uma audiência pública", v: "pacificador", n: "Equilíbrio através do diálogo democrático." }, { t: "Documentar para registro histórico do local", v: "cauteloso", n: "Preservação da memória ambiental." }, { t: "Organizar um protesto pacífico", v: "determinado", n: "Mobilização popular urgente." }] },
             
             { q: "Você percebe a extração ilegal de palmito juçara em uma trilha no Morro do Cabaraquara.", img: "1_0_extracaoilegaldepalmito.png", 
               opcoes: [{ t: "Chamar a Polícia Ambiental", v: "determinado", n: "Intervenção legal." }, { t: "Alertar outros trilheiros", v: "pacificador", n: "Rede de proteção." }, { t: "Não confrontar e sair", v: "cauteloso", n: "Segurança pessoal." }, { t: "Tirar fotos dos infratores", v: "impulsivo", n: "Produção de prova." }] },
@@ -167,8 +167,8 @@ function escolher(notificacao, valor) {
     }
     else if (perguntaTextoAtual.includes("Greenpeace")) {
         if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_1_seinscreveragora.png')";
-        else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
         else bgImage.style.backgroundImage = "url('4_4_estudarbiologiamarinha.png')";
     }
     else if (perguntaTextoAtual.includes("Mercado Municipal")) {
