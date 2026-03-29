@@ -185,83 +185,97 @@
         }
 
         function escolher(notificacao, valor) {
-            window.speechSynthesis.cancel();
-            dadosTreinamento.push(valor);
-            const n = document.getElementById('notification');
-            const bgImage = document.getElementById('bg-image');
-            const perguntaAtual = jornada[diaAtual].q;
+    // --- TRAVA DE SEGURANÇA (NOVO) ---
+    // Seleciona todos os botões de escolha e os desabilita imediatamente
+    const botoes = document.querySelectorAll('.btn-escolha');
+    botoes.forEach(btn => {
+        btn.disabled = true; 
+        btn.style.opacity = "0.6"; // Feedback visual de que a opção foi registrada
+        btn.style.cursor = "not-allowed";
+    });
+    // ---------------------------------
 
-            // --- LÓGICA DE CONSEQUÊNCIAS VISUAIS ---
-            if (perguntaAtual.includes("canteiro de obras")) {
-                if (valor === 'determinado') bgImage.style.backgroundImage = "url('0_1_paralizacaodaobra.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('0_2_audienciapublica.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('0_3_documentararea.png')";
-                else bgImage.style.backgroundImage = "url('0_4_organizarprotesto.png')";
-            }
-            else if (perguntaAtual.includes("palmito")) {
-                if (valor === 'determinado') bgImage.style.backgroundImage = "url('1_1_chamoupolicia.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('1_2_alertartrilheiros.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('1_3_naoconfrontaresair.png')";
-                else bgImage.style.backgroundImage = "url('1_4_tirarfotodosinfratores.png')";
-            }
-            else if (perguntaAtual.includes("Praia Central")) {
-                if (valor === 'determinado') bgImage.style.backgroundImage = "url('2_1_esgotoclandestinolacrado.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('2_2_campanhapraialimpa.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('2_3_procuraroutrapraia.png')";
-                else bgImage.style.backgroundImage = "url('2_4_protestarnaprefeitura.png')";
-            }
-            else if (perguntaAtual.includes("Morro do Cristo")) {
-                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('3_1_interrompersonsaltos.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('3_2_guiaabiental.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('3_3_voltaremhorariosmaiscalmos.png')";
-                else bgImage.style.backgroundImage = "url('3_4_cercaraarea.png')";
-            }
-            else if (perguntaAtual.includes("Greenpeace")) {
-                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_1_seinscreveragora.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
-                else bgImage.style.backgroundImage = "url('4_4_estudarbiologiamarinha.png')";
-            }
-            else if (perguntaAtual.includes("Mercado Municipal")) {
-                if (valor === 'determinado') bgImage.style.backgroundImage = "url('5_1_leidebanimento.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('5_2_oficinadesacolasdepapel.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('5_3_ecobags.png')";
-                else bgImage.style.backgroundImage = "url('5_4_reclamandocomosboxes.png')";
-            }
-            else if (perguntaAtual.includes("bicho-preguiça")) {
-                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('6_1_pararotransito.png')";
-                else if (valor === 'determinado') bgImage.style.backgroundImage = "url('6_2_chamarresgate.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('6_3_sinalizandoparaosmotoristas.png')";
-                else bgImage.style.backgroundImage = "url('6_4_observardelonge.png')";
-            }
-            else if (perguntaAtual.includes("manguezal")) {
-                if (valor === 'determinado') bgImage.style.backgroundImage = "url('7_1_denunciaparaoiat.png')";
-                else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('7_2_postarvideo.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('7_3_palestrasescolares.png')";
-                else bgImage.style.backgroundImage = "url('7_4_acionarpoliciaambiental.png')";
-            }
-            else if (perguntaAtual.includes("Obras na orla")) {
-                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('8_1_preocupadourgente.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('8_2_debaterprojeto.png')";
-                else if (valor === 'observador') bgImage.style.backgroundImage = "url('8_3_fiscalizarlicencas.png')";
-                else bgImage.style.backgroundImage = "url('8_4_confiarnosengenheiros.png')";
-            }
-            else if (perguntaAtual.includes("pesca artesanal")) {
-                if (valor === 'determinado') bgImage.style.backgroundImage = "url('9_1_proibirplasticosnabaia.png')";
-                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('9_2_apoiarcooperativas.png')";
-                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('9_3_consumirmenosplastico.png')";
-                else bgImage.style.backgroundImage = "url('9_4_protestarnotrapiche.png')";
-            }
+    window.speechSynthesis.cancel();
+    dadosTreinamento.push(valor);
+    const n = document.getElementById('notification');
+    const bgImage = document.getElementById('bg-image');
+    const perguntaAtual = jornada[diaAtual].q;
 
-            n.innerHTML = `${notificacao}<br><b style="color:var(--greenpeace-yellow)">A natureza irá se lembrar disso.</b>`;
-            n.style.opacity = 1;
-            
-            const narrador = new SpeechSynthesisUtterance(`${notificacao}. A natureza irá se lembrar disso.`);
-            narrador.lang = 'pt-BR';
-            window.speechSynthesis.speak(narrador);
+    // --- LÓGICA DE CONSEQUÊNCIAS VISUAIS (MANTIDA INTEGRALMENTE) ---
+    if (perguntaAtual.includes("canteiro de obras")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('0_1_paralizacaodaobra.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('0_2_audienciapublica.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('0_3_documentararea.png')";
+        else bgImage.style.backgroundImage = "url('0_4_organizarprotesto.png')";
+    }
+    else if (perguntaAtual.includes("palmito")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('1_1_chamoupolicia.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('1_2_alertartrilheiros.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('1_3_naoconfrontaresair.png')";
+        else bgImage.style.backgroundImage = "url('1_4_tirarfotodosinfratores.png')";
+    }
+    else if (perguntaAtual.includes("Praia Central")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('2_1_esgotoclandestinolacrado.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('2_2_campanhapraialimpa.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('2_3_procuraroutrapraia.png')";
+        else bgImage.style.backgroundImage = "url('2_4_protestarnaprefeitura.png')";
+    }
+    else if (perguntaAtual.includes("Morro do Cristo")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('3_1_interrompersonsaltos.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('3_2_guiaabiental.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('3_3_voltaremhorariosmaiscalmos.png')";
+        else bgImage.style.backgroundImage = "url('3_4_cercaraarea.png')";
+    }
+    else if (perguntaAtual.includes("Greenpeace")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_1_seinscreveragora.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
+        else bgImage.style.backgroundImage = "url('4_4_estudarbiologiamarinha.png')";
+    }
+    else if (perguntaAtual.includes("Mercado Municipal")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('5_1_leidebanimento.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('5_2_oficinadesacolasdepapel.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('5_3_ecobags.png')";
+        else bgImage.style.backgroundImage = "url('5_4_reclamandocomosboxes.png')";
+    }
+    else if (perguntaAtual.includes("bicho-preguiça")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('6_1_pararotransito.png')";
+        else if (valor === 'determinado') bgImage.style.backgroundImage = "url('6_2_chamarresgate.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('6_3_sinalizandoparaosmotoristas.png')";
+        else if (valor === '6_4_observardelonge') bgImage.style.backgroundImage = "url('6_4_observardelonge.png')";
+    }
+    else if (perguntaAtual.includes("manguezal")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('7_1_denunciaparaoiat.png')";
+        else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('7_2_postarvideo.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('7_3_palestrasescolares.png')";
+        else bgImage.style.backgroundImage = "url('7_4_acionarpoliciaambiental.png')";
+    }
+    else if (perguntaAtual.includes("Obras na orla")) {
+        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('8_1_preocupadourgente.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('8_2_debaterprojeto.png')";
+        else if (valor === 'observador') bgImage.style.backgroundImage = "url('8_3_fiscalizarlicencas.png')";
+        else bgImage.style.backgroundImage = "url('8_4_confiarnosengenheiros.png')";
+    }
+    else if (perguntaAtual.includes("pesca artesanal")) {
+        if (valor === 'determinado') bgImage.style.backgroundImage = "url('9_1_proibirplasticosnabaia.png')";
+        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('9_2_apoiarcooperativas.png')";
+        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('9_3_consumirmenosplastico.png')";
+        else bgImage.style.backgroundImage = "url('9_4_protestarnotrapiche.png')";
+    }
 
-            setTimeout(() => { n.style.opacity = 0; diaAtual++; carregarCena(); }, 7000);
-        }
+    n.innerHTML = `${notificacao}<br><b style="color:var(--greenpeace-yellow)">A natureza irá se lembrar disso.</b>`;
+    n.style.opacity = 1;
+    
+    const narrador = new SpeechSynthesisUtterance(`${notificacao}. A natureza irá se lembrar disso.`);
+    narrador.lang = 'pt-BR';
+    window.speechSynthesis.speak(narrador);
+
+    setTimeout(() => { 
+        n.style.opacity = 0; 
+        diaAtual++; 
+        carregarCena(); 
+    }, 7000);
+}
 
         function ouvirTexto(id) {
             window.speechSynthesis.cancel();
