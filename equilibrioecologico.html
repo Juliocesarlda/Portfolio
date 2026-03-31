@@ -285,6 +285,9 @@
         }
 
         function finalizarJogoIA() {
+            window.speechSynthesis.cancel(); // Limpa filas travadas
+const wakeUp = new SpeechSynthesisUtterance("");
+window.speechSynthesis.speak(wakeUp);
             let probs = { pacificador: 0.2, determinado: 0.2, cauteloso: 0.2, impulsivo: 0.2, observador: 0.2 };
             dadosTreinamento.forEach(v => {
                 for (let p in probs) probs[p] *= modeloIA[v][p];
