@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMCOR: Jornada da Segurança</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;700&family=Press+Start+2P&display=swap');
+
+        :root {
+            --blue: #00d4ff;
+            --gold: #ffcc00;
+            --red: #ff4444;
+            --dark: #000a12;
+            --glass: rgba(0, 0, 0, 0.9);
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background: #000; color: white;
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* --- TELA INICIAL (sem login) --- */
+        #start-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, #001a33 0%, #000 100%);
+            z-index: 300; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 20px;
+        }
+
+        .logo-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(22px, 5vw, 38px);
+            color: var(--blue);
+            text-shadow: 0 0 30px rgba(0,212,255,0.5);
+            margin-bottom: 10px;
+            letter-spacing: 3px;
+        }
+
+        .logo-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 50px;
+        }
+
+        .start-btn {
+            background: transparent;
+            border: 2px solid var(--blue);
+            color: var(--blue);
+            padding: 18px 50px;
+            font-family: 'Cinzel', serif;
+            font-size: 16px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,212,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .start-btn:hover::before { left: 100%; }
+        .start-btn:hover {
+            background: rgba(0,212,255,0.1);
+            box-shadow: 0 0 30px rgba(0,212,255,0.3);
+        }
+
+        .pulse-ring {
+            width: 80px; height: 80px;
+            border: 2px solid var(--blue);
+            border-radius: 50%;
+            margin: 0 auto 30px;
+            position: relative;
+            animation: ringPulse 2s infinite;
+        }
+
+        .pulse-ring::after {
+            content: '🛡️';
+            font-size: 35px;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes ringPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.4); }
+            50% { box-shadow: 0 0 0 20px rgba(0,212,255,0); }
+        }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        #scene-container {
+            position: relative;
+            width: 100%; min-height: 100vh;
+            background: radial-gradient(circle at center, #001a33 0%, #000 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px 0;
+        }
+
+        #notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            font-family: 'Cinzel', serif; font-size: 12px; color: var(--blue);
+            text-transform: uppercase; letter-spacing: 3px; opacity: 0; transition: 0.5s;
+            z-index: 10; white-space: nowrap;
+            background: rgba(0,0,0,0.7); padding: 8px 20px; border-radius: 20px;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+
+        #ui-layer { position: relative; z-index: 5; width: 90%; max-width: 700px; text-align: center; }
+
+        /* Barra de progresso */
+        #progress-bar-wrap {
+            width: 90%; max-width: 700px;
+            margin: 20px auto 0;
+            display: none;
+        }
+
+        .progress-track {
+            background: rgba(255,255,255,0.1);
+            height: 4px; border-radius: 4px; overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, var(--blue), var(--gold));
+            transition: width 0.5s ease;
+        }
+
+        .progress-label {
+            font-size: 11px; color: rgba(255,255,255,0.4);
+            letter-spacing: 2px; text-align: right;
+            margin-bottom: 6px; text-transform: uppercase;
+        }
+
+        .choice-btn {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white; padding: 20px; cursor: pointer; font-size: 14px;
+            transition: 0.4s; border-radius: 8px; text-align: left; width: 100%;
+            margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .choice-btn:hover { border-color: var(--blue); background: rgba(0, 212, 255, 0.1); transform: translateX(10px); }
+
+        #consequence-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 100; justify-content: center; align-items: center;
+        }
+
+        .consequence-card {
+            background: var(--glass); border: 2px solid var(--blue); padding: 40px;
+            max-width: 500px; width: 85%; border-radius: 15px; text-align: center;
+        }
+
+        .stat-bar-container { background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; margin: 10px 0 20px 0; }
+        .stat-bar { height: 100%; border-radius: 5px; transition: width 1s; }
+
+        .ranking-table {
+            width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em;
+            background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden;
+        }
+        .ranking-table th { background: var(--blue); color: #000; padding: 10px; text-align: left; }
+        .ranking-table td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
+
+        #scene-img {
+            width: 100%; max-height: 280px; object-fit:contain;
+            border-radius: 10px; border: 2px solid rgba(0,212,255,0.4);
+            margin-bottom: 20px; display: none;
+        }
+
+        /* --- TELA DE CADASTRO FINAL --- */
+        #register-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(15px);
+            z-index: 200; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+
+        .register-card {
+            background: linear-gradient(135deg, #000d1a, #001a33);
+            border: 1px solid rgba(0,212,255,0.4);
+            padding: 45px 40px;
+            max-width: 480px; width: 100%;
+            border-radius: 16px; text-align: center;
+            box-shadow: 0 0 60px rgba(0,212,255,0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative; overflow: hidden;
+        }
+
+        .register-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--blue), var(--gold), var(--blue), transparent);
+        }
+
+        .register-title {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            font-size: 22px;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+        }
+
+        .register-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+        }
+
+        .register-score-badge {
+            display: inline-block;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            border-radius: 50px;
+            padding: 10px 30px;
+            margin-bottom: 30px;
+            font-family: 'Cinzel', serif;
+            color: var(--blue);
+            font-size: 18px;
+        }
+
+        .field-group {
+            text-align: left;
+            margin-bottom: 18px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .field-input:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+        }
+
+        .field-input option { background: #001a33; color: white; }
+
+        .register-btn {
+            width: 100%;
+            padding: 16px;
+            margin-top: 10px;
+            background: linear-gradient(135deg, rgba(0,212,255,0.15), rgba(0,212,255,0.05));
+            border: 1px solid var(--blue);
+            color: var(--blue);
+            font-family: 'Cinzel', serif;
+            font-size: 14px;
+            letter-spacing: 3px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .register-btn:hover {
+            background: rgba(0,212,255,0.2);
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- SCANNER DE EPIs --- */
+        #scanner-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 600; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            gap: 30px;
+        }
+
+        .scanner-box {
+            position: relative;
+            width: 260px; height: 260px;
+            border: 2px solid rgba(0,212,255,0.3);
+            border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        .scanner-box::before, .scanner-box::after {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+        }
+
+        /* Cantos do scanner */
+        .corner { position: absolute; width: 20px; height: 20px; border-color: var(--blue); border-style: solid; }
+        .corner-tl { top: -1px; left: -1px; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+        .corner-tr { top: -1px; right: -1px; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+        .corner-bl { bottom: -1px; left: -1px; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+        .corner-br { bottom: -1px; right: -1px; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+        .scanner-icon {
+            font-size: 80px;
+            filter: drop-shadow(0 0 20px rgba(0,212,255,0.6));
+            animation: iconPulse 2s infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,212,255,0.4)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 30px rgba(0,212,255,0.9)); }
+        }
+
+        .scanner-beam {
+            position: absolute;
+            left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--blue), transparent);
+            box-shadow: 0 0 12px var(--blue), 0 0 30px rgba(0,212,255,0.5);
+            animation: beamScan 1.8s ease-in-out infinite;
+        }
+
+        @keyframes beamScan {
+            0%   { top: 10%; opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { top: 90%; opacity: 0; }
+        }
+
+        .scanner-grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .scanner-status {
+            font-family: 'Cinzel', serif;
+            font-size: 13px;
+            letter-spacing: 4px;
+            color: var(--blue);
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .scanner-dots {
+            display: flex; gap: 8px; margin-top: 8px; justify-content: center;
+        }
+
+        .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(0,212,255,0.3);
+            animation: dotBlink 1.2s infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.4s; }
+        .dot:nth-child(3) { animation-delay: 0.8s; }
+
+        @keyframes dotBlink {
+            0%, 100% { background: rgba(0,212,255,0.2); }
+            50% { background: var(--blue); box-shadow: 0 0 8px var(--blue); }
+        }
+
+        .scanner-label {
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: rgba(255,255,255,0.25);
+            text-transform: uppercase;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        .scanner-authorized {
+            font-family: 'Cinzel', serif;
+            font-size: 20px;
+            letter-spacing: 5px;
+            color: #00ff88;
+            text-shadow: 0 0 20px #00ff88;
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SCANNER DE EPIs -->
+    <div id="scanner-overlay">
+        <div style="text-align:center;">
+            <p style="font-size:10px; letter-spacing:3px; color:rgba(255,255,255,0.3); text-transform:uppercase; margin:0 0 16px 0;">AMCOR · SISTEMA DE SEGURANÇA</p>
+        </div>
+
+        <!-- Carrossel de EPIs acima do scanner -->
+        <div id="epi-carousel" style="display:flex; gap:18px; margin-bottom:10px; min-height:90px; align-items:center; justify-content:center;">
+            <!-- imagens injetadas via JS -->
+        </div>
+
+        <div class="scanner-box">
+            <div class="scanner-grid"></div>
+            <div class="corner corner-tl"></div>
+            <div class="corner corner-tr"></div>
+            <div class="corner corner-bl"></div>
+            <div class="corner corner-br"></div>
+            <img id="scanner-epi-img" src="" alt="EPI"
+                 style="width:120px;height:120px;object-fit:contain;
+                        filter:drop-shadow(0 0 18px rgba(0,212,255,0.7));
+                        transition:opacity 0.4s, transform 0.4s;">
+            <div class="scanner-beam"></div>
+        </div>
+
+        <div style="text-align:center; margin-top:10px;">
+            <div class="scanner-status" id="scanner-text">ESCANEANDO EPIs</div>
+            <div id="epi-name-label" style="font-size:11px;letter-spacing:3px;color:var(--blue);
+                 text-transform:uppercase;margin:6px 0 2px;min-height:16px;transition:opacity 0.3s;"></div>
+            <div class="scanner-dots" id="scanner-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="scanner-label">Verificação de Equipamentos de Proteção Individual</div>
+            <div class="scanner-authorized" id="scanner-authorized">✓ ACESSO AUTORIZADO</div>
+        </div>
+    </div>
+
+    <!-- TELA INICIAL -->
+    <div id="start-screen">
+        <!-- <div class="pulse-ring"></div> -->
+        <img src="amcor4.png" class="pulse-ring amcor-logo" alt="Logo Amcor">
+        <h1 class="logo-title">AMCOR: JORNADA DA SEGURANÇA</h1>
+        <p class="logo-sub">Simulação de Segurança do Trabalho · SIPAT 2026</p>
+        <button class="start-btn" onclick="startGame()">▶ INICIAR SIMULAÇÃO</button>
+    </div>
+
+    <!-- JOGO PRINCIPAL -->
+    <div id="scene-container" style="display:flex;">
+        <div id="notification">A segurança se lembrará disso.</div>
+        <div id="progress-bar-wrap">
+            <p class="progress-label" id="progress-label">Cenário 1 de 8</p>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+            </div>
+        </div>
+        <div id="ui-layer" style="margin-top: 20px;">
+            <div id="game-content">
+                <img id="scene-img" src="" alt="Cenário de Segurança">
+                <h2 id="question" style="line-height: 1.5; font-size: clamp(16px, 3vw, 22px);"></h2>
+                <div class="choice-list" id="choices"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE CONSEQUÊNCIA -->
+    <div id="consequence-overlay">
+        <div class="consequence-card">
+            <h3 style="font-family: 'Cinzel'; color: var(--blue); margin-top: 0;">CONSEQUÊNCIA</h3>
+            <p id="consequence-text" style="font-size: 1.1em; line-height: 1.6;"></p>
+            <p id="pts-gained" style="font-family: 'Cinzel'; font-size: 20px; color: var(--gold);"></p>
+            <button class="choice-btn" style="text-align: center; margin-top: 10px; border-color: var(--blue);" onclick="closeConsequence()">CONTINUAR →</button>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE CADASTRO FINAL -->
+    <div id="register-overlay">
+        <div class="register-card">
+            <h2 class="register-title">SIMULAÇÃO CONCLUÍDA</h2>
+            <p class="register-subtitle">Registre seu resultado para o ranking</p>
+            <div class="register-score-badge">
+                SCORE: <span id="final-score-badge">0</span>
+            </div>
+            <div class="field-group">
+                <label class="field-label" for="userName">Nome Completo</label>
+                <input class="field-input" type="text" id="userName" placeholder="Digite seu nome">
+            </div>
+            <div class="field-group">
+                <label class="field-label" for="userRE">Número do RE</label>
+                <input class="field-input" type="text" id="userRE" placeholder="Digite seu RE">
+            </div>
+            <div class="field-group">
+                <label class="field-label" for="userTurno">Turno</label>
+                <select class="field-input" id="userTurno">
+                    <option value="">Selecione seu turno</option>
+                    <option value="Turno A">Turno A</option>
+                    <option value="Turno B">Turno B</option>
+                    <option value="Turno C">Turno C</option>
+                    <option value="Adm">Administrativo</option>
+                </select>
+            </div>
+            <button class="register-btn" onclick="submitRegistration()">REGISTRAR E VER RANKING ▶</button>
+        </div>
+    </div>
+
+<script>
+    let userData = { nome: "", re: "", turno: "" };
+    let step = 0;
+    let score = 0;
+    let traits = { Cauteloso: 0, Negligente: 0, Arrojado: 0 };
+    //scanAudio.pause();
+//    scanAudio.currentTime = 0; // Reseta o som para o início para a próxima vez
+
+    const story = [
+        {
+            q: "Você vê um colega limpando a maquina sem utilizar o cadeado de bloqueio (LOTO). O que você faz?",
+            img: "1_maquinasembloqueioloto.png ",
+            choices: [
+                { text: "Alertar e exigir o bloqueio", feedback: "Avisar o colega sobre o cadeado aberto impede que a máquina ligue sozinha ou por erro, evitando acidentes graves e salvando vidas. Essa atitude mostra que você se importa com a equipe, garantindo que todos cumpram as regras de segurança e voltem para casa bem.", trait: "Cauteloso", pts: 100 },
+                { text: "Apenas avisar para ter cuidado", feedback: "Cuidado não substitui o bloqueio físico. Você aceitou o risco.", trait: "Arrojado", pts: 40 },
+                { text: "Não interferir para não atrasar", feedback: "Negligência fatal. O silêncio é cúmplice do acidente.", trait: "Negligente", pts: 0 }
+            ]
+        },
+        {
+            q: "Durante o turno, um óleo vaza no piso. A equipe de limpeza está em outra ala.",
+            img: "2_manchadeoleonochao.png",
+            choices: [
+                { text: "Isolar a área e limpar", feedback: "Excelente. Escorregões são causas frequentes de afastamento.", trait: "Cauteloso", pts: 100 },
+                { text: "Colocar um cone e seguir", feedback: "Sinalizou, mas o risco de espalhar o óleo continua.", trait: "Arrojado", pts: 60 },
+                { text: "Ignorar, pois não é sua função", feedback: "A segurança é responsabilidade de todos, não apenas da limpeza.", trait: "Negligente", pts: 0 }
+            ]
+        },
+        {
+            q: "O empilhador está buzinando excessivamente, mas dirigindo rápido demais para a área de pedestres.",
+            img: "3_trafegodeempilhadeira.png",
+            choices: [
+                { text: "Fazer o sinal de PARE e orientar", feedback: "Liderança ativa. Velocidade em galpão é um perigo constante.", trait: "Cauteloso", pts: 100 },
+                { text: "Sair da frente rapidamente", feedback: "Você se salvou, mas permitiu que o risco continuasse para outros.", trait: "Arrojado", pts: 30 },
+                { text: "Fingir que não viu", feedback: "A omissão permite que o comportamento inseguro vire rotina.", trait: "Negligente", pts: 0 }
+            ]
+        },
+        {
+            q: "Você percebe que seu protetor auricular está desgastado, mas o estoque de EPI é longe.",
+            img: "4_protecaoauricular.png",
+            choices: [
+                { text: "Ir buscar um novo agora", feedback: "Sua audição agradece. EPI vencido é o mesmo que nenhum EPI.", trait: "Cauteloso", pts: 100 },
+                { text: "Usar assim mesmo até o fim do turno", feedback: "Danos auditivos são silenciosos e irreversíveis.", trait: "Negligente", pts: 0 },
+                { text: "Pedir um reserva para o colega", feedback: "Resolveu o problema imediato, mas certifique-se da higiene.", trait: "Arrojado", pts: 70 }
+            ]
+        },
+        {
+            q: "Um sensor de segurança da máquina está falhando, causando paradas falsas.",
+            img: "5_sensordeseguranca.png",
+            choices: [
+                { text: "Abrir chamado e parar a máquina", feedback: "Segurança em primeiro lugar. Jamais opere com sensores burlados.", trait: "Cauteloso", pts: 100 },
+                { text: "Reiniciar o sistema e tentar de novo", feedback: "Você está mascarando um defeito que pode causar um acidente.", trait: "Arrojado", pts: 50 },
+                { text: "Desativar o sensor para produzir", feedback: "Crime de segurança. Você colocou sua vida em perigo extremo.", trait: "Negligente", pts: 0 }
+            ]
+        },
+        {
+            q: "Você encontra uma ferramenta improvisada ('gambiarra') na bancada.",
+            img: "6_ferramentaimprovisadagambiarra.png",
+            choices: [
+                { text: "Descartar e solicitar a correta", feedback: "Gambiarras são o caminho mais curto para um ferimento nas mãos.", trait: "Cauteloso", pts: 100 },
+                { text: "Usar com muito cuidado", feedback: "Ferramenta errada gera esforço errado e acidentes.", trait: "Negligente", pts: 0 },
+                { text: "Avisar o supervisor no final do dia", feedback: "Tarde demais se alguém se machucar antes disso.", trait: "Arrojado", pts: 40 }
+            ]
+        },
+        {
+            q: "Há uma reunião de segurança (DDS), mas você tem um relatório urgente para entregar.",
+            img: "7_reuniaodesegurancadds.png",
+            choices: [
+                { text: "Participar do DDS focado", feedback: "A informação salva vidas. O relatório pode esperar 10 minutos.", trait: "Cauteloso", pts: 100 },
+                { text: "Participar mexendo no celular", feedback: "Presença física sem atenção não gera consciência.", trait: "Negligente", pts: 0 },
+                { text: "Pedir para ler o resumo depois", feedback: "A interação no DDS é o que fortalece o time.", trait: "Arrojado", pts: 50 }
+            ]
+        },
+        {
+            q: "Você vê uma fiação exposta próxima a uma tubulação de água.",
+            img: "8_riscoeletrico.png",
+            choices: [
+                { text: "Isolar e chamar manutenção elétrica", feedback: "Risco de choque e incêndio eliminado com sucesso.", trait: "Cauteloso", pts: 100 },
+                { text: "Tentar afastar o fio com um pedaço de pau", feedback: "Arriscado! Você não é eletricista habilitado.", trait: "Arrojado", pts: 20 },
+                { text: "Passar longe e não avisar ninguém", feedback: "O próximo a passar pode não ter a mesma sorte.", trait: "Negligente", pts: 0 }
+            ]
+        }
+    ];
+
+    function startGame() {
+        document.getElementById('start-screen').style.display = 'none';
+
+        const epis = [
+            { src: 'oculosamplavisao.png',  name: 'Óculos de Segurança' },
+            { src: 'luvalatex.png',           name: 'Luva de Látex' },
+            { src: 'luvaanticorte.png',        name: 'Luva Anticorte' },
+            { src: 'bonecasquete.png',         name: 'Boné Casquete' },
+        ];
+
+        // Monta carrossel (thumbs) — ficam esmaecidos inicialmente
+        const carousel = document.getElementById('epi-carousel');
+        carousel.innerHTML = '';
+        epis.forEach((e, i) => {
+            const thumb = document.createElement('div');
+            thumb.id = 'thumb-' + i;
+            thumb.style.cssText = `
+                width:60px;height:60px;border-radius:8px;overflow:hidden;
+                border:2px solid rgba(0,212,255,0.2);
+                display:flex;align-items:center;justify-content:center;
+                transition:all 0.4s;opacity:0.25;
+            `;
+            const img = document.createElement('img');
+            img.src = e.src;
+            img.style.cssText = 'width:100%;height:100%;object-fit:contain;filter:grayscale(1);transition:filter 0.4s;';
+            thumb.appendChild(img);
+            carousel.appendChild(thumb);
+        });
+
+        // Mostra o scanner
+        const scanner = document.getElementById('scanner-overlay');
+        scanner.style.display = 'flex';
+        scanner.style.opacity = '1';
+
+        const mainImg  = document.getElementById('scanner-epi-img');
+        const nameLabel = document.getElementById('epi-name-label');
+
+        let idx = 0;
+        const intervalMs = 2000; // tempo por EPI
+        const scannerAudio = new Audio('scanner.mp3');
+        scannerAudio.play().catch(e => console.log("Áudio bloqueado"));
+
+
+        function scanEpi(i) {
+            if (i >= epis.length) return;
+
+            // Atualiza imagem central com fade
+            mainImg.style.opacity = '0';
+            mainImg.style.transform = 'scale(0.85)';
+            nameLabel.style.opacity = '0';
+
+            setTimeout(() => {
+                mainImg.src = epis[i].src;
+                mainImg.style.opacity = '1';
+                mainImg.style.transform = 'scale(1)';
+                nameLabel.innerText = epis[i].name;
+                nameLabel.style.opacity = '1';
+
+                // Acende thumb
+                const thumb = document.getElementById('thumb-' + i);
+                thumb.style.opacity = '1';
+                thumb.style.borderColor = 'var(--blue)';
+                thumb.style.boxShadow = '0 0 10px rgba(0,212,255,0.5)';
+                thumb.querySelector('img').style.filter = 'grayscale(0)';
+
+                // Status text cycling
+                const statuses = ['ESCANEANDO EPIs', 'VERIFICANDO CONFORMIDADE', 'CHECANDO INTEGRIDADE', 'VALIDANDO EPI'];
+                document.getElementById('scanner-text').innerText = statuses[i] || 'ESCANEANDO';
+            }, 200);
+        }
+
+        // Escaneia cada EPI sequencialmente
+        scanEpi(0);
+
+        const scanInterval = setInterval(() => {
+            idx++;
+            if (idx < epis.length) {
+                scanEpi(idx);
+            } else {
+                clearInterval(scanInterval);
+
+
+                // Todos escaneados — mostra ACESSO AUTORIZADO
+                setTimeout(( ) => {
+                    document.getElementById('scanner-text').innerText = 'ACESSO AUTORIZADO';
+                    document.getElementById('scanner-text').style.color = '#00ff88';
+                    document.getElementById('scanner-dots').style.display = 'none';
+                    document.getElementById('scanner-authorized').style.display = 'block';
+                    nameLabel.style.opacity = '0';
+                }, 400);
+
+                // Fade out e entra no jogo
+                setTimeout(() => {
+                    scanner.style.transition = 'opacity 0.8s';
+                    scanner.style.opacity = '0';
+                    setTimeout(() => {
+                        scanner.style.display = 'none';
+                        document.getElementById('scene-container').style.display = 'flex';
+                        document.getElementById('progress-bar-wrap').style.display = 'block';
+                        renderStep();
+                    }, 800);
+                }, 1800);
+            }
+        }, intervalMs);
+                                
+
+    }
+
+    function updateProgress() {
+        const pct = ((step) / story.length) * 100;
+        document.getElementById('progress-fill').style.width = pct + '%';
+        document.getElementById('progress-label').innerText = `Cenário ${step + 1} de ${story.length}`;
+    }
+
+    function renderStep() {
+        if (step >= story.length) return;
+        updateProgress();
+        const current = story[step];
+
+        const imgElement = document.getElementById('scene-img');
+        if (current.img) {
+            imgElement.src = current.img;
+            imgElement.style.display = 'block';
+        } else {
+            imgElement.style.display = 'none';
+        }
+
+        document.getElementById('question').innerText = current.q;
+        const choiceList = document.getElementById('choices');
+        choiceList.innerHTML = '';
+        current.choices.forEach(c => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = c.text;
+            btn.onclick = () => makeChoice(c);
+            choiceList.appendChild(btn);
+        });
+    }
+
+    function makeChoice(choice) {
+        const nav = document.getElementById('notification');
+        nav.style.opacity = '1';
+        setTimeout(() => nav.style.opacity = '0', 2000);
+
+        document.getElementById('consequence-text').innerText = choice.feedback;
+        document.getElementById('pts-gained').innerText = choice.pts > 0 ? `+${choice.pts} pontos` : '0 pontos';
+        document.getElementById('consequence-overlay').style.display = 'flex';
+
+        score += choice.pts;
+        traits[choice.trait]++;
+    }
+
+    function closeConsequence() {
+        document.getElementById('consequence-overlay').style.display = 'none';
+        step++;
+        if (step >= story.length) {
+            startMinigame();
+        } else {
+            renderStep();
+        }
+    }
+
+    function startMinigame() {
+        document.getElementById('progress-bar-wrap').style.display = 'none';
+        const ui = document.getElementById('ui-layer');
+        ui.innerHTML = `
+            <div style="animation: fadeIn 1s;">
+                <h2 style="font-family: 'Cinzel'; color: var(--blue);">MISSÃO FINAL: RECOLHA OS EPIs</h2>
+                <div style="display: flex; justify-content: space-between; background: #333; padding: 10px; border: 2px solid #555; font-family: 'Press Start 2P', cursive; font-size: 10px;">
+                    <div>PONTOS: <span id="m-score">0</span></div>
+                    <div>VIDAS: <span id="m-lives">3</span></div>
+                </div>
+                <canvas id="breakoutCanvas" width="480" height="320" style="background: #000; border: 4px solid var(--blue); width: 100%; max-width: 480px;"></canvas>
+                <p style="font-size: 0.7em; margin-top: 10px; color: rgba(255,255,255,0.5);">USE AS SETAS [←] [→] DO TECLADO</p>
+            </div>
+        `;
+
+        const canvas = document.getElementById("breakoutCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreDisp = document.getElementById("m-score");
+        const livesDisp = document.getElementById("m-lives");
+
+        let mScore = 0; let mLives = 3;
+        let bx = canvas.width / 2; let by = canvas.height - 30;
+        let bdx = 3; let bdy = -3;
+        let pX = (canvas.width - 75) / 2;
+        let rP = false; let lP = false;
+        let gameRunning = true;
+
+        const imgLatex = new Image(); imgLatex.src = 'luvalatex.png';
+        const imgAnticorte = new Image(); imgAnticorte.src = 'luvaanticorte.png';
+        const imgCasquete = new Image(); imgCasquete.src = 'bonecasquete.png';
+        const imgOculos = new Image(); imgOculos.src = 'oculosamplavisao.png';
+        const imgMangote = new Image(); imgMangote.src = 'luvamangote.png';
+        const imgs = [imgLatex, imgAnticorte, imgCasquete, imgOculos, imgMangote];
+
+        let bricks = [];
+        for (let c = 0; c < 9; c++) {
+            bricks[c] = [];
+            for (let r = 0; r < 5; r++) {
+                bricks[c][r] = { x: 0, y: 0, status: 1, img: imgs[r] };
+            }
+        }
+
+        function onKey(e, val) {
+            if (e.key === "Right" || e.key === "ArrowRight") rP = val;
+            else if (e.key === "Left" || e.key === "ArrowLeft") lP = val;
+        }
+        document.addEventListener("keydown", e => onKey(e, true));
+        document.addEventListener("keyup", e => onKey(e, false));
+
+        function draw() {
+            if (!gameRunning) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let allCleared = true;
+            for (let c = 0; c < 9; c++) {
+                for (let r = 0; r < 5; r++) {
+                    let b = bricks[c][r];
+                    if (b.status === 1) {
+                        allCleared = false;
+                        b.x = (c * 50) + 20; b.y = (r * 40) + 10;
+                        ctx.drawImage(b.img, b.x, b.y, 40, 30);
+                        if (bx > b.x && bx < b.x + 40 && by > b.y && by < b.y + 30) {
+                            bdy = -bdy; b.status = 0; mScore += 10;
+                            scoreDisp.innerText = mScore;
+                        }
+                    }
+                }
+            }
+
+            if (allCleared) { gameRunning = false; score += mScore; return showRegisterScreen(); }
+
+            ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2);
+            ctx.fillStyle = "#FFF"; ctx.fill(); ctx.closePath();
+            ctx.fillStyle = "#FF0000"; ctx.fillRect(pX, canvas.height - 15, 75, 10);
+
+            if (bx + bdx > canvas.width - 6 || bx + bdx < 6) bdx = -bdx;
+            if (by + bdy < 6) bdy = -bdy;
+            else if (by + bdy > canvas.height - 11) {
+                if (bx > pX && bx < pX + 75) {
+                    bdy = -bdy;
+                    bdx = 8 * ((bx - (pX + 37.5)) / 75);
+                } else {
+                    mLives--; livesDisp.innerText = mLives;
+                    if (!mLives) { gameRunning = false; score += mScore; return showRegisterScreen(); }
+                    bx = canvas.width / 2; by = canvas.height - 30; bdx = 3; bdy = -3;
+                }
+            }
+
+            if (rP && pX < canvas.width - 75) pX += 7;
+            else if (lP && pX > 0) pX -= 7;
+            bx += bdx; by += bdy;
+            requestAnimationFrame(draw);
+        }
+        draw();
+    }
+
+    // Exibe tela de cadastro antes de mostrar o resultado
+    function showRegisterScreen() {
+        document.getElementById('final-score-badge').innerText = score;
+        document.getElementById('register-overlay').style.display = 'flex';
+    }
+
+    function submitRegistration() {
+        const nome = document.getElementById('userName').value.trim();
+        const re = document.getElementById('userRE').value.trim();
+        const turno = document.getElementById('userTurno').value;
+
+        if (!nome || !re || !turno) {
+            alert("Por favor, preencha todos os campos para registrar seu resultado!");
+            return;
+        }
+
+        userData.nome = nome;
+        userData.re = re;
+        userData.turno = turno;
+
+        document.getElementById('register-overlay').style.display = 'none';
+        endGame();
+    }
+
+    function saveScore(name, re, shift, finalScore) {
+        let rankings = JSON.parse(localStorage.getItem('amcorRankings')) || [];
+        rankings.push({ name, re, shift, score: finalScore });
+        rankings.sort((a, b) => b.score - a.score);
+        localStorage.setItem('amcorRankings', JSON.stringify(rankings));
+        return rankings;
+    }
+
+    function endGame() {
+        const rankings = saveScore(userData.nome, userData.re, userData.turno, score);
+        const ui = document.getElementById('ui-layer');
+        const totalQ = story.length;
+        const pC = Math.round((traits.Cauteloso / totalQ) * 100);
+        const pN = Math.round((traits.Negligente / totalQ) * 100);
+
+        let pNome = "", pCor = "", pMsg = "";
+        if (pC >= 75) {
+            pNome = "SENTINELA DE ELITE"; pCor = "var(--blue)";
+            pMsg = "Você é o mestre da prevenção! Na Amcor, sua atitude garante que todos cheguem bem em casa.";
+        } else if (pN >= 40) {
+            pNome = "VISITANTE DO PERIGO"; pCor = "var(--red)";
+            pMsg = "Cuidado! Você está arriscando demais. Que tal focar mais no bloqueio e nos EPIs?";
+        } else if (traits.Arrojado >= 3) {
+            pNome = "RESOLVEDOR APRESSADO"; pCor = "var(--gold)";
+            pMsg = "Sua pressa pode causar acidentes. Ser rápido é bom, mas ser seguro é vital.";
+        } else {
+            pNome = "OPERADOR CONSCIENTE"; pCor = "#00ff88";
+            pMsg = "Bom trabalho! Continue atento aos detalhes para se tornar um Sentinela.";
+        }
+
+        // Ranking filtrado por turno do usuário
+        const shiftRanking = rankings.filter(r => r.shift === userData.turno).slice(0, 5);
+
+        // Ranking geral (top 5)
+        const globalRanking = rankings.slice(0, 5);
+
+        ui.innerHTML = `
+            <div style="animation: fadeIn 1s; padding-bottom: 60px;">
+                <h1 style="color:var(--gold); font-family: 'Cinzel'; margin-bottom:5px; font-size: clamp(18px, 4vw, 28px);">RESULTADO FINAL</h1>
+                <h2 style="margin-bottom:20px; color: white;">
+                    ${userData.nome.split(' ')[0]} — <span style="color: var(--blue);">${score} pontos</span>
+                </h2>
+
+                <div style="background: ${pCor}; color: black; padding: 15px 20px; border-radius: 10px; margin-bottom: 25px; text-align: left;">
+                    <h2 style="margin:0 0 5px 0; font-weight: 700; font-family: 'Cinzel';">PERFIL: ${pNome}</h2>
+                    <p style="margin: 0; font-size: 0.9em; line-height: 1.5;">${pMsg}</p>
+                </div>
+
+                <div style="text-align: left; background: rgba(255,255,255,0.04); padding: 20px; border-radius: 10px; border: 1px solid rgba(0,212,255,0.2); margin-bottom: 30px;">
+                    <p style="margin-top:0; font-size: 12px; letter-spacing: 2px; color: rgba(255,255,255,0.5); text-transform: uppercase;">Comportamento nas perguntas</p>
+                    <span style="font-size: 13px;">Prevenção: ${pC}%</span>
+                    <div class="stat-bar-container"><div class="stat-bar" style="width:${pC}%; background:var(--blue)"></div></div>
+                    <span style="font-size: 13px;">Pontos de Atenção: ${pN}%</span>
+                    <div class="stat-bar-container"><div class="stat-bar" style="width:${pN}%; background:var(--red)"></div></div>
+                </div>
+
+                <h3 style="font-family: 'Cinzel'; color: var(--blue); letter-spacing: 2px;">🏆 RANKING — ${userData.turno}</h3>
+                <table class="ranking-table">
+                    <thead><tr><th>#</th><th>Nome</th><th>RE</th><th>Pontos</th></tr></thead>
+                    <tbody>
+                        ${shiftRanking.map((r, i) => `
+                            <tr style="${r.re === userData.re ? 'background: rgba(0,212,255,0.1); font-weight: bold;' : ''}">
+                                <td style="color: var(--gold);">${i + 1}°</td>
+                                <td>${r.name.split(' ')[0]}</td>
+                                <td style="color: rgba(255,255,255,0.5);">${r.re}</td>
+                                <td style="color: var(--blue);">${r.score}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <h3 style="font-family: 'Cinzel'; color: var(--gold); letter-spacing: 2px; margin-top: 30px;">🌟 RANKING GERAL</h3>
+                <table class="ranking-table">
+                    <thead><tr><th>#</th><th>Nome</th><th>Turno</th><th>Pontos</th></tr></thead>
+                    <tbody>
+                        ${globalRanking.map((r, i) => `
+                            <tr style="${r.re === userData.re ? 'background: rgba(255,204,0,0.08); font-weight: bold;' : ''}">
+                                <td style="color: var(--gold);">${i + 1}°</td>
+                                <td>${r.name.split(' ')[0]}</td>
+                                <td style="color: rgba(255,255,255,0.5);">${r.shift}</td>
+                                <td style="color: var(--blue);">${r.score}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <button onclick="location.reload()" class="choice-btn" style="text-align:center; margin-top: 35px; border-color: var(--blue);">↺ JOGAR NOVAMENTE</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
