@@ -804,6 +804,26 @@
         document.addEventListener("keydown", e => onKey(e, true));
         document.addEventListener("keyup", e => onKey(e, false));
 
+        
+
+        canvas.addEventListener("touchstart", e => {
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener("touchmove", e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const relativeX = e.touches[0].clientX - rect.left;
+            // Cálculo para centralizar a raquete no dedo dentro do canvas
+            const scaleX = canvas.width / rect.width; 
+            const touchX = relativeX * scaleX;
+
+            if (touchX > 0 && touchX < canvas.width) {
+                pX = touchX - 75 / 2; // 75 é a largura da sua raquete
+            }
+        }, { passive: false });
+
+
         function draw() {
             if (!gameRunning) return;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
