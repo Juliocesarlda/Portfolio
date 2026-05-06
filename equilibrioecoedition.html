@@ -464,9 +464,14 @@ const CONFIG_PROJETO = {
 };
 
 // Função para processar o resultado do Naive Bayes e enviar
+// Substitua sua função enviarDadosParaNuvem por esta estrutura global
 async function registrarResultado(perfilFinal, pontuacaoTotal) {
-    
-    // Objeto de dados formatado para a sua planilha "Green Peace"
+    const CONFIG_PROJETO = {
+        endpoint: "https://script.google.com/macros/s/AKfycbyCx5N-0xt2Q73tFj9uXPZFNAtGkMgWRMyl_-UI5vLbwqDJZwTgIvZi22Z7SrKzGOv4Gg/exec",
+        local: "Escola Municipal - Guaratuba",
+        versao: "Greenpeace - Maré de Consciência"
+    };
+
     const payload = {
         cidade: "Guaratuba",
         escola: CONFIG_PROJETO.local,
@@ -476,25 +481,15 @@ async function registrarResultado(perfilFinal, pontuacaoTotal) {
     };
 
     try {
-        // Envio assíncrono para o Google Sheets
-        const response = await fetch(CONFIG_PROJETO.endpoint, {
+        await fetch(CONFIG_PROJETO.endpoint, {
             method: 'POST',
-            mode: 'no-cors', // Mantido para evitar bloqueios de CORS em hospedagens simples
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
-        console.log("Dados enviados com sucesso para a Maré de Consciência!");
-        
-        // Aqui você pode disparar a função que mostra a tela final de resultado
-        mostrarTelaFinal(perfilFinal);
-
+        console.log("Soberania de dados confirmada: Planilha atualizada.");
     } catch (error) {
-        console.error("Erro ao reportar dados ao Greenpeace:", error);
-        // Mesmo com erro no envio, o jogo deve continuar para não frustrar o aluno
-        mostrarTelaFinal(perfilFinal);
+        console.error("Erro ao reportar dados:", error);
     }
 }
 }
@@ -504,6 +499,7 @@ function finalizarJogoIA() {
 window.speechSynthesis.cancel(); // Limpa filas travadas
 const wakeUp = new SpeechSynthesisUtterance("");
 window.speechSynthesis.speak(wakeUp);
+
     let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25, observador: 0.25 };
     
     dadosTreinamento.forEach(escolha => {
@@ -516,6 +512,9 @@ window.speechSynthesis.speak(wakeUp);
 
     const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
     const confianca = Math.round(probs[perfilFinal] * 100);
+
+// PARA ENVIAR OS DADOS
+registrarResultado(perfilFinal, confianca);
 
     const resultados = {
         observador: {
