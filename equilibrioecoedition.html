@@ -560,13 +560,14 @@ function finalizarJogoIA() {
     document.getElementById('timer-container').style.display = 'none';
 
     // Dentro da sua função finalizarJogoIA, logo após calcular o perfilFinal:
-    const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbzZKMa1S7u9_fDi7WnFt0BQqRXCYR-KxK6sIb0rZCN6MRaNLnwWWCALhiJNNgzwHUwt/exec";
+    const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbzeNUdc4Wi2QS5MvgcSgRSAj2kVt2mULSHSTf3sup6jekpsyhz7k7MDz1moCbib4H5pZg/exec";
+;
 
     fetch(URL_DA_PLANILHA, {
         method: 'POST',
         mode: 'no-cors',
         body: JSON.stringify(gameStats)
-    }).then(() => console.log("Dados enviados para a planilha da PIC!"));
+    }).then(() => console.log("Dados de pesquisa enviados!"));
 }
 
 </script>
