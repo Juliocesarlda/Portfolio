@@ -250,6 +250,22 @@
             observador:  { pacificador: 0.10, determinado: 0.05, cauteloso: 0.15, impulsivo: 0.05, observador: 0.80 }
         };
 
+        // Exemplo coleta de dados - incialização de variaveis
+        let gameStats = { rodadaAtual: 0,
+            perfis: {
+                pacificador: 0,
+                determinado: 0,
+                cauteloso: 0,
+                impulsivo: 0,
+                observador: 0
+            },
+            escolhas: {
+                boas: 0,
+                ruinsRazoavel: 0,
+                ruinsApocaliptico: 0
+            }
+        };
+        
         let dadosTreinamento = []; 
         let diaAtual = 0;
         let timer;
@@ -338,15 +354,28 @@ function carregarCena() {
 }
 
 function escolher(notificacao, valor) {
-    // Interrompe qualquer fala anterior para narrar a consequência
+    // --- 1. COLETA DE DADOS (O que você pediu) ---
+    gameStats.rodadaAtual++;
+    if (gameStats.perfis[valor] !== undefined) {
+        gameStats.perfis[valor]++;
+    }
+
+    // Classificação para o seu relatório .txt
+    if (valor === 'pacificador' || valor === 'cauteloso') {
+        gameStats.escolhas.boas++;
+    } else if (valor === 'determinado' || valor === 'observador') {
+        gameStats.escolhas.ruinsRazoavel++;
+    } else if (valor === 'impulsivo') {
+        gameStats.escolhas.ruinsApocaliptico++;
+    }
+
+    // --- 2. SUA LÓGICA ORIGINAL DE IFs (Reposta aqui) ---
     window.speechSynthesis.cancel();
-    
     dadosTreinamento.push(valor || "cauteloso");
     const n = document.getElementById('notification');
     const bgImage = document.getElementById('bg-image');
     const perguntaTextoAtual = jornada[diaAtual].q;
 
-    // --- LÓGICA DE CONSEQUÊNCIAS VISUAIS ---
     if (perguntaTextoAtual.includes("canteiro de obras")) {
         if (valor === 'determinado') bgImage.style.backgroundImage = "url('0_1_paralizacaodaobra.png')";
         else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('0_2_audienciapublica.png')";
@@ -407,26 +436,23 @@ function escolher(notificacao, valor) {
         else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('9_3_consumirmenosplastico.png')";
         else bgImage.style.backgroundImage = "url('9_4_protestarnotrapiche.png')";
     }
-const textoConsequencia = `${notificacao}. A natureza irá se lembrar disso.`;
+
+    // --- 3. NOTIFICAÇÃO E VOZ ---
+    const textoConsequencia = `${notificacao}. A natureza irá se lembrar disso.`;
     n.innerHTML = `${notificacao}<br><span style="color: var(--greenpeace-yellow); font-weight: bold;">A natureza irá se lembrar disso.</span>`;
     n.style.opacity = 1;
 
-    // --- NOVIDADE: Narrar a consequência automaticamente ---
     const narradorConsequencia = new SpeechSynthesisUtterance(textoConsequencia);
     narradorConsequencia.lang = 'pt-BR';
-    narradorConsequencia.rate = 0.9;
     window.speechSynthesis.speak(narradorConsequencia);
 
-    // Desabilita interações durante a transição
     document.querySelectorAll('.btn-escolha, .btn-audio-acessivel').forEach(b => b.style.pointerEvents = 'none');
 
-    // Aumentamos o tempo de exibição para 6 segundos para dar tempo de ouvir tudo com calma
     setTimeout(() => { 
         n.style.opacity = 0; 
         diaAtual++;
         carregarCena();
-    }, 9000);
-    enviarDadosParaNuvem();
+    }, 9000); 
 }
 
 function ouvirTexto(elementoId) {
@@ -454,27 +480,11 @@ function ouvirTexto(elementoId) {
     console.log("Steve informa: Tentando narrar -> " + texto);
 }
 
-function enviarDadosParaNuvem() {
-    // Cole o seu link aqui dentro das aspas
-    const urlScript = "https://script.google.com/macros/s/AKfycbw23T8CKI_G6ilmz2bx3pe23vPYzvAstyFnzzMRaobWb5b1LAqdZ5gqwTHv7FHhvUTG/exec";
-
-    fetch(urlScript, {
-        method: 'POST',
-        mode: 'no-cors', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(gameStats)
-    }).then(() => {
-        console.log("Dados enviados para a planilha com sucesso!");
-    }).catch(err => {
-        console.error("Erro ao enviar dados:", err);
-    });
-}
-
 function finalizarJogoIA() {
     // Dentro da função finalizarJogoIA, antes de tudo:
-window.speechSynthesis.cancel(); // Limpa filas travadas
-const wakeUp = new SpeechSynthesisUtterance("");
-window.speechSynthesis.speak(wakeUp);
+    window.speechSynthesis.cancel(); // Limpa filas travadas
+    const wakeUp = new SpeechSynthesisUtterance("");
+    window.speechSynthesis.speak(wakeUp);
     let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25, observador: 0.25 };
     
     dadosTreinamento.forEach(escolha => {
@@ -548,6 +558,15 @@ window.speechSynthesis.speak(wakeUp);
     `;
     
     document.getElementById('timer-container').style.display = 'none';
+
+    // Dentro da sua função finalizarJogoIA, logo após calcular o perfilFinal:
+    const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbzZKMa1S7u9_fDi7WnFt0BQqRXCYR-KxK6sIb0rZCN6MRaNLnwWWCALhiJNNgzwHUwt/exec";
+
+    fetch(URL_DA_PLANILHA, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify(gameStats)
+    }).then(() => console.log("Dados enviados para a planilha da PIC!"));
 }
 
 </script>
