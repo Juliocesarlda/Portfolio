@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>
-        Equilíbrio: Eco-Edition - Greenpeace & IA
+        Equilíbrio: Eco-Edition (Greenpeace & AI)
     </title>
     <style>
         :root {
@@ -426,7 +426,7 @@ const textoConsequencia = `${notificacao}. A natureza irá se lembrar disso.`;
         diaAtual++;
         carregarCena();
     }, 9000);
-    
+    enviarDadosParaNuvem();
 }
 
 function ouvirTexto(elementoId) {
@@ -454,30 +454,22 @@ function ouvirTexto(elementoId) {
     console.log("Steve informa: Tentando narrar -> " + texto);
 }
 
-function enviarDadosParaNuvem(perfilFinal, confianca) {
-    const urlScript = "https://script.google.com/macros/s/AKfycbwiqMQfBUgIUKs5W-GLbokfDcvG2nSqjLhgQCEvsgglP4u6Mh9aaapmvQbNwHPgwYKe0w/exec";
-
-    // O objeto deve ter exatamente os mesmos nomes que o seu doPost(e) espera
-    const dadosParaEnviar = {
-        cidade: "Guaratuba",
-        escola: "Escola Municipal",
-        perfil: perfilFinal,
-        pontuacao: confianca, // Aqui deve ser 'pontuacao' para bater com o data.pontuacao do Script
-        versao: "Greenpeace - Maré de Consciência"
-    };
+function enviarDadosParaNuvem() {
+    // Cole o seu link aqui dentro das aspas
+    const urlScript = "https://script.google.com/macros/s/AKfycbw23T8CKI_G6ilmz2bx3pe23vPYzvAstyFnzzMRaobWb5b1LAqdZ5gqwTHv7FHhvUTG/exec";
 
     fetch(urlScript, {
         method: 'POST',
         mode: 'no-cors', 
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dadosParaEnviar)
+        body: JSON.stringify(gameStats)
     }).then(() => {
-        console.log("Dados enviados com sucesso.");
+        console.log("Dados enviados para a planilha com sucesso!");
     }).catch(err => {
-        console.error("Erro ao enviar:", err);
+        console.error("Erro ao enviar dados:", err);
     });
 }
-        
+
 function finalizarJogoIA() {
     // Dentro da função finalizarJogoIA, antes de tudo:
 window.speechSynthesis.cancel(); // Limpa filas travadas
@@ -493,8 +485,8 @@ window.speechSynthesis.speak(wakeUp);
         }
     });
 
- const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
-const confianca = Math.round(probs[perfilFinal] * 100);
+    const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
+    const confianca = Math.round(probs[perfilFinal] * 100);
 
     const resultados = {
         observador: {
@@ -519,7 +511,6 @@ const confianca = Math.round(probs[perfilFinal] * 100);
         }
     };
 
-    enviarDadosParaNuvem(perfilFinal, confianca);
     const resultadoFinal = resultados[perfilFinal];
 
     // Atualiza a imagem final no fundo
