@@ -192,7 +192,7 @@ async function fetchData() {
             totalPlayers: rawData.length,
             profiles: { pacificador: 0, determinado: 0, cauteloso: 0, impulsivo: 0 },
             decisions: { boas: 0, razoaveis: 0, apocalipticas: 0 },
-            shifts: { turnoA: 0, turnoB: 0, turnoC: 0 }
+            shifts: { turnoA: 0, turnoB: 0, turnoC: 0, administrativo: 0 }
         };
 
         rawData.forEach(row => {
@@ -211,6 +211,7 @@ async function fetchData() {
             if(row.turno === 'Turno A') estatisticas.shifts.turnoA++;
             if(row.turno === 'Turno B') estatisticas.shifts.turnoB++;
             if(row.turno === 'Turno C') estatisticas.shifts.turnoC++;
+            if(row.turno === 'Adm') estatisticas.shifts.administrativo++;
         });
 
         renderDashboard(estatisticas);
@@ -241,7 +242,7 @@ async function fetchData() {
                     pointBackgroundColor: '#ffcc00'
                 }]
             },
-            options: { 
+            options: {
                 scales: { r: { grid: { color: '#333' }, ticks: { display: false } } },
                 plugins: { legend: { display: false } }
             }
@@ -254,7 +255,7 @@ async function fetchData() {
                 labels: ['Seguras', 'Razoáveis', 'Críticas'],
                 datasets: [{
                     data: [data.decisions.boas, data.decisions.razoaveis, data.decisions.apocalipticas],
-                    backgroundColor: ['#00d4ff', '#ffcc00', '#ff4444'],
+                    backgroundColor: ['#0000FF', '#FFFF00', '#FFFFFF'],
                     borderWidth: 0
                 }]
             },
@@ -265,10 +266,10 @@ async function fetchData() {
         new Chart(document.getElementById('shiftsChart'), {
             type: 'bar',
             data: {
-                labels: ['Turno A', 'Turno B', 'Turno C'],
+                labels: ['Turno A', 'Turno B', 'Turno C', 'Administrativo'],
                 datasets: [{
                     label: 'Participantes',
-                    data: [data.shifts.turnoA, data.shifts.turnoB, data.shifts.turnoC],
+                    data: [data.shifts.turnoA, data.shifts.turnoB, data.shifts.turnoC, data.shifts.administrativo],
                     backgroundColor: '#ffcc00'
                 }]
             },
