@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Jornada da Segurança</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --blue: #00d4ff;
+            --gold: #ffcc00;
+            --red: #ff4444;
+            --dark: #000a12;
+            --glass: rgba(0, 10, 18, 0.95);
+        }
+
+        body {
+            background: radial-gradient(circle at center, #001a33 0%, #000 100%);
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--blue);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            color: var(--gold);
+            letter-spacing: 3px;
+            margin: 10px 0;
+        }
+
+        .subtitle {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.6em;
+            color: var(--blue);
+            text-transform: uppercase;
+        }
+
+        /* Layout em Grade para o Dashboard */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--blue);
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            font-family: 'Cinzel', serif;
+            color: var(--blue);
+            margin-top: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        /* Estilo dos Números em Destaque */
+        .stat-highlight {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1.8em;
+            color: var(--gold);
+            display: block;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .label-stat {
+            text-align: center;
+            display: block;
+            font-size: 0.8em;
+            color: rgba(255,255,255,0.6);
+            text-transform: uppercase;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.8em;
+        }
+
+        /* Botão para atualizar dados */
+        .btn-refresh {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: bold;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .btn-refresh:hover {
+            background: var(--gold);
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="subtitle">Controle de Segurança IA</div>
+    <h1>Jornada da Segurança: Analytics</h1>
+</header>
+
+<div style="text-align: right; max-width: 1200px; margin: 0 auto;">
+    <button class="btn-refresh" onclick="location.reload()">🔄 ATUALIZAR DADOS EM TEMPO REAL</button>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h3>Engajamento Total</h3>
+        <span class="stat-highlight" id="total-players">0</span>
+        <span class="label-stat">Colaboradores Treinados</span>
+    </div>
+
+    <div class="card">
+        <h3>Índice de Risco Crítico</h3>
+        <span class="stat-highlight" id="risk-index" style="color: var(--red);">0%</span>
+        <span class="label-stat">Decisões Apocalípticas</span>
+    </div>
+
+    <div class="card">
+        <h3>Perfil Comportamental da Planta</h3>
+        <div class="chart-container">
+            <canvas id="profilesChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Qualidade das Decisões (IA)</h3>
+        <div class="chart-container">
+            <canvas id="decisionsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card" style="grid-column: span 1;">
+        <h3>Participação por Turno</h3>
+        <div class="chart-container">
+            <canvas id="shiftsChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2026 - Sistema de Monitoramento de Segurança - Tecnologia IA Aplicada
+</footer>
+
+<script>
+    // Simulação de carregamento de dados da sua planilha
+    // Em produção, você substituiria isso por um fetch() no seu Web App do Google Sheets
+async function fetchData() {
+    const URL_DO_SEU_SCRIPT = "COLE_AQUI_A_URL_DO_SEU_WEB_APP";
+    
+    try {
+        const response = await fetch(URL_DO_SEU_SCRIPT);
+        const rawData = await response.json();
+
+        // Agora processamos os dados brutos da planilha para o formato do Dashboard
+        const estatisticas = {
+            totalPlayers: rawData.length,
+            profiles: { pacificador: 0, determinado: 0, cauteloso: 0, impulsivo: 0 },
+            decisions: { boas: 0, razoaveis: 0, apocalipticas: 0 },
+            shifts: { turnoA: 0, turnoB: 0, turnoC: 0 }
+        };
+
+        rawData.forEach(row => {
+            // Contabiliza Perfis (ajuste os nomes das colunas se necessário)
+            estatisticas.profiles.pacificador += parseInt(row.pacificador || 0);
+            estatisticas.profiles.determinado += parseInt(row.determinado || 0);
+            estatisticas.profiles.cauteloso += parseInt(row.cauteloso || 0);
+            estatisticas.profiles.impulsivo += parseInt(row.impulsivo || 0);
+
+            // Contabiliza Decisões
+            estatisticas.decisions.boas += parseInt(row.boas || 0);
+            estatisticas.decisions.razoaveis += parseInt(row.ruinsRazoavel || 0);
+            estatisticas.decisions.apocalipticas += parseInt(row.ruinsApocaliptico || 0);
+
+            // Contabiliza Turnos
+            if(row.turno === 'Turno A') estatisticas.shifts.turnoA++;
+            if(row.turno === 'Turno B') estatisticas.shifts.turnoB++;
+            if(row.turno === 'Turno C') estatisticas.shifts.turnoC++;
+        });
+
+        renderDashboard(estatisticas);
+
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        alert("Erro ao conectar com a base de dados em tempo real.");
+    }
+}
+    function renderDashboard(data) {
+        // Atualiza números rápidos
+        document.getElementById('total-players').innerText = data.totalPlayers;
+        
+        const totalDecisions = data.decisions.boas + data.decisions.razoaveis + data.decisions.apocalipticas;
+        const riskPercent = ((data.decisions.apocalipticas / totalDecisions) * 100).toFixed(1);
+        document.getElementById('risk-index').innerText = riskPercent + '%';
+
+        // Gráfico de Perfis (Radar)
+        new Chart(document.getElementById('profilesChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Pacificador', 'Determinado', 'Cauteloso', 'Impulsivo'],
+                datasets: [{
+                    label: 'Perfis (%)',
+                    data: [data.profiles.pacificador, data.profiles.determinado, data.profiles.cauteloso, data.profiles.impulsivo],
+                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                    borderColor: '#00d4ff',
+                    pointBackgroundColor: '#ffcc00'
+                }]
+            },
+            options: { 
+                scales: { r: { grid: { color: '#333' }, ticks: { display: false } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Gráfico de Decisões (Pizza/Doughnut)
+        new Chart(document.getElementById('decisionsChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Seguras', 'Razoáveis', 'Críticas'],
+                datasets: [{
+                    data: [data.decisions.boas, data.decisions.razoaveis, data.decisions.apocalipticas],
+                    backgroundColor: ['#00d4ff', '#ffcc00', '#ff4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { position: 'bottom', labels: { color: 'white' } } } }
+        });
+
+        // Gráfico de Turnos (Barras)
+        new Chart(document.getElementById('shiftsChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Turno A', 'Turno B', 'Turno C'],
+                datasets: [{
+                    label: 'Participantes',
+                    data: [data.shifts.turnoA, data.shifts.turnoB, data.shifts.turnoC],
+                    backgroundColor: '#ffcc00'
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, grid: { color: '#333' } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // Iniciar
+    fetchData();
+</script>
+</body>
+</html>
