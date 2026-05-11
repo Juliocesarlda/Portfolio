@@ -24,69 +24,6 @@
             overflow-x: hidden;
         }
 
-/* Estilos dos Controles Mobile do Minijogo */
-        .mobile-controls {
-            display: none;
-            justify-content: center;
-            gap: 40px;
-            margin-top: 20px;
-        }
-        @media (max-width: 768px) {
-            .mobile-controls { display: flex; }
-        }
-        .key-btn {
-            width: 70px;
-            height: 70px;
-            background: #1a1a1a;
-            border: 2px solid var(--blue);
-            border-radius: 10px;
-            color: var(--blue);
-            font-size: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 0 var(--blue), 0 8px 15px rgba(0,0,0,0.5);
-            cursor: pointer;
-            user-select: none;
-            touch-action: manipulation;
-        }
-        .key-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 1px 0 var(--blue);
-        }
-
-        /* --- Estilos da Caixa de Alerta IA --- */
-        #ia-alert-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 1000;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
-        }
-        .ia-alert-box {
-            background: linear-gradient(135deg, #001a33 0%, #000a12 100%);
-            border: 2px solid var(--blue);
-            border-radius: 15px; width: 90%; max-width: 500px;
-            padding: 30px; text-align: center;
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
-            position: relative;
-            animation: fadeIn 0.5s;
-        }
-        .ia-alert-header {
-            color: var(--blue); font-family: 'Cinzel'; font-size: 1.2em;
-            margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .ia-alert-content {
-            color: #e0e0e0; font-size: 0.95em; line-height: 1.6;
-            text-align: left; margin-bottom: 25px;
-        }
-        .ia-alert-btn {
-            background: transparent; border: 1px solid var(--blue);
-            color: var(--blue); padding: 10px 40px; border-radius: 5px;
-            cursor: pointer; font-family: 'Montserrat'; font-weight: bold;
-            transition: 0.3s; text-transform: uppercase;
-        }
-        .ia-alert-btn:hover { background: var(--blue); color: black; }
-
         /* --- TELA INICIAL (sem login) --- */
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -468,23 +405,16 @@
 </head>
 <body>
 
-    <div id="ia-alert-overlay">
-        <div class="ia-alert-box">
-            <div class="ia-alert-header">
-                <span>🤖</span> ANÁLISE DE SEGURANÇA IA
-            </div>
-            <div id="ia-alert-text" class="ia-alert-content"></div>
-            <button class="ia-alert-btn" onclick="document.getElementById('ia-alert-overlay').style.display='none'">OK</button>
-        </div>
-    </div>
-
+    <!-- SCANNER DE EPIs -->
     <div id="scanner-overlay">
         <div style="text-align:center;">
             <p style="font-size:10px; letter-spacing:3px; color:rgba(255,255,255,0.3); text-transform:uppercase; margin:0 0 16px 0;">AMCOR · SISTEMA DE SEGURANÇA</p>
         </div>
 
+        <!-- Carrossel de EPIs acima do scanner -->
         <div id="epi-carousel" style="display:flex; gap:18px; margin-bottom:10px; min-height:90px; align-items:center; justify-content:center;">
-            </div>
+            <!-- imagens injetadas via JS -->
+        </div>
 
         <div class="scanner-box">
             <div class="scanner-grid"></div>
@@ -513,13 +443,16 @@
         </div>
     </div>
 
+    <!-- TELA INICIAL -->
     <div id="start-screen">
+        <!-- <div class="pulse-ring"></div> -->
         <img src="amcor4.png" class="pulse-ring amcor-logo" alt="Logo Amcor">
         <h1 class="logo-title">AMCOR: JORNADA DA SEGURANÇA</h1>
         <p class="logo-sub">Simulação de Segurança do Trabalho · SIPAT 2026</p>
         <button class="start-btn" onclick="startGame()">▶ INICIAR SIMULAÇÃO</button>
     </div>
 
+    <!-- JOGO PRINCIPAL -->
     <div id="scene-container" style="display:flex;">
         <div id="notification">A segurança se lembrará disso.</div>
         <div id="progress-bar-wrap">
@@ -537,6 +470,7 @@
         </div>
     </div>
 
+    <!-- OVERLAY DE CONSEQUÊNCIA -->
     <div id="consequence-overlay">
         <div class="consequence-card">
             <h3 style="font-family: 'Cinzel'; color: var(--blue); margin-top: 0;">CONSEQUÊNCIA</h3>
@@ -546,6 +480,7 @@
         </div>
     </div>
 
+    <!-- OVERLAY DE CADASTRO FINAL -->
     <div id="register-overlay">
         <div class="register-card">
             <h2 class="register-title">SIMULAÇÃO CONCLUÍDA</h2>
@@ -829,13 +764,7 @@
                     <div>VIDAS: <span id="m-lives">3</span></div>
                 </div>
                 <canvas id="breakoutCanvas" width="480" height="320" style="background: #000; border: 4px solid var(--blue); width: 100%; max-width: 480px;"></canvas>
-                
-                <div class="mobile-controls">
-                    <div class="key-btn" id="btn-left">◀</div>
-                    <div class="key-btn" id="btn-right">▶</div>
-                </div>
-                
-                <p style="font-size: 0.7em; margin-top: 15px; color: rgba(255,255,255,0.5);">USE AS SETAS OU OS BOTÕES NA TELA</p>
+                <p style="font-size: 0.7em; margin-top: 10px; color: rgba(255,255,255,0.5);">USE AS SETAS [←] [→] DO TECLADO</p>
             </div>
         `;
 
@@ -851,24 +780,6 @@
         let rP = false; let lP = false;
         let gameRunning = true;
 
-        // --- LÓGICA DE CONTROLE (TECLADO + TOQUE) ---
-        function onKey(e, val) {
-            if (e.key === "Right" || e.key === "ArrowRight") rP = val;
-            else if (e.key === "Left" || e.key === "ArrowLeft") lP = val;
-        }
-        document.addEventListener("keydown", e => onKey(e, true));
-        document.addEventListener("keyup", e => onKey(e, false));
-
-        // Controles de Toque para Celular
-        const btnL = document.getElementById('btn-left');
-        const btnR = document.getElementById('btn-right');
-
-        btnL.addEventListener('touchstart', (e) => { e.preventDefault(); lP = true; });
-        btnL.addEventListener('touchend', (e) => { e.preventDefault(); lP = false; });
-        btnR.addEventListener('touchstart', (e) => { e.preventDefault(); rP = true; });
-        btnR.addEventListener('touchend', (e) => { e.preventDefault(); rP = false; });
-        // --------------------------------------------
-
         const imgLatex = new Image(); imgLatex.src = 'luvalatex.png';
         const imgAnticorte = new Image(); imgAnticorte.src = 'luvaanticorte.png';
         const imgCasquete = new Image(); imgCasquete.src = 'bonecasquete.png';
@@ -883,6 +794,13 @@
                 bricks[c][r] = { x: 0, y: 0, status: 1, img: imgs[r] };
             }
         }
+
+        function onKey(e, val) {
+            if (e.key === "Right" || e.key === "ArrowRight") rP = val;
+            else if (e.key === "Left" || e.key === "ArrowLeft") lP = val;
+        }
+        document.addEventListener("keydown", e => onKey(e, true));
+        document.addEventListener("keyup", e => onKey(e, false));
 
         function draw() {
             if (!gameRunning) return;
@@ -937,7 +855,7 @@
         document.getElementById('register-overlay').style.display = 'flex';
     }
 
-    function submitRegistration() {
+    /*function submitRegistration() {
         const nome = document.getElementById('userName').value.trim();
         const re = document.getElementById('userRE').value.trim();
         const turno = document.getElementById('userTurno').value;
@@ -953,7 +871,78 @@
 
         document.getElementById('register-overlay').style.display = 'none';
         endGame();
+    }*/
+
+    function submitRegistration() {
+    const nome = document.getElementById('userName').value.trim();
+    const re = document.getElementById('userRE').value.trim();
+    const turno = document.getElementById('userTurno').value;
+
+    if (!nome || !re || !turno) {
+        alert("Por favor, preencha todos os campos para registrar seu resultado!");
+        return;
     }
+
+    userData.nome = nome;
+    userData.re = re;
+    userData.turno = turno;
+
+    // --- NOVA PARTE: Preparar e enviar dados ---
+    const gameStats = {
+    nome: userData.nome,   // Adiciona o nome capturado
+    re: userData.re,       // Adiciona o RE capturado
+    turno: userData.turno, // Adiciona o turno capturado
+    rodadaAtual: step, 
+    perfis: {
+        pacificador: traits.Cauteloso || 0,
+        determinado: traits.Arrojado || 0,
+        cauteloso: traits.Cauteloso || 0, 
+        impulsivo: traits.Negligente || 0,
+        observador: 0 
+    },
+    escolhas: {
+        boas: traits.Cauteloso || 0,
+        ruinsRazoavel: traits.Arrojado || 0,
+        ruinsApocaliptico: traits.Negligente || 0
+    }
+};
+    /*const gameStats = {
+        rodadaAtual: step, // No final será o total de perguntas
+        perfis: {
+            pacificador: traits.Cauteloso || 0,
+            determinado: traits.Arrojado || 0,
+            cauteloso: traits.Cauteloso || 0, // Mapeando conforme seu script
+            impulsivo: traits.Negligente || 0,
+            observador: 0 
+        },
+        escolhas: {
+            boas: traits.Cauteloso || 0,
+            ruinsRazoavel: traits.Arrojado || 0,
+            ruinsApocaliptico: traits.Negligente || 0
+        }
+    };*/
+
+    function enviarParaPlanilha(gameStats) {
+    const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbzAtVjrouQn_wkAiF1UO_fgtpgebokscU31H0mop18MtqTjxvkamarkDK-dYaLR6gps/exec"; // COLE A URL DO SEU APPS SCRIPT AQUI
+
+    fetch(URL_DA_PLANILHA, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gameStats)
+    })
+    .then(() => console.log("Dados da Jornada enviados com sucesso!"))
+    .catch(err => console.error("Erro ao enviar dados:", err));
+}
+
+    enviarParaPlanilha(gameStats);
+    // -------------------------------------------
+
+    document.getElementById('register-overlay').style.display = 'none';
+    endGame();
+}
 
     function saveScore(name, re, shift, finalScore) {
         let rankings = JSON.parse(localStorage.getItem('amcorRankings')) || [];
@@ -963,93 +952,31 @@
         return rankings;
     }
 
-    // Função que aplica o Algoritmo Naive Bayes
-    function classificarPerfilNaiveBayes(traits) {
-        const perfis = [
-            {
-                nome: "SENTINELA DE ELITE",
-                cor: "var(--blue)",
-                msg: "Você é o mestre da prevenção! Na Amcor, sua atitude garante que todos cheguem bem em casa.",
-                prior: 0.25,
-                verossimilhanca: { Cauteloso: 0.8, Arrojado: 0.15, Negligente: 0.05 }
-            },
-            {
-                nome: "VISITANTE DO PERIGO",
-                cor: "var(--red)",
-                msg: "Cuidado! Você está arriscando demais. Que tal focar mais no bloqueio e nos EPIs?",
-                prior: 0.25,
-                verossimilhanca: { Cauteloso: 0.1, Arrojado: 0.2, Negligente: 0.7 }
-            },
-            {
-                nome: "RESOLVEDOR APRESSADO",
-                cor: "var(--gold)",
-                msg: "Sua pressa pode causar acidentes. Ser rápido é bom, mas ser seguro é vital.",
-                prior: 0.25,
-                verossimilhanca: { Cauteloso: 0.2, Arrojado: 0.6, Negligente: 0.2 }
-            },
-            {
-                nome: "OPERADOR CONSCIENTE",
-                cor: "#00ff88",
-                msg: "Bom trabalho! Continue atento aos detalhes para se tornar um Sentinela.",
-                prior: 0.25,
-                verossimilhanca: { Cauteloso: 0.5, Arrojado: 0.3, Negligente: 0.2 }
-            }
-        ];
-
-        let melhorPerfil = perfis[0];
-        let maiorProbabilidade = -Infinity;
-
-        perfis.forEach(perfil => {
-            let logProbabilidade = Math.log(perfil.prior);
-            logProbabilidade += traits.Cauteloso * Math.log(perfil.verossimilhanca.Cauteloso);
-            logProbabilidade += traits.Arrojado * Math.log(perfil.verossimilhanca.Arrojado);
-            logProbabilidade += traits.Negligente * Math.log(perfil.verossimilhanca.Negligente);
-
-            if (logProbabilidade > maiorProbabilidade) {
-                maiorProbabilidade = logProbabilidade;
-                melhorPerfil = perfil;
-            }
-        });
-        return melhorPerfil;
-    }
-
-    function showIAPersonalizedAlert(perfil, traits) {
-        const overlay = document.getElementById('ia-alert-overlay');
-        const textBox = document.getElementById('ia-alert-text');
-        let texto = "";
-
-        if (perfil.nome === "SENTINELA DE ELITE") {
-            texto = `<b>Análise de Sistema:</b> Detectamos um padrão de alta disciplina técnica. Sua percepção de risco é cirúrgica. <br><br><b>Conselho de Imersão:</b> Você é a última linha de defesa da Amcor. Sua missão agora é ser o mentor: quando vir um colega apressado, compartilhe sua visão. A segurança é uma engrenagem que depende da sua liderança silenciosa no posto de trabalho.`;
-        } else if (perfil.nome === "VISITANTE DO PERIGO") {
-            texto = `<b>Alerta de Integridade:</b> O sistema identificou falhas críticas no seu protocolo de decisão. <br><br><b>Foco na Dificuldade:</b> Você tendeu a priorizar a facilidade em detrimento do bloqueio LOTO e do uso de EPIs. <br><br><b>Dica de Segurança:</b> Na Amcor, não existe 'só desta vez'. Cada atalho é uma roleta russa. Volte aos fundamentos: se não está seguro, pare a máquina e peça ajuda.`;
-        } else if (perfil.nome === "RESOLVEDOR APRESSADO") {
-            texto = `<b>Diagnóstico de Performance:</b> Sua agilidade é notável, mas ela está mascarando riscos fatais. <br><br><b>Foco na Dificuldade:</b> Suas decisões foram moldadas pela urgência de 'resolver logo'. <br><br><b>Dica de Imersão:</b> A pressa é o maior inimigo da perfeição e a melhor amiga do acidente. Respire. O cronômetro da produção nunca deve ser mais rápido que o batimento do seu coração. Segurança primeiro, sempre.`;
-        } else {
-            texto = `<b>Relatório de Monitoramento:</b> Você demonstra consciência, mas seu escudo de proteção ainda tem frestas. <br><br><b>Foco na Dificuldade:</b> Houve momentos de hesitação em situações de risco médio. <br><br><b>Missão:</b> Aprofunde seu conhecimento nos procedimentos operacionais padrão (POP). Transforme a atenção básica em instinto de proteção.`;
-        }
-
-        textBox.innerHTML = texto;
-        setTimeout(() => {
-            overlay.style.display = 'flex';
-        }, 1200);
-    }
-
     function endGame() {
         const rankings = saveScore(userData.nome, userData.re, userData.turno, score);
         const ui = document.getElementById('ui-layer');
-        
-        // --- CLASSIFICAÇÃO NAIVE BAYES ---
-        const perfilIdentificado = classificarPerfilNaiveBayes(traits);
-        const pNome = perfilIdentificado.nome;
-        const pCor = perfilIdentificado.cor;
-        const pMsg = perfilIdentificado.msg;
-
         const totalQ = story.length;
         const pC = Math.round((traits.Cauteloso / totalQ) * 100);
         const pN = Math.round((traits.Negligente / totalQ) * 100);
 
+        let pNome = "", pCor = "", pMsg = "";
+        if (pC >= 75) {
+            pNome = "SENTINELA DE ELITE"; pCor = "var(--blue)";
+            pMsg = "Você é o mestre da prevenção! Na Amcor, sua atitude garante que todos cheguem bem em casa.";
+        } else if (pN >= 40) {
+            pNome = "VISITANTE DO PERIGO"; pCor = "var(--red)";
+            pMsg = "Cuidado! Você está arriscando demais. Que tal focar mais no bloqueio e nos EPIs?";
+        } else if (traits.Arrojado >= 3) {
+            pNome = "RESOLVEDOR APRESSADO"; pCor = "var(--gold)";
+            pMsg = "Sua pressa pode causar acidentes. Ser rápido é bom, mas ser seguro é vital.";
+        } else {
+            pNome = "OPERADOR CONSCIENTE"; pCor = "#00ff88";
+            pMsg = "Bom trabalho! Continue atento aos detalhes para se tornar um Sentinela.";
+        }
+
         // Ranking filtrado por turno do usuário
         const shiftRanking = rankings.filter(r => r.shift === userData.turno).slice(0, 5);
+
         // Ranking geral (top 5)
         const globalRanking = rankings.slice(0, 5);
 
@@ -1106,7 +1033,6 @@
                 <button onclick="location.reload()" class="choice-btn" style="text-align:center; margin-top: 35px; border-color: var(--blue);">↺ JOGAR NOVAMENTE</button>
             </div>
         `;
-        showIAPersonalizedAlert(perfilIdentificado, traits);
     }
 </script>
 </body>
