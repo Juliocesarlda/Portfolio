@@ -515,81 +515,355 @@
     let step = 0;
     let score = 0;
     let traits = { Cauteloso: 0, Negligente: 0, Arrojado: 0 };
+let nr12Erros = 0;
+let nr11Erros = 0;
+let nr10Erros = 0;
+let nr23Erros = 0;
+let nr35Erros = 0;
 
     const story = [
-        {
-            q: "Você vê um colega limpando a maquina sem utilizar o cadeado de bloqueio (LOTO). O que você faz?",
-            img: "1_maquinasembloqueioloto.png ",
-            choices: [
-                { text: "Alertar e exigir o bloqueio", feedback: "Avisar o colega sobre o cadeado aberto impede que a máquina ligue sozinha ou por erro, evitando acidentes graves e salvando vidas. Essa atitude mostra que você se importa com a equipe, garantindo que todos cumpram as regras de segurança e voltem para casa bem.", trait: "Cauteloso", pts: 100 },
-                { text: "Apenas avisar para ter cuidado", feedback: "Cuidado não substitui o bloqueio físico. Você aceitou o risco.", trait: "Arrojado", pts: 40 },
-                { text: "Não interferir para não atrasar", feedback: "Negligência fatal. O silêncio é cúmplice do acidente.", trait: "Negligente", pts: 0 }
-            ]
-        },
-        {
-            q: "Durante o turno, um óleo vaza no piso. A equipe de limpeza está em outra ala.",
-            img: "2_manchadeoleonochao.png",
-            choices: [
-                { text: "Isolar a área e limpar", feedback: "Excelente. Escorregões são causas frequentes de afastamento.", trait: "Cauteloso", pts: 100 },
-                { text: "Colocar um cone e seguir", feedback: "Sinalizou, mas o risco de espalhar o óleo continua.", trait: "Arrojado", pts: 60 },
-                { text: "Ignorar, pois não é sua função", feedback: "A segurança é responsabilidade de todos, não apenas da limpeza.", trait: "Negligente", pts: 0 }
-            ]
-        },
-        {
-            q: "O empilhador está buzinando excessivamente, mas dirigindo rápido demais para a área de pedestres.",
-            img: "3_trafegodeempilhadeira.png",
-            choices: [
-                { text: "Fazer o sinal de PARE e orientar", feedback: "Liderança ativa. Velocidade em galpão é um perigo constante.", trait: "Cauteloso", pts: 100 },
-                { text: "Sair da frente rapidamente", feedback: "Você se salvou, mas permitiu que o risco continuasse para outros.", trait: "Arrojado", pts: 30 },
-                { text: "Fingir que não viu", feedback: "A omissão permite que o comportamento inseguro vire rotina.", trait: "Negligente", pts: 0 }
-            ]
-        },
-        {
-            q: "Você percebe que seu protetor auricular está desgastado, mas o estoque de EPI é longe.",
-            img: "4_protecaoauricular.png",
-            choices: [
-                { text: "Ir buscar um novo agora", feedback: "Sua audição agradece. EPI vencido é o mesmo que nenhum EPI.", trait: "Cauteloso", pts: 100 },
-                { text: "Usar assim mesmo até o fim do turno", feedback: "Danos auditivos são silenciosos e irreversíveis.", trait: "Negligente", pts: 0 },
-                { text: "Pedir um reserva para o colega", feedback: "Resolveu o problema imediato, mas certifique-se da higiene.", trait: "Arrojado", pts: 70 }
-            ]
-        },
-        {
-            q: "Um sensor de segurança da máquina está falhando, causando paradas falsas.",
-            img: "5_sensordeseguranca.png",
-            choices: [
-                { text: "Abrir chamado e parar a máquina", feedback: "Segurança em primeiro lugar. Jamais opere com sensores burlados.", trait: "Cauteloso", pts: 100 },
-                { text: "Reiniciar o sistema e tentar de novo", feedback: "Você está mascarando um defeito que pode causar um acidente.", trait: "Arrojado", pts: 50 },
-                { text: "Desativar o sensor para produzir", feedback: "Crime de segurança. Você colocou sua vida em perigo extremo.", trait: "Negligente", pts: 0 }
-            ]
-        },
-        {
-            q: "Você encontra uma ferramenta improvisada ('gambiarra') na bancada.",
-            img: "6_ferramentaimprovisadagambiarra.png",
-            choices: [
-                { text: "Descartar e solicitar a correta", feedback: "Gambiarras são o caminho mais curto para um ferimento nas mãos.", trait: "Cauteloso", pts: 100 },
-                { text: "Usar com muito cuidado", feedback: "Ferramenta errada gera esforço errado e acidentes.", trait: "Negligente", pts: 0 },
-                { text: "Avisar o supervisor no final do dia", feedback: "Tarde demais se alguém se machucar antes disso.", trait: "Arrojado", pts: 40 }
-            ]
-        },
-        {
-            q: "Há uma reunião de segurança (DDS), mas você tem um relatório urgente para entregar.",
-            img: "7_reuniaodesegurancadds.png",
-            choices: [
-                { text: "Participar do DDS focado", feedback: "A informação salva vidas. O relatório pode esperar 10 minutos.", trait: "Cauteloso", pts: 100 },
-                { text: "Participar mexendo no celular", feedback: "Presença física sem atenção não gera consciência.", trait: "Negligente", pts: 0 },
-                { text: "Pedir para ler o resumo depois", feedback: "A interação no DDS é o que fortalece o time.", trait: "Arrojado", pts: 50 }
-            ]
-        },
-        {
-            q: "Você vê uma fiação exposta próxima a uma tubulação de água.",
-            img: "8_riscoeletrico.png",
-            choices: [
-                { text: "Isolar e chamar manutenção elétrica", feedback: "Risco de choque e incêndio eliminado com sucesso.", trait: "Cauteloso", pts: 100 },
-                { text: "Tentar afastar o fio com um pedaço de pau", feedback: "Arriscado! Você não é eletricista habilitado.", trait: "Arrojado", pts: 20 },
-                { text: "Passar longe e não avisar ninguém", feedback: "O próximo a passar pode não ter a mesma sorte.", trait: "Negligente", pts: 0 }
-            ]
-        }
-    ];
+    {
+        q: "Você encontra óleo no chão da fábrica. Qual a ação correta?",
+        nr: "Ambiente",
+        tema: "Organização",
+        img: "2_manchadeoleonochao.png",
+        choices: [
+            { text: "Ignorar", feedback: "Negligência grave. Óleo no piso é uma das principais causas de queda e afastamento.", trait: "Negligente", pts: 0 },
+            { text: "Sinalizar e reportar", feedback: "Correto! Sinalizar protege os colegas enquanto o problema é resolvido adequadamente.", trait: "Cauteloso", pts: 100 },
+            { text: "Limpar com papel", feedback: "Parcialmente correto, mas sem sinalização o risco continua para quem passa antes.", trait: "Arrojado", pts: 50 }
+        ]
+    },
+    {
+        q: "Qual EPI protege contra ruídos excessivos?",
+        nr: "NR-06",
+        tema: "EPI",
+        img: "4_protecaoauricular.png",
+        choices: [
+            { text: "Capacete", feedback: "O capacete protege o crânio, não os ouvidos.", trait: "Negligente", pts: 0 },
+            { text: "Protetor auricular", feedback: "Correto! O protetor auricular é o EPI específico para proteção auditiva.", trait: "Cauteloso", pts: 100 },
+            { text: "Óculos", feedback: "Os óculos protegem a visão, não os ouvidos.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "As faixas amarelas no piso servem para:",
+        nr: "NR-26",
+        tema: "Sinalização",
+        img: "",
+        choices: [
+            { text: "Circulação segura", feedback: "Correto! As faixas amarelas delimitam rotas seguras de circulação de pedestres.", trait: "Cauteloso", pts: 100 },
+            { text: "Estética", feedback: "Incorreto. Toda sinalização de piso tem função de segurança.", trait: "Negligente", pts: 0 },
+            { text: "Apoiar paletes", feedback: "Incorreto. Paletes sobre faixas obstruem rotas de segurança.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Antes de operar uma máquina nova, você deve:",
+        nr: "NR-12",
+        tema: "Máquinas",
+        img: "5_sensordeseguranca.png",
+        choices: [
+            { text: "Tentar sozinho", feedback: "Operar sem treinamento é uma das principais causas de acidentes graves.", trait: "Negligente", pts: 0 },
+            { text: "Ler o manual e treinar", feedback: "Correto! Treinamento e leitura do manual garantem operação segura.", trait: "Cauteloso", pts: 100 },
+            { text: "Pedir ao colega para mostrar", feedback: "Melhor do que nada, mas o treinamento formal e o manual são indispensáveis.", trait: "Arrojado", pts: 50 }
+        ]
+    },
+    {
+        q: "Viu um colega sem óculos de proteção? O que fazer?",
+        nr: "NR-06",
+        tema: "EPI",
+        img: "",
+        choices: [
+            { text: "Ficar em silêncio", feedback: "O silêncio é cumplicidade. Acidentes oculares são irreversíveis.", trait: "Negligente", pts: 0 },
+            { text: "Alertar o colega", feedback: "Correto! Alertar o colega é uma atitude de respeito e cuidado com a equipe.", trait: "Cauteloso", pts: 100 },
+            { text: "Rir da situação", feedback: "Completamente adequado. Segurança é um compromisso coletivo.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Rotas de fuga podem ser obstruídas?",
+        nr: "NR-23",
+        tema: "Incêndio",
+        img: "",
+        choices: [
+            { text: "Nunca", feedback: "Correto! Rotas de fuga devem estar sempre livres e desobstruídas.", trait: "Cauteloso", pts: 100 },
+            { text: "Só por 5 minutos", feedback: "Incorreto. Em uma emergência, 5 minutos podem custar vidas.", trait: "Negligente", pts: 0 },
+            { text: "Se houver espaço suficiente", feedback: "Incorreto. Qualquer obstrução é proibida por norma de segurança.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "A 'Regra de Ouro' das mãos proíbe:",
+        nr: "NR-12",
+        tema: "Mãos e Partes Móveis",
+        img: "",
+        choices: [
+            { text: "Lavar as mãos", feedback: "Lavar as mãos é uma prática de higiene recomendada, não proibida.", trait: "Negligente", pts: 0 },
+            { text: "Mãos em partes móveis", feedback: "Correto! Nunca coloque as mãos em partes móveis de máquinas.", trait: "Cauteloso", pts: 100 },
+            { text: "Usar luvas", feedback: "As luvas são EPIs essenciais em muitas operações.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Lixo químico deve ser descartado onde?",
+        nr: "NR-25",
+        tema: "Resíduos",
+        img: "",
+        choices: [
+            { text: "Lixo comum", feedback: "Proibido. Resíduos químicos no lixo comum causam contaminação ambiental.", trait: "Negligente", pts: 0 },
+            { text: "Coletor específico", feedback: "Correto! Cada tipo de resíduo tem seu descarte regulamentado.", trait: "Cauteloso", pts: 100 },
+            { text: "No pátio", feedback: "Completamente proibido. Contamina o solo e os lençóis freáticos.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Ao ver uma empilhadeira em movimento:",
+        nr: "NR-11",
+        tema: "Logística",
+        img: "3_trafegodeempilhadeira.png",
+        choices: [
+            { text: "Mantenha distância segura", feedback: "Correto! Empilhadeiras têm pontos cegos e frenagem lenta.", trait: "Cauteloso", pts: 100 },
+            { text: "Passe correndo pela frente", feedback: "Extremamente perigoso. Nunca cruze na frente de equipamentos em movimento.", trait: "Negligente", pts: 0 },
+            { text: "Suba nela", feedback: "Proibido. Somente o operador habilitado pode estar no equipamento.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "O que é um 'Quase Acidente'?",
+        nr: "NR-01",
+        tema: "Gestão",
+        img: "",
+        choices: [
+            { text: "Um evento sem lesão mas com potencial de acidente", feedback: "Correto! Quase acidentes são alertas que devem ser registrados e investigados.", trait: "Cauteloso", pts: 100 },
+            { text: "Um acidente grave", feedback: "Incorreto. Quase acidente é um evento sem lesão mas que poderia ter causado dano.", trait: "Negligente", pts: 0 },
+            { text: "Uma brincadeira entre colegas", feedback: "Incorreto. Brincadeiras que envolvem risco são situações de segurança sérias.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Qual a cor da sinalização de advertência?",
+        nr: "NR-26",
+        tema: "Sinalização",
+        img: "",
+        choices: [
+            { text: "Amarela", feedback: "Correto! Amarelo indica atenção e advertência em sinalização de segurança.", trait: "Cauteloso", pts: 100 },
+            { text: "Azul", feedback: "Azul indica obrigação de uso de EPI.", trait: "Negligente", pts: 0 },
+            { text: "Verde", feedback: "Verde indica segurança, primeiros socorros ou saída de emergência.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Capacete com trinca deve ser:",
+        nr: "NR-06",
+        tema: "EPI",
+        img: "",
+        choices: [
+            { text: "Usado assim mesmo", feedback: "Proibido. Um capacete trincado não oferece proteção adequada.", trait: "Negligente", pts: 0 },
+            { text: "Substituído imediatamente", feedback: "Correto! EPI danificado deve ser substituído sem hesitação.", trait: "Cauteloso", pts: 100 },
+            { text: "Colado com fita adesiva", feedback: "Incorreto. Remendos não restauram a integridade estrutural do EPI.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Extintores devem estar sempre:",
+        nr: "NR-23",
+        tema: "Incêndio",
+        img: "",
+        choices: [
+            { text: "Guardados para não sujar", feedback: "Incorreto. Extintor escondido é inútil em uma emergência.", trait: "Negligente", pts: 0 },
+            { text: "Livres e acessíveis", feedback: "Correto! Acesso rápido ao extintor pode salvar vidas em um incêndio.", trait: "Cauteloso", pts: 100 },
+            { text: "Atrás de caixas e paletes", feedback: "Incorreto. Obstruir extintores é infração grave de segurança.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Trabalho em altura requer qual proteção prioritária?",
+        nr: "NR-35",
+        tema: "Altura",
+        img: "",
+        choices: [
+            { text: "Cinto de segurança", feedback: "Correto! O cinto é EPI obrigatório para trabalho em altura.", trait: "Cauteloso", pts: 100 },
+            { text: "Botina apenas", feedback: "Insuficiente. Botina não previne queda de altura.", trait: "Negligente", pts: 0 },
+            { text: "Boné", feedback: "Completamente adequado para trabalho em altura.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Quem é responsável pela segurança no trabalho?",
+        nr: "NR-01",
+        tema: "Gestão",
+        img: "",
+        choices: [
+            { text: "Apenas o SESMT", feedback: "O SESMT apoia, mas a segurança é responsabilidade de todos.", trait: "Negligente", pts: 0 },
+            { text: "Todos os colaboradores", feedback: "Correto! Segurança é um compromisso coletivo de toda a equipe.", trait: "Cauteloso", pts: 100 },
+            { text: "Apenas o Diretor", feedback: "A liderança tem responsabilidade, mas todos os colaboradores também.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Sinalização verde na fábrica indica:",
+        nr: "NR-26",
+        tema: "Sinalização",
+        img: "",
+        choices: [
+            { text: "Perigo iminente", feedback: "Incorreto. Vermelho indica proibição ou combate a incêndio.", trait: "Negligente", pts: 0 },
+            { text: "Segurança e saídas de emergência", feedback: "Correto! Verde sinaliza saídas, primeiros socorros e equipamentos de segurança.", trait: "Cauteloso", pts: 100 },
+            { text: "Área de atenção redobrada", feedback: "Incorreto. Amarelo é a cor de advertência e atenção.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Ao sentir cheiro de queimado em uma máquina em operação:",
+        nr: "NR-10",
+        tema: "Elétrica",
+        img: "5_sensordeseguranca.png",
+        choices: [
+            { text: "Continue operando normalmente", feedback: "Perigoso. Cheiro de queimado pode indicar curto-circuito ou superaquecimento.", trait: "Negligente", pts: 0 },
+            { text: "Desligue a máquina e reporte", feedback: "Correto! Desligar e reportar previne incêndios e choques elétricos.", trait: "Cauteloso", pts: 100 },
+            { text: "Jogue água na máquina", feedback: "Extremamente perigoso. Nunca use água em equipamentos elétricos.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "O uso de adornos como anéis e pulseiras na produção é:",
+        nr: "NR-12",
+        tema: "Máquinas",
+        img: "",
+        choices: [
+            { text: "Permitido com cuidado", feedback: "Incorreto. Adornos podem ser presos em partes móveis causando acidentes graves.", trait: "Negligente", pts: 0 },
+            { text: "Proibido na área de produção", feedback: "Correto! Adornos representam risco real de amputação e arrastamento.", trait: "Cauteloso", pts: 100 },
+            { text: "Opcional, cada um decide", feedback: "Incorreto. Normas de segurança não são opcionais.", trait: "Arrojado", pts: 50 }
+        ]
+    },
+    {
+        q: "O que significa a sigla EPC?",
+        nr: "NR-01",
+        tema: "Proteção Coletiva",
+        img: "",
+        choices: [
+            { text: "Equipamento de Proteção Coletiva", feedback: "Correto! EPC protege todos os trabalhadores de uma área, como grades e exaustores.", trait: "Cauteloso", pts: 100 },
+            { text: "Equipamento de Proteção Cara", feedback: "Incorreto. EPI individual de proteção facial existe, mas EPC tem outro significado.", trait: "Negligente", pts: 0 },
+            { text: "Exame de Pressão Cardíaca", feedback: "Incorreto. EPC é um conceito fundamental de segurança do trabalho.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Pode-se correr dentro da unidade industrial?",
+        nr: "Ambiente",
+        tema: "Circulação",
+        img: "3_trafegodeempilhadeira.png",
+        choices: [
+            { text: "Sim, se estiver atrasado", feedback: "Não. Correr aumenta o risco de queda e colisão com equipamentos.", trait: "Negligente", pts: 0 },
+            { text: "Não, caminhe sempre com atenção", feedback: "Correto! Caminhar com atenção é norma básica de circulação segura.", trait: "Cauteloso", pts: 100 },
+            { text: "Só nos corredores amplos", feedback: "Incorreto. A regra de não correr se aplica a toda a unidade.", trait: "Arrojado", pts: 30 }
+        ]
+    },
+    {
+        q: "Bloqueio LOTO serve para:",
+        nr: "NR-12",
+        tema: "LOTO",
+        img: "1_maquinasembloqueioloto.png",
+        choices: [
+            { text: "Limpar a máquina por fora", feedback: "Incorreto. LOTO é necessário especialmente durante manutenção e limpeza interna.", trait: "Negligente", pts: 0 },
+            { text: "Isolar energias perigosas durante manutenção", feedback: "Correto! LOTO impede acionamento acidental durante intervenções.", trait: "Cauteloso", pts: 100 },
+            { text: "Prender a máquina no chão", feedback: "Incorreto. LOTO controla energias, não fixa equipamentos.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Ferramentas manuais devem ser guardadas:",
+        nr: "Ambiente",
+        tema: "Organização",
+        img: "6_ferramentaimprovisadagambiarra.png",
+        choices: [
+            { text: "Em qualquer lugar disponível", feedback: "Incorreto. Ferramentas fora do lugar causam acidentes e perdas de produção.", trait: "Negligente", pts: 0 },
+            { text: "Em local apropriado e identificado", feedback: "Correto! Organização evita acidentes e facilita o trabalho seguro.", trait: "Cauteloso", pts: 100 },
+            { text: "No bolso da calça", feedback: "Perigoso. Ferramentas no bolso podem causar cortes e quedas.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "A limpeza do posto de trabalho contribui para:",
+        nr: "Ambiente",
+        tema: "Organização",
+        img: "",
+        choices: [
+            { text: "Evitar acidentes", feedback: "Correto! Ambiente limpo e organizado reduz riscos de queda, corte e incêndio.", trait: "Cauteloso", pts: 100 },
+            { text: "Gastar tempo de produção", feedback: "Incorreto. O tempo de limpeza é investimento em segurança e produtividade.", trait: "Negligente", pts: 0 },
+            { text: "Não contribui para nada", feedback: "Incorreto. Desordem é uma das principais causas de acidentes leves.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Ao subir escadas fixas, use sempre:",
+        nr: "Ambiente",
+        tema: "Circulação",
+        img: "",
+        choices: [
+            { text: "As mãos nos bolsos", feedback: "Perigoso. Sem apoio nas mãos, uma escorregada pode ser fatal.", trait: "Negligente", pts: 0 },
+            { text: "O corrimão com ambas as mãos", feedback: "Correto! O corrimão é sua proteção contra quedas em escadas.", trait: "Cauteloso", pts: 100 },
+            { text: "O celular para filmar a subida", feedback: "Perigoso. Celular distrai e impede uso correto do corrimão.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Qual o objetivo principal da SIPAT?",
+        nr: "NR-05",
+        tema: "CIPA",
+        img: "7_reuniaodesegurancadds.png",
+        choices: [
+            { text: "Apenas fazer festa na empresa", feedback: "Incorreto. A SIPAT é um evento formal de prevenção e conscientização.", trait: "Negligente", pts: 0 },
+            { text: "Prevenção de acidentes e saúde do trabalhador", feedback: "Correto! A SIPAT promove cultura de segurança e qualidade de vida.", trait: "Cauteloso", pts: 100 },
+            { text: "Dar folga para os funcionários", feedback: "Incorreto. A SIPAT é obrigatória por lei e tem conteúdo técnico.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Sinalização vermelha na fábrica indica:",
+        nr: "NR-23",
+        tema: "Incêndio",
+        img: "",
+        choices: [
+            { text: "Atenção redobrada", feedback: "Incorreto. Amarelo é a cor de advertência.", trait: "Negligente", pts: 0 },
+            { text: "Proibição ou combate a incêndio", feedback: "Correto! Vermelho sinaliza extintores, proibições e alarmes de incêndio.", trait: "Cauteloso", pts: 100 },
+            { text: "Informação geral", feedback: "Incorreto. Branco ou azul costumam indicar informações.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "O que fazer se o EPI estiver desconfortável?",
+        nr: "NR-06",
+        tema: "EPI",
+        img: "",
+        choices: [
+            { text: "Não usar por ser incômodo", feedback: "Proibido. EPI desconfortável deve ser ajustado ou trocado, nunca dispensado.", trait: "Negligente", pts: 0 },
+            { text: "Solicitar ajuste ou troca ao responsável", feedback: "Correto! EPI bem ajustado garante proteção e conforto durante o trabalho.", trait: "Cauteloso", pts: 100 },
+            { text: "Cortar o EPI para ficar melhor", feedback: "Proibido. Modificar EPI anula sua certificação e proteção.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Brincadeiras no ambiente de trabalho industrial:",
+        nr: "NR-01",
+        tema: "Comportamento",
+        img: "",
+        choices: [
+            { text: "Aumentam o clima e a segurança", feedback: "Incorreto. Distrações em ambiente industrial são fontes de acidentes.", trait: "Negligente", pts: 0 },
+            { text: "Podem causar acidentes graves", feedback: "Correto! Brincadeiras distraem e podem resultar em acidentes sérios.", trait: "Cauteloso", pts: 100 },
+            { text: "São permitidas nos intervalos", feedback: "Parcialmente. Depende do local, mas dentro da área de produção sempre há risco.", trait: "Arrojado", pts: 50 }
+        ]
+    },
+    {
+        q: "Antes de comer após manipular produtos químicos, você deve:",
+        nr: "NR-26",
+        tema: "Higiene",
+        img: "",
+        choices: [
+            { text: "Comer diretamente", feedback: "Proibido. Resíduos químicos nas mãos podem ser ingeridos e causar intoxicação.", trait: "Negligente", pts: 0 },
+            { text: "Lavar bem as mãos com água e sabão", feedback: "Correto! Higiene das mãos é fundamental para prevenir contaminação.", trait: "Cauteloso", pts: 100 },
+            { text: "Limpar as mãos apenas na roupa", feedback: "Insuficiente. Panos e roupas não removem resíduos químicos adequadamente.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Segurança no trabalho se faz com:",
+        nr: "NR-01",
+        tema: "Gestão",
+        img: "",
+        choices: [
+            { text: "Sorte e improviso", feedback: "Incorreto. Segurança é planejamento, não sorte.", trait: "Negligente", pts: 0 },
+            { text: "Atitude e prevenção constantes", feedback: "Correto! Cultura de segurança se constrói com atitude diária.", trait: "Cauteloso", pts: 100 },
+            { text: "Pressa para terminar logo", feedback: "Incorreto. Pressa é uma das principais causas de acidentes.", trait: "Negligente", pts: 0 }
+        ]
+    },
+    {
+        q: "Você vê uma fiação elétrica exposta próxima a uma tubulação de água.",
+        nr: "NR-10",
+        tema: "Elétrica",
+        img: "8_riscoeletrico.png",
+        choices: [
+            { text: "Isolar a área e chamar manutenção elétrica", feedback: "Correto! Risco de choque e incêndio eliminado com a atitude certa.", trait: "Cauteloso", pts: 100 },
+            { text: "Afastar o fio com um pedaço de madeira", feedback: "Arriscado! Somente eletricista habilitado deve intervir em fiações.", trait: "Arrojado", pts: 20 },
+            { text: "Passar longe e não avisar ninguém", feedback: "O próximo a passar pode não ter a mesma sorte.", trait: "Negligente", pts: 0 }
+        ]
+    }
+];
 
     function startGame() {
         document.getElementById('start-screen').style.display = 'none';
@@ -632,7 +906,6 @@
         const intervalMs = 2000; // tempo por EPI
         const scannerAudio = new Audio('scanner.mp3');
         scannerAudio.play().catch(e => console.log("Áudio bloqueado"));
-
 
         function scanEpi(i) {
             if (i >= epis.length) return;
@@ -690,13 +963,20 @@
                         scanner.style.display = 'none';
                         document.getElementById('scene-container').style.display = 'flex';
                         document.getElementById('progress-bar-wrap').style.display = 'block';
+
+                        // ── Embaralha e seleciona 10 perguntas aleatórias das 30 ──
+                        for (let i = story.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [story[i], story[j]] = [story[j], story[i]];
+                        }
+                        story.splice(10); // mantém apenas as 10 primeiras após embaralhar
+
                         renderStep();
                     }, 800);
                 }, 1800);
             }
         }, intervalMs);
                                 
-
     }
 
     function updateProgress() {
@@ -762,7 +1042,7 @@
                 <div style="display: flex; justify-content: space-between; background: #333; padding: 10px; border: 2px solid #555; font-family: 'Press Start 2P', cursive; font-size: 10px;">
                     <div>PONTOS: <span id="m-score">0</span></div>
                     <div>VIDAS: <span id="m-lives">3</span></div>
-                </div>
+                </div><br>
                 <canvas id="breakoutCanvas" width="480" height="320" style="background: #000; border: 4px solid var(--blue); width: 100%; max-width: 480px;"></canvas>
                 <p style="font-size: 0.7em; margin-top: 10px; color: rgba(255,255,255,0.5);">USE AS SETAS [←] [→] DO TECLADO</p>
             </div>
@@ -855,24 +1135,6 @@
         document.getElementById('register-overlay').style.display = 'flex';
     }
 
-    /*function submitRegistration() {
-        const nome = document.getElementById('userName').value.trim();
-        const re = document.getElementById('userRE').value.trim();
-        const turno = document.getElementById('userTurno').value;
-
-        if (!nome || !re || !turno) {
-            alert("Por favor, preencha todos os campos para registrar seu resultado!");
-            return;
-        }
-
-        userData.nome = nome;
-        userData.re = re;
-        userData.turno = turno;
-
-        document.getElementById('register-overlay').style.display = 'none';
-        endGame();
-    }*/
-
     function submitRegistration() {
     const nome = document.getElementById('userName').value.trim();
     const re = document.getElementById('userRE').value.trim();
@@ -889,39 +1151,49 @@
 
     // --- NOVA PARTE: Preparar e enviar dados ---
     const gameStats = {
-    nome: userData.nome,   // Adiciona o nome capturado
-    re: userData.re,       // Adiciona o RE capturado
-    turno: userData.turno, // Adiciona o turno capturado
-    rodadaAtual: step, 
-    perfis: {
-        pacificador: traits.Cauteloso || 0,
-        determinado: traits.Arrojado || 0,
-        cauteloso: traits.Cauteloso || 0, 
-        impulsivo: traits.Negligente || 0,
-        observador: 0 
-    },
-    escolhas: {
-        boas: traits.Cauteloso || 0,
-        ruinsRazoavel: traits.Arrojado || 0,
-        ruinsApocaliptico: traits.Negligente || 0
-    }
-};
-    /*const gameStats = {
-        rodadaAtual: step, // No final será o total de perguntas
-        perfis: {
-            pacificador: traits.Cauteloso || 0,
-            determinado: traits.Arrojado || 0,
-            cauteloso: traits.Cauteloso || 0, // Mapeando conforme seu script
-            impulsivo: traits.Negligente || 0,
-            observador: 0 
-        },
-        escolhas: {
-            boas: traits.Cauteloso || 0,
-            ruinsRazoavel: traits.Arrojado || 0,
-            ruinsApocaliptico: traits.Negligente || 0
-        }
-    };*/
 
+    nome: userData.nome,
+    re: userData.re,
+    turno: userData.turno,
+
+    rodadaAtual: step,
+
+    perfis: {
+
+        pacificador: traits.Cauteloso || 0,
+
+        determinado: traits.Arrojado || 0,
+
+        cauteloso: traits.Cauteloso || 0,
+
+        impulsivo: traits.Negligente || 0,
+
+        observador: 0
+    },
+
+    escolhas: {
+
+        boas: traits.Cauteloso || 0,
+
+        ruinsRazoavel: traits.Arrojado || 0,
+
+        ruinsApocaliptico: traits.Negligente || 0
+    },
+
+    /* ======================= */
+    /* NRs */
+    /* ======================= */
+
+    nr12Erros: nr12Erros || 0,
+
+    nr11Erros: nr11Erros || 0,
+
+    nr10Erros: nr10Erros || 0,
+
+    nr23Erros: nr23Erros || 0,
+
+    nr35Erros: nr35Erros || 0
+};
     function enviarParaPlanilha(gameStats) {
     const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbzAtVjrouQn_wkAiF1UO_fgtpgebokscU31H0mop18MtqTjxvkamarkDK-dYaLR6gps/exec";
 
