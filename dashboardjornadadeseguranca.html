@@ -1,131 +1,397 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | Jornada da Segurança</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        :root {
-            --blue: #00d4ff;
-            --gold: #ffcc00;
-            --red: #ff4444;
-            --dark: #000a12;
-            --glass: rgba(0, 10, 18, 0.95);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            background: radial-gradient(circle at center, #001a33 0%, #000 100%);
-            color: white;
-            font-family: 'Montserrat', sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
+<title>Dashboard | Jornada da Segurança</title>
 
-        header {
-            text-align: center;
-            border-bottom: 2px solid var(--blue);
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Montserrat:wght@300;400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 
-        h1 {
-            font-family: 'Cinzel', serif;
-            color: var(--gold);
-            letter-spacing: 3px;
-            margin: 10px 0;
-        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        .subtitle {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.6em;
-            color: var(--blue);
-            text-transform: uppercase;
-        }
+<style>
+#heatmap-plant{
 
-        /* Layout em Grade para o Dashboard */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+    position:relative;
 
-        .card {
-            background: var(--glass);
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: transform 0.3s ease;
-        }
+    width:100%;
+    height:500px;
 
-        .card:hover {
-            border-color: var(--blue);
-            transform: translateY(-5px);
-        }
+    border-radius:18px;
 
-        .card h3 {
-            font-family: 'Cinzel', serif;
-            color: var(--blue);
-            margin-top: 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 10px;
-            font-size: 1.1em;
-        }
+    overflow:hidden;
 
-        /* Estilo dos Números em Destaque */
-        .stat-highlight {
-            font-family: 'Press Start 2P', cursive;
-            font-size: 1.8em;
-            color: var(--gold);
-            display: block;
-            margin: 15px 0;
-            text-align: center;
-        }
+    border:1px solid rgba(0,212,255,0.15);
 
-        .label-stat {
-            text-align: center;
-            display: block;
-            font-size: 0.8em;
-            color: rgba(255,255,255,0.6);
-            text-transform: uppercase;
-        }
+    background:
 
-        .chart-container {
-            position: relative;
-            height: 250px;
-            width: 100%;
-        }
+    linear-gradient(
+        rgba(0,0,0,0.82),
+        rgba(0,0,0,0.88)
+    ),
 
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            color: rgba(255,255,255,0.3);
-            font-size: 0.8em;
-        }
+    linear-gradient(
+        90deg,
+        rgba(0,212,255,0.03) 1px,
+        transparent 1px
+    ),
 
-        /* Botão para atualizar dados */
-        .btn-refresh {
-            background: transparent;
-            border: 1px solid var(--gold);
-            color: var(--gold);
-            padding: 10px 20px;
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: bold;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
+    linear-gradient(
+        rgba(0,212,255,0.03) 1px,
+        transparent 1px
+    ),
 
-        .btn-refresh:hover {
-            background: var(--gold);
-            color: black;
-        }
-    </style>
+    linear-gradient(
+        180deg,
+        #02111d,
+        #000814
+    );
+
+    background-size:
+        cover,
+        40px 40px,
+        40px 40px,
+        cover;
+
+    box-shadow:
+        inset 0 0 40px rgba(0,0,0,0.8),
+        0 0 30px rgba(0,212,255,0.08);
+}
+
+/* linhas industriais */
+
+#heatmap-plant::before{
+
+    content:'';
+
+    position:absolute;
+
+    inset:0;
+
+    background:
+
+    repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 120px,
+        rgba(0,212,255,0.04) 120px,
+        rgba(0,212,255,0.04) 122px
+    ),
+
+    repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 120px,
+        rgba(0,212,255,0.04) 120px,
+        rgba(0,212,255,0.04) 122px
+    );
+
+    pointer-events:none;
+}
+
+/* zonas */
+
+.heat-area{
+
+    position:absolute;
+
+    display:flex;
+
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+
+    color:white;
+
+    font-weight:bold;
+
+    font-size:13px;
+
+    letter-spacing:0.5px;
+
+    border-radius:35px;
+
+    backdrop-filter:blur(5px);
+
+    transition:0.5s ease;
+
+    border:1px solid rgba(255,255,255,0.08);
+
+    animation:pulseHeat 3s infinite;
+}
+
+/* ========================= */
+/* POSICIONAMENTO MELHORADO */
+/* ========================= */
+
+/* PRODUÇÃO */
+
+.area-producao{
+
+    top:50px;
+    left:80px;
+
+    width:220px;
+    height:140px;
+}
+
+/* LOGÍSTICA */
+
+.area-logistica{
+
+    bottom:60px;
+    left:90px;
+
+    width:190px;
+    height:120px;
+}
+
+/* ELÉTRICA */
+
+.area-eletrica{
+
+    top:70px;
+    right:80px;
+
+    width:180px;
+    height:120px;
+}
+
+/* EMERGÊNCIA */
+
+.area-incendio{
+
+    bottom:50px;
+    right:70px;
+
+    width:220px;
+    height:110px;
+}
+
+/* ALTURA */
+
+.area-altura{
+
+    top:180px;
+    left:50%;
+
+    transform:translateX(-50%);
+
+    width:150px;
+    height:150px;
+}
+
+/* ========================= */
+/* ANIMAÇÃO */
+/* ========================= */
+
+@keyframes pulseHeat{
+
+    0%{
+        transform:scale(1);
+    }
+
+    50%{
+        transform:scale(1.025);
+    }
+
+    100%{
+        transform:scale(1);
+    }
+}
+:root{
+    --blue:#00d4ff;
+    --gold:#ffcc00;
+    --red:#ff4444;
+    --dark:#000a12;
+    --glass:rgba(0,10,18,0.95);
+}
+
+body{
+    background:radial-gradient(circle at center,#001a33 0%,#000 100%);
+    color:white;
+    font-family:'Montserrat',sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+header{
+    text-align:center;
+    border-bottom:2px solid var(--blue);
+    padding-bottom:20px;
+    margin-bottom:30px;
+}
+
+h1{
+    font-family:'Cinzel',serif;
+    color:var(--gold);
+    letter-spacing:3px;
+}
+
+.subtitle{
+    font-family:'Press Start 2P',cursive;
+    font-size:0.6em;
+    color:var(--blue);
+}
+
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:20px;
+    max-width:1200px;
+    margin:0 auto;
+}
+
+.card{
+    background:var(--glass);
+    border:1px solid rgba(0,212,255,0.3);
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+.card h3{
+    font-family:'Cinzel',serif;
+    color:var(--blue);
+    margin-top:0;
+    border-bottom:1px solid rgba(255,255,255,0.1);
+    padding-bottom:10px;
+}
+
+.stat-highlight{
+    font-family:'Press Start 2P',cursive;
+    font-size:1.8em;
+    color:var(--gold);
+    display:block;
+    text-align:center;
+    margin:15px 0;
+}
+
+.label-stat{
+    text-align:center;
+    display:block;
+    color:rgba(255,255,255,0.6);
+    font-size:0.8em;
+}
+
+.chart-container{
+    position:relative;
+    height:250px;
+}
+
+.btn-refresh{
+    background:transparent;
+    border:1px solid var(--gold);
+    color:var(--gold);
+    padding:10px 20px;
+    cursor:pointer;
+    border-radius:5px;
+    margin-bottom:20px;
+    font-weight:bold;
+}
+
+.btn-refresh:hover{
+    background:var(--gold);
+    color:black;
+}
+
+/* ========================= */
+/* HEATMAP */
+/* ========================= */
+
+#heatmap-plant{
+    position:relative;
+    width:100%;
+    height:450px;
+
+    background:
+        linear-gradient(rgba(255,255,255,0.03), rgba(255,255,255,0.03)),
+        url('planta.png');
+
+    background-size:cover;
+    background-position:center;
+
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.1);
+}
+
+.heat-area{
+    position:absolute;
+    border-radius:12px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+
+    color:white;
+    font-size:12px;
+    font-weight:bold;
+
+    backdrop-filter:blur(4px);
+
+    transition:0.5s;
+
+    animation:pulseHeat 2s infinite;
+}
+
+/* Produção */
+.area-producao{
+    top:40px;
+    left:40px;
+    width:200px;
+    height:120px;
+}
+
+/* Logística */
+.area-logistica{
+    top:250px;
+    left:50px;
+    width:180px;
+    height:100px;
+}
+
+/* Elétrica */
+.area-eletrica{
+    top:60px;
+    right:60px;
+    width:160px;
+    height:100px;
+}
+
+/* Emergência */
+.area-incendio{
+    bottom:40px;
+    right:40px;
+    width:200px;
+    height:90px;
+}
+
+/* Altura */
+.area-altura{
+    top:180px;
+    right:250px;
+    width:130px;
+    height:130px;
+}
+
+@keyframes pulseHeat{
+    0%{ transform:scale(1); }
+    50%{ transform:scale(1.03); }
+    100%{ transform:scale(1); }
+}
+
+footer{
+    text-align:center;
+    margin-top:40px;
+    color:rgba(255,255,255,0.3);
+}
+
+</style>
 </head>
 <body>
 
@@ -134,11 +400,14 @@
     <h1>Painel de Indicadores: Jornada da Segurança</h1>
 </header>
 
-<div style="text-align: right; max-width: 1200px; margin: 0 auto;">
-    <button class="btn-refresh" onclick="location.reload()">🔄 ATUALIZAR DADOS EM TEMPO REAL</button>
+<div style="text-align:right; max-width:1200px; margin:0 auto;">
+    <button class="btn-refresh" onclick="location.reload()">
+        🔄 ATUALIZAR DADOS
+    </button>
 </div>
 
 <div class="dashboard-grid">
+
     <div class="card">
         <h3>Engajamento Total</h3>
         <span class="stat-highlight" id="total-players">0</span>
@@ -147,90 +416,387 @@
 
     <div class="card">
         <h3>Índice de Risco Crítico</h3>
-        <span class="stat-highlight" id="risk-index" style="color: var(--red);">0%</span>
+        <span class="stat-highlight" id="risk-index" style="color:var(--red);">0%</span>
         <span class="label-stat">Atos Inseguros</span>
     </div>
 
     <div class="card">
-        <h3>Perfil Comportamental da Planta</h3>
+        <h3>Perfil Comportamental</h3>
+
         <div class="chart-container">
             <canvas id="profilesChart"></canvas>
         </div>
     </div>
 
     <div class="card">
-        <h3>Qualidade das Decisões (IA)</h3>
+        <h3>Qualidade das Decisões</h3>
+
         <div class="chart-container">
             <canvas id="decisionsChart"></canvas>
         </div>
     </div>
 
-    <div class="card" style="grid-column: span 1;">
+    <div class="card">
         <h3>Participação por Turno</h3>
+
         <div class="chart-container">
             <canvas id="shiftsChart"></canvas>
         </div>
     </div>
+
+    <!-- HEATMAP -->
+
+    <div class="card" style="grid-column:span 2;">
+
+        <h3>Heatmap de Risco por Área da Planta</h3>
+
+        <div class="card" style="grid-column: span 2;">
+
+    <h3>Áreas Críticas da Planta (NRs)</h3>
+
+    <div class="chart-container" style="height: 400px;">
+        <canvas id="heatmapBarChart"></canvas>
+    </div>
+
+</div>
+
+    </div>
+
 </div>
 
 <footer>
-    © 2026 - Sistema de Monitoramento de Segurança - Tecnologia IA Aplicada
+    © 2026 - Sistema de Monitoramento de Segurança
 </footer>
 
 <script>
-    // Simulação de carregamento de dados da sua planilha
-    // Em produção, você substituiria isso por um fetch() no seu Web App do Google Sheets
-async function fetchData() {
-    const URL_DO_SEU_SCRIPT = "https://script.google.com/macros/s/AKfycbzAtVjrouQn_wkAiF1UO_fgtpgebokscU31H0mop18MtqTjxvkamarkDK-dYaLR6gps/exec";
-    
-    try {
+
+/* ========================================= */
+/* BUSCAR DADOS */
+/* ========================================= */
+
+async function fetchData(){
+
+    const URL_DO_SEU_SCRIPT =
+    "https://script.google.com/macros/s/AKfycbzAtVjrouQn_wkAiF1UO_fgtpgebokscU31H0mop18MtqTjxvkamarkDK-dYaLR6gps/exec";
+
+    try{
+
         const response = await fetch(URL_DO_SEU_SCRIPT);
+
         const rawData = await response.json();
 
-        // Agora processamos os dados brutos da planilha para o formato do Dashboard
         const estatisticas = {
+
             totalPlayers: rawData.length,
-            profiles: { pacificador: 0, determinado: 0, cauteloso: 0, impulsivo: 0 },
-            decisions: { boas: 0, razoaveis: 0, apocalipticas: 0 },
-            shifts: { turnoA: 0, turnoB: 0, turnoC: 0, administrativo: 0 }
+
+            profiles:{
+                pacificador:0,
+                determinado:0,
+                cauteloso:0,
+                impulsivo:0
+            },
+
+            decisions:{
+                boas:0,
+                razoaveis:0,
+                apocalipticas:0
+            },
+
+            shifts:{
+                turnoA:0,
+                turnoB:0,
+                turnoC:0,
+                administrativo:0
+            },
+
+            heatmap:{
+                producao:0,
+                logistica:0,
+                eletrica:0,
+                incendio:0,
+                altura:0
+            }
         };
 
         rawData.forEach(row => {
-            // Contabiliza Perfis (ajuste os nomes das colunas se necessário)
+
+            /* PERFIS */
+
             estatisticas.profiles.pacificador += parseInt(row.pacificador || 0);
+
             estatisticas.profiles.determinado += parseInt(row.determinado || 0);
+
             estatisticas.profiles.cauteloso += parseInt(row.cauteloso || 0);
+
             estatisticas.profiles.impulsivo += parseInt(row.impulsivo || 0);
 
-            // Contabiliza Decisões
+            /* DECISÕES */
+
             estatisticas.decisions.boas += parseInt(row.boas || 0);
+
             estatisticas.decisions.razoaveis += parseInt(row.ruinsRazoavel || 0);
+
             estatisticas.decisions.apocalipticas += parseInt(row.ruinsApocaliptico || 0);
 
-            // Contabiliza Turnos
-            if(row.turno === 'Turno A') estatisticas.shifts.turnoA++;
-            if(row.turno === 'Turno B') estatisticas.shifts.turnoB++;
-            if(row.turno === 'Turno C') estatisticas.shifts.turnoC++;
-            if(row.turno === 'Adm') estatisticas.shifts.administrativo++;
+            /* TURNOS */
+
+            if(row.turno === 'Turno A'){
+                estatisticas.shifts.turnoA++;
+            }
+
+            if(row.turno === 'Turno B'){
+                estatisticas.shifts.turnoB++;
+            }
+
+            if(row.turno === 'Turno C'){
+                estatisticas.shifts.turnoC++;
+            }
+
+            if(row.turno === 'Adm'){
+                estatisticas.shifts.administrativo++;
+            }
+
+            /* HEATMAP */
+
+            estatisticas.heatmap.producao += parseInt(row.nr12Erros || 0);
+
+            estatisticas.heatmap.logistica += parseInt(row.nr11Erros || 0);
+
+            estatisticas.heatmap.eletrica += parseInt(row.nr10Erros || 0);
+
+            estatisticas.heatmap.incendio += parseInt(row.nr23Erros || 0);
+
+            estatisticas.heatmap.altura += parseInt(row.nr35Erros || 0);
+
         });
 
         renderDashboard(estatisticas);
 
-    } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-        alert("Erro ao conectar com a base de dados em tempo real.");
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert("Erro ao carregar dados.");
     }
 }
-    function renderDashboard(data) {
-        // Atualiza números rápidos
-        document.getElementById('total-players').innerText = data.totalPlayers;
-        
-        const totalDecisions = data.decisions.boas + data.decisions.razoaveis + data.decisions.apocalipticas;
-        const riskPercent = ((data.decisions.apocalipticas / totalDecisions) * 100).toFixed(1);
-        document.getElementById('risk-index').innerText = riskPercent + '%';
 
-        // Gráfico de Perfis (Radar)
-        new Chart(document.getElementById('profilesChart'), {
+/* ========================================= */
+/* HEATMAP */
+/* ========================================= */
+
+function applyHeatmap(data){
+
+    const values = [
+
+        data.producao,
+        data.logistica,
+        data.eletrica,
+        data.incendio,
+        data.altura
+    ];
+
+    const max = Math.max(...values);
+
+    colorize('.area-producao', data.producao, max);
+
+    colorize('.area-logistica', data.logistica, max);
+
+    colorize('.area-eletrica', data.eletrica, max);
+
+    colorize('.area-incendio', data.incendio, max);
+
+    colorize('.area-altura', data.altura, max);
+}
+
+function colorize(selector, value, max){
+
+    const el = document.querySelector(selector);
+
+    /* evita divisão por zero */
+
+    const intensity = max === 0 ? 0 : value / max;
+
+    /*
+    Hue:
+    120 = verde
+    60 = amarelo
+    0 = vermelho
+    */
+
+    const hue = 120 - (120 * intensity);
+
+    /*
+    intensidade do brilho
+    */
+
+    const alpha = 0.35 + (intensity * 0.45);
+
+    const color = `hsla(${hue}, 100%, 50%, ${alpha})`;
+
+    /* fundo térmico */
+
+    el.style.background = `
+
+    radial-gradient(
+
+        circle,
+
+        ${color} 0%,
+
+        rgba(0,0,0,0.08) 75%
+    )
+    `;
+
+    /* glow */
+
+    el.style.boxShadow = `
+
+        0 0 15px ${color},
+        0 0 35px ${color}
+
+    `;
+
+    /* borda */
+
+    el.style.border = `1px solid ${color}`;
+
+    /* texto */
+
+    const label = el.getAttribute('data-label');
+
+    el.innerHTML = `
+
+        <div>
+
+            <div style="
+                font-size:14px;
+                font-weight:bold;
+            ">
+                ${label}
+            </div>
+
+            <div style="
+                margin-top:6px;
+                font-size:11px;
+                opacity:0.9;
+            ">
+                Índice de risco: ${value}
+            </div>
+
+        </div>
+    `;
+}
+
+/* ========================================= */
+/* RENDER DASHBOARD */
+/* ========================================= */
+
+function renderDashboard(data){
+
+    document.getElementById('total-players').innerText =
+    data.totalPlayers;
+
+    const totalDecisions =
+    data.decisions.boas +
+    data.decisions.razoaveis +
+    data.decisions.apocalipticas;
+
+    const riskPercent =
+    ((data.decisions.apocalipticas / totalDecisions) * 100).toFixed(1);
+
+    document.getElementById('risk-index').innerText =
+    riskPercent + '%';
+
+    /* PERFIS */
+
+    /* ===================================== */
+/* ÁREAS CRÍTICAS / HEATMAP EM BARRAS */
+/* ===================================== */
+
+new Chart(document.getElementById('heatmapBarChart'), {
+
+    type: 'bar',
+
+    data: {
+
+        labels: [
+
+            'Produção | NR-12',
+            'Logística | NR-11',
+            'Elétrica | NR-10',
+            'Emergência | NR-23',
+            'Altura | NR-35'
+        ],
+
+        datasets: [{
+
+            label: 'Índice de Criticidade',
+
+            data: [
+
+                data.heatmap.producao,
+                data.heatmap.logistica,
+                data.heatmap.eletrica,
+                data.heatmap.incendio,
+                data.heatmap.altura
+            ],
+
+            backgroundColor: [
+
+                '#ff4444',
+                '#ff8800',
+                '#ffcc00',
+                '#00d4ff',
+                '#00ff88'
+            ],
+
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+
+    options: {
+
+        responsive: true,
+
+        plugins: {
+
+            legend: {
+                display: false
+            }
+        },
+
+        scales: {
+
+            y: {
+
+                beginAtZero: true,
+
+                grid: {
+                    color: 'rgba(255,255,255,0.08)'
+                },
+
+                ticks: {
+                    color: 'white'
+                }
+            },
+
+            x: {
+
+                grid: {
+                    display: false
+                },
+
+                ticks: {
+                    color: 'white'
+                }
+            }
+        }
+    }
+});
+
+    new Chart(document.getElementById('profilesChart'), {
             type: 'radar',
             data: {
                 labels: ['Pacificador', 'Determinado', 'Cauteloso', 'Impulsivo'],
@@ -248,40 +814,84 @@ async function fetchData() {
             }
         });
 
-        // Gráfico de Decisões (Pizza/Doughnut)
-        new Chart(document.getElementById('decisionsChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Seguras', 'Razoáveis', 'Críticas'],
-                datasets: [{
-                    data: [data.decisions.boas, data.decisions.razoaveis, data.decisions.apocalipticas],
-                    backgroundColor: ['#0000FF', '#FFFF00', '#FFFFFF'],
-                    borderWidth: 0
-                }]
-            },
-            options: { plugins: { legend: { position: 'bottom', labels: { color: 'white' } } } }
-        });
+    /* DECISÕES */
 
-        // Gráfico de Turnos (Barras)
-        new Chart(document.getElementById('shiftsChart'), {
-            type: 'bar',
-            data: {
-                labels: ['Turno A', 'Turno B', 'Turno C', 'Administrativo'],
-                datasets: [{
-                    label: 'Participantes',
-                    data: [data.shifts.turnoA, data.shifts.turnoB, data.shifts.turnoC, data.shifts.administrativo],
-                    backgroundColor: '#ffcc00'
-                }]
+    new Chart(document.getElementById('decisionsChart'),{
+
+        type:'doughnut',
+
+        data:{
+            labels:[
+                'Seguras',
+                'Razoáveis',
+                'Críticas'
+            ],
+
+            datasets:[{
+                data:[
+                    data.decisions.boas,
+                    data.decisions.razoaveis,
+                    data.decisions.apocalipticas
+                ],
+
+                backgroundColor:[
+                    '#00d4ff',
+                    '#ffcc00',
+                    '#ff4444'
+                ]
+            }]
+        }
+    });
+
+    /* TURNOS */
+
+    new Chart(document.getElementById('shiftsChart'),{
+
+        type:'bar',
+
+        data:{
+            labels:[
+                'Turno A',
+                'Turno B',
+                'Turno C',
+                'Administrativo'
+            ],
+
+            datasets:[{
+                data:[
+                    data.shifts.turnoA,
+                    data.shifts.turnoB,
+                    data.shifts.turnoC,
+                    data.shifts.administrativo
+                ],
+
+                backgroundColor:'#ffcc00'
+            }]
+        },
+
+        options:{
+            plugins:{
+                legend:{
+                    display:false
+                }
             },
-            options: {
-                scales: { y: { beginAtZero: true, grid: { color: '#333' } } },
-                plugins: { legend: { display: false } }
+
+            scales:{
+                y:{
+                    beginAtZero:true
+                }
             }
-        });
+        }
+    });
+
     }
 
-    // Iniciar
-    fetchData();
+/* ========================================= */
+/* INICIAR */
+/* ========================================= */
+
+fetchData();
+
 </script>
 </body>
 </html>
