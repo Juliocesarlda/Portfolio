@@ -515,16 +515,16 @@
     let step = 0;
     let score = 0;
     let traits = { Cauteloso: 0, Negligente: 0, Arrojado: 0 };
-let nr12Erros = 0;
-let nr11Erros = 0;
-let nr10Erros = 0;
-let nr23Erros = 0;
-let nr35Erros = 0;
+    let nr12Erros = 0;
+    let nr11Erros = 0;
+    let nr10Erros = 0;
+    let nr23Erros = 0;
+    let nr35Erros = 0;
 
     const story = [
     {
         q: "Você encontra óleo no chão da fábrica. Qual a ação correta?",
-        nr: "Ambiente",
+        nr: "NR-01",
         tema: "Organização",
         img: "2_manchadeoleonochao.png",
         choices: [
@@ -733,7 +733,7 @@ let nr35Erros = 0;
     },
     {
         q: "Pode-se correr dentro da unidade industrial?",
-        nr: "Ambiente",
+        nr: "NR-01",
         tema: "Circulação",
         img: "3_trafegodeempilhadeira.png",
         choices: [
@@ -755,7 +755,7 @@ let nr35Erros = 0;
     },
     {
         q: "Ferramentas manuais devem ser guardadas:",
-        nr: "Ambiente",
+        nr: "NR-01",
         tema: "Organização",
         img: "6_ferramentaimprovisadagambiarra.png",
         choices: [
@@ -766,7 +766,7 @@ let nr35Erros = 0;
     },
     {
         q: "A limpeza do posto de trabalho contribui para:",
-        nr: "Ambiente",
+        nr: "NR-01",
         tema: "Organização",
         img: "",
         choices: [
@@ -777,7 +777,7 @@ let nr35Erros = 0;
     },
     {
         q: "Ao subir escadas fixas, use sempre:",
-        nr: "Ambiente",
+        nr: "NR-01",
         tema: "Circulação",
         img: "",
         choices: [
@@ -1011,17 +1011,52 @@ let nr35Erros = 0;
     }
 
     function makeChoice(choice) {
-        const nav = document.getElementById('notification');
-        nav.style.opacity = '1';
-        setTimeout(() => nav.style.opacity = '0', 2000);
+    const nav = document.getElementById('notification');
+    nav.style.opacity = '1';
+    setTimeout(() => nav.style.opacity = '0', 2000);
 
-        document.getElementById('consequence-text').innerText = choice.feedback;
-        document.getElementById('pts-gained').innerText = choice.pts > 0 ? `+${choice.pts} pontos` : '0 pontos';
-        document.getElementById('consequence-overlay').style.display = 'flex';
+    document.getElementById('consequence-text').innerText = choice.feedback;
+    document.getElementById('pts-gained').innerText =
+        choice.pts > 0 ? `+${choice.pts} pontos` : '0 pontos';
 
-        score += choice.pts;
-        traits[choice.trait]++;
+    document.getElementById('consequence-overlay').style.display = 'flex';
+
+    score += choice.pts;
+    traits[choice.trait]++;
+
+    /* ===================================== */
+    /* CONTABILIZA ERROS POR NR */
+    /* ===================================== */
+
+    const current = story[step];
+
+    /* considera erro quando ganhou menos de 100 pontos */
+    if(choice.pts < 100){
+
+        switch(current.nr){
+
+            case 'NR-12':
+                nr12Erros++;
+                break;
+
+            case 'NR-11':
+                nr11Erros++;
+                break;
+
+            case 'NR-10':
+                nr10Erros++;
+                break;
+
+            case 'NR-23':
+                nr23Erros++;
+                break;
+
+            case 'NR-35':
+                nr35Erros++;
+                break;
+        }
     }
+}
 
     function closeConsequence() {
         document.getElementById('consequence-overlay').style.display = 'none';
@@ -1136,64 +1171,54 @@ let nr35Erros = 0;
     }
 
     function submitRegistration() {
-    const nome = document.getElementById('userName').value.trim();
-    const re = document.getElementById('userRE').value.trim();
-    const turno = document.getElementById('userTurno').value;
+        const nome = document.getElementById('userName').value.trim();
+        const re = document.getElementById('userRE').value.trim();
+        const turno = document.getElementById('userTurno').value;
 
-    if (!nome || !re || !turno) {
-        alert("Por favor, preencha todos os campos para registrar seu resultado!");
-        return;
-    }
+        if (!nome || !re || !turno) {
+            alert("Por favor, preencha todos os campos para registrar seu resultado!");
+            return;
+        }
 
-    userData.nome = nome;
-    userData.re = re;
-    userData.turno = turno;
+        userData.nome = nome;
+        userData.re = re;
+        userData.turno = turno;
 
-    // --- NOVA PARTE: Preparar e enviar dados ---
-    const gameStats = {
+        // --- NOVA PARTE: Preparar e enviar dados ---
+        const gameStats = {
+            nome: userData.nome,
+            re: userData.re,
+            turno: userData.turno,
+            rodadaAtual: step,
 
-    nome: userData.nome,
-    re: userData.re,
-    turno: userData.turno,
+        perfis: {
+            pacificador: traits.Cauteloso || 0,
+            determinado: traits.Arrojado || 0,
+            cauteloso: traits.Cauteloso || 0,
+            impulsivo: traits.Negligente || 0,
+            observador: 0
+        },
 
-    rodadaAtual: step,
-
-    perfis: {
-
-        pacificador: traits.Cauteloso || 0,
-
-        determinado: traits.Arrojado || 0,
-
-        cauteloso: traits.Cauteloso || 0,
-
-        impulsivo: traits.Negligente || 0,
-
-        observador: 0
-    },
-
-    escolhas: {
-
-        boas: traits.Cauteloso || 0,
-
-        ruinsRazoavel: traits.Arrojado || 0,
-
-        ruinsApocaliptico: traits.Negligente || 0
-    },
+        escolhas: {
+            boas: traits.Cauteloso || 0,
+            ruinsRazoavel: traits.Arrojado || 0,
+            ruinsApocaliptico: traits.Negligente || 0
+       },
 
     /* ======================= */
     /* NRs */
     /* ======================= */
 
-    nr12Erros: nr12Erros || 0,
+        nr01Erros: 0,
+        nr06Erros: 0,
+        nr12Erros: nr12Erros,
+        nr11Erros: nr11Erros,
+        nr10Erros: nr10Erros,
+        nr23Erros: nr23Erros,
+        nr35Erros: nr35Erros
 
-    nr11Erros: nr11Erros || 0,
+    };
 
-    nr10Erros: nr10Erros || 0,
-
-    nr23Erros: nr23Erros || 0,
-
-    nr35Erros: nr35Erros || 0
-};
     function enviarParaPlanilha(gameStats) {
     const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbzAtVjrouQn_wkAiF1UO_fgtpgebokscU31H0mop18MtqTjxvkamarkDK-dYaLR6gps/exec";
 
