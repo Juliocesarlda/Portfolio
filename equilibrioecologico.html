@@ -7,6 +7,89 @@
         Equilíbrio: Eco-Edition (Greenpeace & AI)
     </title>
     <style>
+
+       /* Posicionamento do container de botões dentro do modal */
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end; /* Alinha o conteúdo à direita */
+            margin-top: 15px;
+        }
+
+        .btn-voltar-pequeno {
+            background: transparent;
+            border: 1px solid #666;
+            color: #888;
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.2s;
+        }
+
+        .btn-voltar-pequeno:hover {
+            color: var(--greenpeace-yellow);
+            border-color: var(--greenpeace-yellow);
+            background: rgba(255, 222, 0, 0.1);
+        }
+
+        /* Botão Transformer na Tela Inicial */
+        .btn-abrir-cadastro {
+            margin-top: 20px;
+            background: var(--greenpeace-yellow);
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            transition: 0.3s;
+            box-shadow: 0 0 15px var(--greenpeace-yellow);
+            letter-spacing: 2px;
+        }
+
+        .btn-abrir-cadastro:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px #fff;
+        }
+
+        /* Modal do Formulário (Oculto por padrão) */
+        #modal-cadastro {
+            display: none; /* Inicia oculto */
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 2px solid var(--greenpeace-green);
+            padding: 30px;
+            z-index: 3000;
+            box-shadow: 0 0 50px var(--greenpeace-green);
+            text-align: center;
+        }
+
+        .input-cyber {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: #000;
+            border: 1px solid var(--greenpeace-yellow);
+            color: var(--greenpeace-yellow);
+            outline: none;
+        }
+
+        .btn-enviar-cyber {
+            background: var(--greenpeace-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
         :root {
             --greenpeace-green: #3d7e1f;
             --greenpeace-yellow: #ffde00;
@@ -86,7 +169,6 @@
             background: #4a9425;
         }
 
-        /* Ajuste para o texto da pergunta com o botão ao lado */
         #pergunta-container-flex {
             display: flex;
             align-items: center;
@@ -222,17 +304,27 @@
         }
     </style>
 </head>
+
 <body>
-    <audio id="bg-music" loop><source src="slap-bass-riff-dan-barracuda-1-00-04.mp3" type="audio/mpeg"></audio>
 
     <div id="intro-screen">
         <div id="intro-bg"></div>
         <br><br><br><br><br><br><br><br><br><br>
         <h1 class="titulo-intro">EQUILÍBRIO</h1>
         <p class="subtitulo-intro">ECO-EDITION (AI POWERED)</p>
-        <button class="btn-play" onclick="comecarJogo()">INICIAR MISSÃO</button>
+        <button id="btn-missao" class="btn-play" style="margin-top: 20px;" onclick="comecarJogo()">INICIAR MISSÃO</button>
+        <button class="btn-abrir-cadastro" onclick="abrirFormulario()">CADASTRAR ALUNO</button>
+        <div id="modal-cadastro">
+            <h3 style="color: var(--greenpeace-yellow);">REGISTRO DE ACESSO</h3>
+            <input type="email" id="aluno-email" class="input-cyber" placeholder="E-MAIL">
+            <input type="number" id="aluno-idade" class="input-cyber" placeholder="IDADE">
+            <input type="text" id="aluno-serie" class="input-cyber" placeholder="SÉRIE">
+            <button class="btn-enviar-cyber" onclick="processarCadastro()">ENVIAR DADOS</button>
+            <div class="modal-footer">
+                <button class="btn-voltar-pequeno" onclick="fecharApenasModal()">Voltar</button>
+            </div>
+        </div>
     </div>
-
     <div id="notification"></div>
     <div id="container-visual"><div id="bg-image"></div></div>
     <div id="game-interface">
@@ -240,7 +332,6 @@
         <div id="botoes-respostas"></div>
         <div id="timer-container"><div id="timer-bar"></div></div>
     </div>
-
     <script>
         const modeloIA = {
             pacificador: { pacificador: 0.85, determinado: 0.10, cauteloso: 0.03, impulsivo: 0.02, observador: 0.05 },
@@ -250,7 +341,7 @@
             observador:  { pacificador: 0.10, determinado: 0.05, cauteloso: 0.15, impulsivo: 0.05, observador: 0.80 }
         };
 
-        // Exemplo coleta de dados - incialização de variaveis
+        // Coleta de dados - incialização de variaveis
         let gameStats = { rodadaAtual: 0,
             perfis: {
                 pacificador: 0,
@@ -265,310 +356,321 @@
                 ruinsApocaliptico: 0
             }
         };
-        
-        let dadosTreinamento = []; 
+        let dadosTreinamento = [];
         let diaAtual = 0;
         let timer;
-
+        // ARRAY COM AS PERGUNTAS
         const jornada = [
             { q: "Ao chegar no local onde o ferry boat costumava ser a única opção, você se depara com um canteiro de obras e precisa decidir como agir:", img: "0_0_pontedeguaratuba.png", 
-              opcoes: [{ t: "Exigir a paralisação da obra", v: "determinado", n: "Rigor legal e proteção da orla." }, { t: "Propor uma audiência pública", v: "pacificador", n: "Equilíbrio através do diálogo democrático." }, { t: "Documentar para registro histórico do local", v: "cauteloso", n: "Preservação da memória ambiental." }, { t: "Organizar um protesto pacífico", v: "determinado", n: "Mobilização popular urgente." }] },
+            opcoes: [{ t: "Exigir a paralisação da obra", v: "determinado", n: "Rigor legal e proteção da orla." }, { t: "Propor uma audiência pública", v: "pacificador", n: "Equilíbrio através do diálogo democrático." }, { t: "Documentar para registro histórico do local", v: "cauteloso", n: "Preservação da memória ambiental." }, { t: "Organizar um protesto pacífico", v: "determinado", n: "Mobilização popular urgente." }] },
             
             { q: "Você percebe a extração ilegal de palmito juçara em uma trilha no Morro do Cabaraquara.", img: "1_0_extracaoilegaldepalmito.png", 
-              opcoes: [{ t: "Chamar a Polícia Ambiental", v: "determinado", n: "Intervenção legal." }, { t: "Alertar outros trilheiros", v: "pacificador", n: "Rede de proteção." }, { t: "Não confrontar e sair", v: "cauteloso", n: "Segurança pessoal." }, { t: "Tirar fotos dos infratores", v: "impulsivo", n: "Produção de prova." }] },
+            opcoes: [{ t: "Chamar a Polícia Ambiental", v: "determinado", n: "Intervenção legal." }, { t: "Alertar outros trilheiros", v: "pacificador", n: "Rede de proteção." }, { t: "Não confrontar e sair", v: "cauteloso", n: "Segurança pessoal." }, { t: "Tirar fotos dos infratores", v: "impulsivo", n: "Produção de prova." }] },
             
             { q: "A Praia Central apresenta bandeira imprópria para banho devido ao esgoto clandestino.", img: "esgotoclandestinoaberto.png", 
-              opcoes: [{ t: "Exigir lacre de esgoto", v: "determinado", n: "Rigor sanitário." }, { t: "Campanha 'Praia Limpa'", v: "pacificador", n: "Conscientização coletiva." }, { t: "Procurar praia mais longe", v: "cauteloso", n: "Adaptação pessoal." }, { t: "Protestar na prefeitura", v: "impulsivo", n: "Cobrança política." }] },
+            opcoes: [{ t: "Exigir lacre de esgoto", v: "determinado", n: "Rigor sanitário." }, { t: "Campanha 'Praia Limpa'", v: "pacificador", n: "Conscientização coletiva." }, { t: "Procurar praia mais longe", v: "cauteloso", n: "Adaptação pessoal." }, { t: "Protestar na prefeitura", v: "impulsivo", n: "Cobrança política." }] },
             
             { q: "Durante a temporada, o barulho excessivo e lixo afetam a fauna no Morro do Cristo.", img: "3_0_morrodocristosomalto.png", 
-              opcoes: [{ t: "Interromper sons altos", v: "impulsivo", n: "Confronto direto." }, { t: "Sugerir guias ambientais", v: "pacificador", n: "Turismo sustentável." }, { t: "Visitar em horários calmos", v: "cauteloso", n: "Impacto reduzido." }, { t: "Pedir cercamento da área", v: "determinado", n: "Proteção estrutural." }] },
+            opcoes: [{ t: "Interromper sons altos", v: "impulsivo", n: "Confronto direto." }, { t: "Sugerir guias ambientais", v: "pacificador", n: "Turismo sustentável." }, { t: "Visitar em horários calmos", v: "cauteloso", n: "Impacto reduzido." }, { t: "Pedir cercamento da área", v: "determinado", n: "Proteção estrutural." }] },
             
             { q: "O Greenpeace abre vagas para monitorar as tartarugas marinhas no litoral paranaense.", img: "tartaruganapraiadeguaratuba.png", 
-              opcoes: [{ t: "Me inscrever agora", v: "impulsivo", n: "Decisão imediata." }, { t: "Divulgar para amigos", v: "pacificador", n: "Mobilização de rede." }, { t: "Avaliar se tenho tempo", v: "cauteloso", n: "Análise realista." }, { t: "Estudar biologia marinha", v: "determinado", n: "Preparação técnica." }] },
+            opcoes: [{ t: "Me inscrever agora", v: "impulsivo", n: "Decisão imediata." }, { t: "Divulgar para amigos", v: "pacificador", n: "Mobilização de rede." }, { t: "Avaliar se tenho tempo", v: "cauteloso", n: "Análise realista." }, { t: "Estudar biologia marinha", v: "determinado", n: "Preparação técnica." }] },
             
             { q: "O Mercado Municipal de Guaratuba ainda usa muitas sacolas plásticas não biodegradáveis.", img: "mercadomucipalsacolasplasticas.png", 
-              opcoes: [{ t: "Propor lei de banimento", v: "determinado", n: "Mudança normativa." }, { t: "Levar sacola ecologica", v: "cauteloso", n: "Hábito consciente." }, { t: "Oficina de sacola de papel recilcável", v: "pacificador", n: "Alternativa prática." }, { t: "Reclamar com os boxes", v: "impulsivo", n: "Cobrança direta." }] },
+            opcoes: [{ t: "Propor lei de banimento", v: "determinado", n: "Mudança normativa." }, { t: "Levar sacola ecologica", v: "cauteloso", n: "Hábito consciente." }, { t: "Oficina de sacola de papel recilcável", v: "pacificador", n: "Alternativa prática." }, { t: "Reclamar com os boxes", v: "impulsivo", n: "Cobrança direta." }] },
             
             { q: "Você vê um animal silvestre (como um bicho-preguiça) tentando atravessar a rodovia PR-412.", img: "bichopreguiçaatravessandoestrada.png", 
-              opcoes: [{ t: "Parar o trânsito na hora", v: "impulsivo", n: "Ação de risco." }, { t: "Chamar o resgate técnico", v: "determinado", n: "Procedimento correto." }, { t: "Sinalizar para trânsito", v: "pacificador", n: "Alerta comunitário." }, { t: "Observar de longe", v: "observador", n: "Registro científico." }] },
+            opcoes: [{ t: "Parar o trânsito na hora", v: "impulsivo", n: "Ação de risco." }, { t: "Chamar o resgate técnico", v: "determinado", n: "Procedimento correto." }, { t: "Sinalizar para trânsito", v: "pacificador", n: "Alerta comunitário." }, { t: "Observar de longe", v: "observador", n: "Registro científico." }] },
             
             { q: "O ecossistema de manguezal na Baía de Guaratuba está sendo aterrado ilegalmente.", img: "aterramentoilegal.png", 
-              opcoes: [{ t: "Denunciar ao IAT", v: "determinado", n: "Fiscalização oficial." }, { t: "Postar vídeo do local", v: "impulsivo", n: "Pressão nas redes." }, { t: "Palestras escolares", v: "pacificador", n: "Conscientização base." }, { t: "Acionar a Força Verde", v: "determinado", n: "Intervenção policial." }] },
+            opcoes: [{ t: "Denunciar ao IAT", v: "determinado", n: "Fiscalização oficial." }, { t: "Postar vídeo do local", v: "impulsivo", n: "Pressão nas redes." }, { t: "Palestras escolares", v: "pacificador", n: "Conscientização base." }, { t: "Acionar a Força Verde", v: "determinado", n: "Intervenção policial." }] },
             
             { q: "Obras na orla podem afetar a restinga e as dunas. Como você vê o futuro da nossa costa?", img: "8_0_obrasnasdunaserestinga.png", 
-              opcoes: [{ t: "Preocupação urgente", v: "impulsivo", n: "Alerta ambiental." }, { t: "Debater o projeto", v: "pacificador", n: "Equilíbrio urbano." }, { t: "Fiscalizar as licenças", v: "observador", n: "Rigor técnico." }, { t: "Confiar nos engenheiros", v: "pacificador", n: "Postura neutra." }] },
+            opcoes: [{ t: "Preocupação urgente", v: "impulsivo", n: "Alerta ambiental." }, { t: "Debater o projeto", v: "pacificador", n: "Equilíbrio urbano." }, { t: "Fiscalizar as licenças", v: "observador", n: "Rigor técnico." }, { t: "Confiar nos engenheiros", v: "pacificador", n: "Postura neutra." }] },
             
             { q: "A pesca artesanal em Guaratuba sofre com a poluição por microplásticos.", img: "9_0_baiadeguaratuba.png", 
-              opcoes: [{ t: "Proibir plásticos na baía", v: "determinado", n: "Lei municipal rígida." }, { t: "Apoiar cooperativas", v: "pacificador", n: "Fortalecimento local." }, { t: "Consumir menos plástico", v: "cauteloso", n: "Redução na fonte." }, { t: "Protestar no trapiche", v: "impulsivo", n: "Visibilidade rápida." }] }
+            opcoes: [{ t: "Proibir plásticos na baía", v: "determinado", n: "Lei municipal rígida." }, { t: "Apoiar cooperativas", v: "pacificador", n: "Fortalecimento local." }, { t: "Consumir menos plástico", v: "cauteloso", n: "Redução na fonte." }, { t: "Protestar no trapiche", v: "impulsivo", n: "Visibilidade rápida." }] }
         ];
 
-function comecarJogo() {
-    const musica = document.getElementById('bg-music');
-    musica.volume = 0.4;
-    musica.play().catch(() => console.log("Áudio bloqueado"));
-
-    // GATILHO DE VOZ: Cria uma fala vazia para habilitar o som no navegador
-    const inicializarVoz = new SpeechSynthesisUtterance("");
-    window.speechSynthesis.speak(inicializarVoz);
-
-    document.getElementById('intro-screen').style.opacity = '0';
-    setTimeout(() => { 
-        document.getElementById('intro-screen').style.display = 'none'; 
-        carregarCena(); 
-    }, 1000);
-}
-function carregarCena() {
-    if (diaAtual >= jornada.length) { finalizarJogoIA(); return; }
-    const cena = jornada[diaAtual];
-    document.getElementById('bg-image').style.backgroundImage = `url('${cena.img}')`;
-    
-    // Interface de Pergunta com Botão de Som
-    const interfaceTexto = document.getElementById('pergunta-texto');
-    interfaceTexto.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-            <span id="txt-pergunta">${cena.q}</span>
-            <button class="btn-audio-acessivel" onclick="ouvirTexto('txt-pergunta')">🔊</button>
-        </div>
-    `;
-
-    const container = document.getElementById('botoes-respostas');
-    container.innerHTML = "";
-    
-    cena.opcoes.forEach((opt, index) => {
-        const idOpt = `opt-${index}`;
-        const divWrapper = document.createElement('div');
-        divWrapper.style.display = "flex";
-        divWrapper.style.gap = "5px";
-        divWrapper.style.marginBottom = "8px";
-
-        divWrapper.innerHTML = `
-            <button class="btn-escolha" style="flex: 1;" onclick="escolher('${opt.n}', '${opt.v}')">
-                <span id="${idOpt}">${opt.t}</span>
-            </button>
-            <button class="btn-audio-acessivel" onclick="ouvirTexto('${idOpt}')">🔊</button>
-        `;
-        container.appendChild(divWrapper);
-    });
-
-    // O TIMER FOI REMOVIDO DAQUI
-}
-
-function escolher(notificacao, valor) {
-    // --- 1. COLETA DE DADOS (O que você pediu) ---
-    gameStats.rodadaAtual++;
-    if (gameStats.perfis[valor] !== undefined) {
-        gameStats.perfis[valor]++;
-    }
-
-    // Classificação para o seu relatório .txt
-    if (valor === 'pacificador' || valor === 'cauteloso') {
-        gameStats.escolhas.boas++;
-    } else if (valor === 'determinado' || valor === 'observador') {
-        gameStats.escolhas.ruinsRazoavel++;
-    } else if (valor === 'impulsivo') {
-        gameStats.escolhas.ruinsApocaliptico++;
-    }
-
-    // --- 2. SUA LÓGICA ORIGINAL DE IFs (Reposta aqui) ---
-    window.speechSynthesis.cancel();
-    dadosTreinamento.push(valor || "cauteloso");
-    const n = document.getElementById('notification');
-    const bgImage = document.getElementById('bg-image');
-    const perguntaTextoAtual = jornada[diaAtual].q;
-
-    if (perguntaTextoAtual.includes("canteiro de obras")) {
-        if (valor === 'determinado') bgImage.style.backgroundImage = "url('0_1_paralizacaodaobra.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('0_2_audienciapublica.png')";
-        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('0_3_documentararea.png')";
-        else bgImage.style.backgroundImage = "url('0_4_organizarprotesto.png')";
-    }
-    else if (perguntaTextoAtual.includes("palmito")) {
-        if (valor === 'determinado') bgImage.style.backgroundImage = "url('1_1_chamoupolicia.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('1_2_alertartrilheiros.png')";
-        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('1_3_naoconfrontaresair.png')";
-        else bgImage.style.backgroundImage = "url('1_4_tirarfotodosinfratores.png')";
-    }
-    else if (perguntaTextoAtual.includes("Praia Central")) {
-        if (valor === 'determinado') bgImage.style.backgroundImage = "url('2_1_esgotoclandestinolacrado.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('2_2_campanhapraialimpa.png')";
-        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('2_3_procuraroutrapraia.png')";
-        else bgImage.style.backgroundImage = "url('2_4_protestarnaprefeitura.png')";
-    }
-    else if (perguntaTextoAtual.includes("Morro do Cristo")) {
-        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('3_1_interrompersonsaltos.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('3_2_guiaabiental.png')";
-        else if (valor === 'observador' || valor === 'cauteloso') bgImage.style.backgroundImage = "url('3_3_voltaremhorariosmaiscalmos.png')";
-        else bgImage.style.backgroundImage = "url('3_4_cercaraarea.png')";
-    }
-    else if (perguntaTextoAtual.includes("Greenpeace")) {
-        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_1_seinscreveragora.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
-        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
-        else bgImage.style.backgroundImage = "url('4_4_estudarbiologiamarinha.png')";
-    }
-    else if (perguntaTextoAtual.includes("Mercado Municipal")) {
-        if (valor === 'determinado') bgImage.style.backgroundImage = "url('5_1_leidebanimento.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('5_2_oficinadesacolasdepapel.png')";
-        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('5_3_ecobags.png')";
-        else bgImage.style.backgroundImage = "url('5_4_reclamandocomosboxes.png')";
-    }
-    else if (perguntaTextoAtual.includes("bicho-preguiça")) {
-        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('6_1_pararotransito.png')";
-        else if (valor === 'determinado') bgImage.style.backgroundImage = "url('6_2_chamarresgate.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('6_3_sinalizandoparaosmotoristas.png')";
-        else bgImage.style.backgroundImage = "url('6_4_observardelonge.png')";
-    }
-    else if (perguntaTextoAtual.includes("manguezal")) {
-        if (valor === 'determinado') bgImage.style.backgroundImage = "url('7_1_denunciaparaoiat.png')";
-        else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('7_2_postarvideo.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('7_3_palestrasescolares.png')";
-        else bgImage.style.backgroundImage = "url('7_4_acionarpoliciaambiental.png')";
-    }
-    else if (perguntaTextoAtual.includes("Obras na orla")) {
-        if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('8_1_preocupadourgente.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('8_2_debaterprojeto.png')";
-        else if (valor === 'observador') bgImage.style.backgroundImage = "url('8_3_fiscalizarlicencas.png')";
-        else bgImage.style.backgroundImage = "url('8_4_confiarnosengenheiros.png')";
-    }
-    else if (perguntaTextoAtual.includes("pesca artesanal")) {
-        if (valor === 'determinado') bgImage.style.backgroundImage = "url('9_1_proibirplasticosnabaia.png')";
-        else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('9_2_apoiarcooperativas.png')";
-        else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('9_3_consumirmenosplastico.png')";
-        else bgImage.style.backgroundImage = "url('9_4_protestarnotrapiche.png')";
-    }
-
-    // --- 3. NOTIFICAÇÃO E VOZ ---
-    const textoConsequencia = `${notificacao}. A natureza irá se lembrar disso.`;
-    n.innerHTML = `${notificacao}<br><span style="color: var(--greenpeace-yellow); font-weight: bold;">A natureza irá se lembrar disso.</span>`;
-    n.style.opacity = 1;
-
-    const narradorConsequencia = new SpeechSynthesisUtterance(textoConsequencia);
-    narradorConsequencia.lang = 'pt-BR';
-    window.speechSynthesis.speak(narradorConsequencia);
-
-    document.querySelectorAll('.btn-escolha, .btn-audio-acessivel').forEach(b => b.style.pointerEvents = 'none');
-
-    setTimeout(() => { 
-        n.style.opacity = 0; 
-        diaAtual++;
-        carregarCena();
-    }, 9000); 
-}
-
-function ouvirTexto(elementoId) {
-    // 1. Forçar parada de qualquer fala anterior (Limpa o cache da voz)
-    window.speechSynthesis.cancel();
-
-    const elemento = document.getElementById(elementoId);
-    if (!elemento) return;
-
-    const texto = elemento.innerText;
-    const narrador = new SpeechSynthesisUtterance(texto);
-    
-    // 2. Configurações cruciais
-    narrador.lang = 'pt-BR';
-    narrador.rate = 0.9;
-    narrador.pitch = 1.0;
-    narrador.volume = 1.0; // Garante volume máximo da IA
-
-    // 3. O "Pulo do Gato": Alguns navegadores precisam de um pequeno delay
-    setTimeout(() => {
-        window.speechSynthesis.speak(narrador);
-    }, 50);
-
-    // Debug para você ver no console (F12) se o código chegou aqui
-    console.log("Steve informa: Tentando narrar -> " + texto);
-}
-
-function finalizarJogoIA() {
-    // Dentro da função finalizarJogoIA, antes de tudo:
-    window.speechSynthesis.cancel(); // Limpa filas travadas
-    const wakeUp = new SpeechSynthesisUtterance("");
-    window.speechSynthesis.speak(wakeUp);
-    let probs = { pacificador: 0.25, determinado: 0.25, cauteloso: 0.25, impulsivo: 0.25, observador: 0.25 };
-    
-    dadosTreinamento.forEach(escolha => {
-        if (modeloIA[escolha]) {
-            for (let perfil in probs) probs[perfil] *= modeloIA[escolha][perfil];
-            let total = Object.values(probs).reduce((a, b) => a + b);
-            for (let perfil in probs) probs[perfil] /= total;
+        function fecharApenasModal() {
+            // Apenas oculta a janela de cadastro
+            document.getElementById('modal-cadastro').style.display = 'none';
+            // Garante que os campos sejam limpos para a próxima abertura
+            document.getElementById('aluno-email').value = "";
+            document.getElementById('aluno-idade').value = "";
+            document.getElementById('aluno-serie').value = "";
         }
-    });
 
-    const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
-    const confianca = Math.round(probs[perfilFinal] * 100);
-
-    const resultados = {
-        observador: {
-            texto: "Através da escolha que você fez, o futuro de Guaratuba se transformou em um lugar onde a tecnologia cuida da natureza. Com o uso de boias inteligentes e sensores no mar, as pessoas conseguiram descobrir qualquer sujeirinha antes mesmo que ela virasse um problema grave. Essa sua decisão de monitorar os peixes e a água funcionou como um escudo invisível que manteve tudo azul e limpo por décadas. Foi a sua ação, agindo como um verdadeiro guardião digital, que garantiu esse cenário cheio de vida para as próximas gerações.",
-            img: "final_baia_observador.png"
-        },
-        impulsivo: {
-            texto: "Através da escolha que você fez, o futuro de Guaratuba em 40 anos se tornou um lugar triste e cheio de sujeira. Como as pessoas decidiram construir tudo rápido e ignorar o lixo, a praia sumiu debaixo de garrafas plásticas e o mar ficou escuro e perigoso. Essa sua decisão de não planejar e não cuidar da natureza quebrou o equilíbrio que existia, fazendo os peixes irem embora. Foi a sua ação, ao esquecer de proteger o meio ambiente, que permitiu que o lixo e a poluição vencessem essa batalha.",
-            img: "final_baia_impulsivo.png"
-        },
-        cauteloso: {
-            texto: "Através da escolha que você fez, o futuro de Guaratuba em 40 anos se transformou em um paraíso natural e muito calmo. Você decidiu que o melhor era deixar a natureza em paz, sem construir prédios ou estradas perto demais da água da baía. Essa sua decisão de manter distância e respeitar o espaço do mar funcionou como um abraço protetor que deixou as plantas e os animais crescerem livres. Foi a sua ação, escolhendo a segurança e o silêncio, que garantiu que a praia continuasse perfeita e selvagem para sempre.",
-            img: "final_baia_cauteloso.png"
-        },
-        determinado: {
-            texto: "Através da escolha que você fez, o futuro de Guaratuba em 40 anos se transformou em um exemplo de cidade forte e moderna. Você decidiu construir muros de pedra e portos organizados para segurar a força das ondas e organizar o movimento dos barcos. Essa sua decisão de usar a engenharia para domar o mar garantiu que a cidade pudesse crescer sem medo das ressacas ou das tempestades. Foi a sua ação, agindo com firmeza e coragem para transformar a orla, que criou um lugar seguro e pronto para o progresso de todos.",
-            img: "final_baia_determinado.png"
-        },
-        pacificador: {
-            texto: "Através da escolha que você fez, o futuro de Guaratuba se transformou em um lugar de união entre as pessoas e a natureza. Você decidiu que o segredo era o equilíbrio, criando espaços onde as famílias podem brincar sem machucar os animais e as plantas da baía. Essa sua decisão de fazer as pazes com o meio ambiente funcionou como uma ponte de amizade entre a cidade e o mar. Foi a sua ação, escolhendo a convivência e o respeito, que garantiu um cenário de paz onde todos vivem em harmonia.",
-            img: "final_baia_pacificador.png"
+        function comecarJogo() {
+            // GATILHO DE VOZ: Cria uma fala vazia para habilitar o som no navegador
+            const inicializarVoz = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(inicializarVoz);
+            document.getElementById('intro-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('intro-screen').style.display = 'none';
+                carregarCena();
+                }, 1000);
         }
-    };
 
-    const resultadoFinal = resultados[perfilFinal];
+        function carregarCena() {
+            if (diaAtual >= jornada.length) { finalizarJogoIA(); return; }
+            const cena = jornada[diaAtual];
+            document.getElementById('bg-image').style.backgroundImage = `url('${cena.img}')`;
+            // Interface de Pergunta com Botão de Som
+            const interfaceTexto = document.getElementById('pergunta-texto');
+            interfaceTexto.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <span id="txt-pergunta">${cena.q}</span>
+                    <button class="btn-audio-acessivel" onclick="ouvirTexto('txt-pergunta')">🔊</button>
+                </div>`;
+            const container = document.getElementById('botoes-respostas');
+            container.innerHTML = "";
+            cena.opcoes.forEach((opt, index) => {
+                const idOpt = `opt-${index}`;
+                const divWrapper = document.createElement('div');
+                divWrapper.style.display = "flex";
+                divWrapper.style.gap = "5px";
+                divWrapper.style.marginBottom = "8px";
+                divWrapper.innerHTML = `
+                    <button class="btn-escolha" style="flex: 1;" onclick="escolher('${opt.n}', '${opt.v}')">
+                        <span id="${idOpt}">${opt.t}</span>
+                    </button>
+                    <button class="btn-audio-acessivel" onclick="ouvirTexto('${idOpt}')">🔊</button>`;
+                container.appendChild(divWrapper);
+            });
+        }
 
-    // Atualiza a imagem final no fundo
-    document.getElementById('bg-image').style.backgroundImage = `url('${resultadoFinal.img}')`;
+        function abrirFormulario() {
+            // Limpa os campos antes de exibir o modal
+            document.getElementById('aluno-email').value = "";
+            document.getElementById('aluno-idade').value = "";
+            document.getElementById('aluno-serie').value = "";
+            // Exibe o modal
+            document.getElementById('modal-cadastro').style.display = 'block';
+        }
 
-    // Prepara a interface final
-    document.getElementById('game-interface').classList.add('final-screen');
-    const txt = document.getElementById('pergunta-texto');
-    
-    // Inserção do ícone de narração (botão de áudio)
-    txt.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
-            <b style="color: var(--greenpeace-yellow); font-size: 1rem;">RELATÓRIO DE IMPACTO (40 ANOS DEPOIS)</b>
-            <button class="btn-audio-acessivel" title="Ouvir Narração" onclick="narrarRelatorioFinal()">🔊</button>
-        </div>
-        <div id="texto-conclusao" style="text-align: justify; font-size: 0.9rem; line-height: 1.4; max-height: 130px; overflow-y: auto; padding: 5px; color: #fff;">
-            ${resultadoFinal.texto}
-            <br><br>
-            <small style="opacity: 0.6; display: block; text-align: center;">Precisão da Análise IA: ${confianca}%</small>
-        </div>
-    `;
+        function processarCadastro() {
+            const email = document.getElementById('aluno-email').value;
+            const idade = document.getElementById('aluno-idade').value;
+            const serie = document.getElementById('aluno-serie').value;
+            if (!email || !idade || !serie) {
+                alert("Preencha todos os campos do protocolo!");
+                return;
+            }
+            const dados = {
+                tipo: "cadastro_aluno", // Direciona para a aba 'Alunos'
+                email: email,
+                idade: idade,
+                serie: serie
+            };
+            const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbyFqpmsDoHm-Tg_Gra9mQmG4uncq5ijaM9clv7zDhj44y1AXyVj-rge-esjgol0HZGz/exec";
+            // Enviando os dados
+            fetch(URL_SCRIPT, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(dados)
+            });
+            alert("Dados enviados para o sistema do Greenpeace. Prepare-se para a missão!");
+            fecharFormulario(); 
+        }
 
-    // Função global para ser chamada pelo botão de ícone
-    window.narrarRelatorioFinal = function() {
-        window.speechSynthesis.cancel(); // Para qualquer fala anterior
-        const mensagem = new SpeechSynthesisUtterance(resultadoFinal.texto);
-        mensagem.lang = 'pt-BR';
-        mensagem.rate = 0.95; // Velocidade levemente reduzida para melhor compreensão
-        window.speechSynthesis.speak(mensagem);
-    };
+        function fecharFormulario() {
+            // Fecha o modal
+            document.getElementById('modal-cadastro').style.display = 'none';
+            document.getElementById('btn-missao').style.display = 'inline-block';
+        }
 
-    // Botão de reiniciar
-    document.getElementById('botoes-respostas').innerHTML = `
-        <button class="btn-escolha" onclick="location.reload()" style="width: 100%; max-width: 300px;">REINICIAR MISSÃO</button>
-    `;
-    
-    document.getElementById('timer-container').style.display = 'none';
+        function escolher(notificacao, valor) {
+            // COLETA DE DADOS
+            gameStats.rodadaAtual++;
+            if (gameStats.perfis[valor] !== undefined) {
+                gameStats.perfis[valor]++;
+            }
+            // Classificação para o relatório
+            if (valor === 'pacificador' || valor === 'cauteloso') {
+                gameStats.escolhas.boas++;
+            } else if (valor === 'determinado' || valor === 'observador') {
+                gameStats.escolhas.ruinsRazoavel++;
+            } else if (valor === 'impulsivo') {
+                gameStats.escolhas.ruinsApocaliptico++;
+            }
+            //LÓGICA ORIGINAL DE IFs
+            window.speechSynthesis.cancel();
+            dadosTreinamento.push(valor || "cauteloso");
+            const n = document.getElementById('notification');
+            const bgImage = document.getElementById('bg-image');
+            const perguntaTextoAtual = jornada[diaAtual].q;
+            if (perguntaTextoAtual.includes("canteiro de obras")) {
+                if (valor === 'determinado') bgImage.style.backgroundImage = "url('0_1_paralizacaodaobra.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('0_2_audienciapublica.png')";
+                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('0_3_documentararea.png')";
+                else bgImage.style.backgroundImage = "url('0_4_organizarprotesto.png')";
+            }
+            else if (perguntaTextoAtual.includes("palmito")) {
+                if (valor === 'determinado') bgImage.style.backgroundImage = "url('1_1_chamoupolicia.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('1_2_alertartrilheiros.png')";
+                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('1_3_naoconfrontaresair.png')";
+                else bgImage.style.backgroundImage = "url('1_4_tirarfotodosinfratores.png')";
+            }
+            else if (perguntaTextoAtual.includes("Praia Central")) {
+                if (valor === 'determinado') bgImage.style.backgroundImage = "url('2_1_esgotoclandestinolacrado.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('2_2_campanhapraialimpa.png')";
+                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('2_3_procuraroutrapraia.png')";
+                else bgImage.style.backgroundImage = "url('2_4_protestarnaprefeitura.png')";
+            }
+            else if (perguntaTextoAtual.includes("Morro do Cristo")) {
+                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('3_1_interrompersonsaltos.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('3_2_guiaabiental.png')";
+                else if (valor === 'observador' || valor === 'cauteloso') bgImage.style.backgroundImage = "url('3_3_voltaremhorariosmaiscalmos.png')";
+                else bgImage.style.backgroundImage = "url('3_4_cercaraarea.png')";
+            }
+            else if (perguntaTextoAtual.includes("Greenpeace")) {
+                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('4_1_seinscreveragora.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('4_2_divulgarparaosamigos.png')";
+                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('4_3_verificarnaagenda.png')";
+                else bgImage.style.backgroundImage = "url('4_4_estudarbiologiamarinha.png')";
+            }
+            else if (perguntaTextoAtual.includes("Mercado Municipal")) {
+                if (valor === 'determinado') bgImage.style.backgroundImage = "url('5_1_leidebanimento.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('5_2_oficinadesacolasdepapel.png')";
+                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('5_3_ecobags.png')";
+                else bgImage.style.backgroundImage = "url('5_4_reclamandocomosboxes.png')";
+            }
+            else if (perguntaTextoAtual.includes("bicho-preguiça")) {
+                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('6_1_pararotransito.png')";
+                else if (valor === 'determinado') bgImage.style.backgroundImage = "url('6_2_chamarresgate.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('6_3_sinalizandoparaosmotoristas.png')";
+                else bgImage.style.backgroundImage = "url('6_4_observardelonge.png')";
+            }
+            else if (perguntaTextoAtual.includes("manguezal")) {
+                if (valor === 'determinado') bgImage.style.backgroundImage = "url('7_1_denunciaparaoiat.png')";
+                else if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('7_2_postarvideo.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('7_3_palestrasescolares.png')";
+                else bgImage.style.backgroundImage = "url('7_4_acionarpoliciaambiental.png')";
+            }
+            else if (perguntaTextoAtual.includes("Obras na orla")) {
+                if (valor === 'impulsivo') bgImage.style.backgroundImage = "url('8_1_preocupadourgente.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('8_2_debaterprojeto.png')";
+                else if (valor === 'observador') bgImage.style.backgroundImage = "url('8_3_fiscalizarlicencas.png')";
+                else bgImage.style.backgroundImage = "url('8_4_confiarnosengenheiros.png')";
+            }
+            else if (perguntaTextoAtual.includes("pesca artesanal")) {
+                if (valor === 'determinado') bgImage.style.backgroundImage = "url('9_1_proibirplasticosnabaia.png')";
+                else if (valor === 'pacificador') bgImage.style.backgroundImage = "url('9_2_apoiarcooperativas.png')";
+                else if (valor === 'cauteloso') bgImage.style.backgroundImage = "url('9_3_consumirmenosplastico.png')";
+                else bgImage.style.backgroundImage = "url('9_4_protestarnotrapiche.png')";
+            }
+            //NOTIFICAÇÃO E VOZ
+            const textoConsequencia = `${notificacao}. A natureza irá se lembrar disso.`;
+            n.innerHTML = `${notificacao}<br><span style="color: var(--greenpeace-yellow); font-weight: bold;">A natureza irá se lembrar disso.</span>`;
+            n.style.opacity = 1;
+            const narradorConsequencia = new SpeechSynthesisUtterance(textoConsequencia);
+            narradorConsequencia.lang = 'pt-BR';
+            window.speechSynthesis.speak(narradorConsequencia);
+            document.querySelectorAll('.btn-escolha, .btn-audio-acessivel').forEach(b => b.style.pointerEvents = 'none');
+            setTimeout(() => {
+                n.style.opacity = 0;
+                diaAtual++;
+                carregarCena();
+            }, 9000);
+        }
 
-    // Dentro da sua função finalizarJogoIA, logo após calcular o perfilFinal:
-    const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbyFqpmsDoHm-Tg_Gra9mQmG4uncq5ijaM9clv7zDhj44y1AXyVj-rge-esjgol0HZGz/exec";
+        function ouvirTexto(elementoId) {
+            //Forçar parada de qualquer fala anterior (Limpa o cache da voz)
+            window.speechSynthesis.cancel();
+            const elemento = document.getElementById(elementoId);
+            if (!elemento) return;
+            const texto = elemento.innerText;
+            const narrador = new SpeechSynthesisUtterance(texto);
+            // Configurações cruciais
+            narrador.lang = 'pt-BR';
+            narrador.rate = 0.9;
+            narrador.pitch = 1.0;
+            narrador.volume = 1.0; // Garante volume máximo da IA
+            // Alguns navegadores precisam de um pequeno delay
+            setTimeout(() => {
+                window.speechSynthesis.speak(narrador);
+            }, 50);
+        }
 
-    fetch(URL_DA_PLANILHA, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(gameStats)
-    }).then(() => console.log("Dados enviados para a planilha da PIC!"));
-}
-
-</script>
+        function finalizarJogoIA() {
+            // Dentro da função finalizarJogoIA, antes de tudo:
+            window.speechSynthesis.cancel(); // Limpa filas travadas
+            const wakeUp = new SpeechSynthesisUtterance("");
+            window.speechSynthesis.speak(wakeUp);
+            let probs = {
+                pacificador: 0.25, determinado: 0.25, 
+                cauteloso: 0.25, impulsivo: 0.25, observador: 0.25
+            };
+            dadosTreinamento.forEach(escolha => {
+                if (modeloIA[escolha]) {
+                    for (let perfil in probs) probs[perfil] *= modeloIA[escolha][perfil];
+                    let total = Object.values(probs).reduce((a, b) => a + b);
+                    for (let perfil in probs) probs[perfil] /= total;
+                }
+            });
+            const perfilFinal = Object.keys(probs).reduce((a, b) => probs[a] > probs[b] ? a : b);
+            const confianca = Math.round(probs[perfilFinal] * 100);
+            const resultados = {
+                observador: {
+                    texto: "Através da escolha que você fez, o futuro de Guaratuba se transformou em um lugar onde a tecnologia cuida da natureza. Com o uso de boias inteligentes e sensores no mar, as pessoas conseguiram descobrir qualquer sujeirinha antes mesmo que ela virasse um problema grave. Essa sua decisão de monitorar os peixes e a água funcionou como um escudo invisível que manteve tudo azul e limpo por décadas. Foi a sua ação, agindo como um verdadeiro guardião digital, que garantiu esse cenário cheio de vida para as próximas gerações.",
+                    img: "final_baia_observador.png"
+                },
+                impulsivo: {
+                    texto: "Através da escolha que você fez, o futuro de Guaratuba em 40 anos se tornou um lugar triste e cheio de sujeira. Como as pessoas decidiram construir tudo rápido e ignorar o lixo, a praia sumiu debaixo de garrafas plásticas e o mar ficou escuro e perigoso. Essa sua decisão de não planejar e não cuidar da natureza quebrou o equilíbrio que existia, fazendo os peixes irem embora. Foi a sua ação, ao esquecer de proteger o meio ambiente, que permitiu que o lixo e a poluição vencessem essa batalha.",
+                    img: "final_baia_impulsivo.png"
+                },
+                cauteloso: {
+                    texto: "Através da escolha que você fez, o futuro de Guaratuba em 40 anos se transformou em um paraíso natural e muito calmo. Você decidiu que o melhor era deixar a natureza em paz, sem construir prédios ou estradas perto demais da água da baía. Essa sua decisão de manter distância e respeitar o espaço do mar funcionou como um abraço protetor que deixou as plantas e os animais crescerem livres. Foi a sua ação, escolhendo a segurança e o silêncio, que garantiu que a praia continuasse perfeita e selvagem para sempre.",
+                    img: "final_baia_cauteloso.png"
+                },
+                determinado: {
+                    texto: "Através da escolha que você fez, o futuro de Guaratuba em 40 anos se transformou em um exemplo de cidade forte e moderna. Você decidiu construir muros de pedra e portos organizados para segurar a força das ondas e organizar o movimento dos barcos. Essa sua decisão de usar a engenharia para domar o mar garantiu que a cidade pudesse crescer sem medo das ressacas ou das tempestades. Foi a sua ação, agindo com firmeza e coragem para transformar a orla, que criou um lugar seguro e pronto para o progresso de todos.",
+                    img: "final_baia_determinado.png"
+                },
+                pacificador: {
+                    texto: "Através da escolha que você fez, o futuro de Guaratuba se transformou em um lugar de união entre as pessoas e a natureza. Você decidiu que o segredo era o equilíbrio, criando espaços onde as famílias podem brincar sem machucar os animais e as plantas da baía. Essa sua decisão de fazer as pazes com o meio ambiente funcionou como uma ponte de amizade entre a cidade e o mar. Foi a sua ação, escolhendo a convivência e o respeito, que garantiu um cenário de paz onde todos vivem em harmonia.",
+                    img: "final_baia_pacificador.png"
+                }
+            };
+            const resultadoFinal = resultados[perfilFinal];
+            // Atualiza a imagem final no fundo
+            document.getElementById('bg-image').style.backgroundImage = `url('${resultadoFinal.img}')`;
+            // Prepara a interface final
+            document.getElementById('game-interface').classList.add('final-screen');
+            const txt = document.getElementById('pergunta-texto');
+            // Inserção do ícone de narração (botão de áudio)
+            txt.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 10px;">
+                    <b style="color: var(--greenpeace-yellow); font-size: 1rem;">RELATÓRIO DE IMPACTO (40 ANOS DEPOIS)</b>
+                    <button class="btn-audio-acessivel" title="Ouvir Narração" onclick="narrarRelatorioFinal()">🔊</button>
+                </div>
+                <div id="texto-conclusao" style="text-align: justify; font-size: 0.9rem; line-height: 1.4; max-height: 130px; overflow-y: auto; padding: 5px; color: #fff;">
+                    ${resultadoFinal.texto}
+                    <br><br>
+                    <small style="opacity: 0.6; display: block; text-align: center;">Precisão da Análise IA: ${confianca}%</small>
+                </div>
+            `;
+            // Função global para ser chamada pelo botão de ícone
+            window.narrarRelatorioFinal = function() {
+                window.speechSynthesis.cancel(); // Para qualquer fala anterior
+                const mensagem = new SpeechSynthesisUtterance(resultadoFinal.texto);
+                mensagem.lang = 'pt-BR';
+                mensagem.rate = 0.95; // Velocidade levemente reduzida para melhor compreensão
+                window.speechSynthesis.speak(mensagem);
+            };
+            // Botão de reiniciar
+            document.getElementById('botoes-respostas').innerHTML = `
+                <button class="btn-escolha" onclick="location.reload()" style="width: 100%; max-width: 300px;">REINICIAR MISSÃO</button>
+            `;
+            document.getElementById('timer-container').style.display = 'none';
+            const URL_DA_PLANILHA = "https://script.google.com/macros/s/AKfycbyFqpmsDoHm-Tg_Gra9mQmG4uncq5ijaM9clv7zDhj44y1AXyVj-rge-esjgol0HZGz/exec";
+            fetch(URL_DA_PLANILHA, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(gameStats)
+            }).then(() => console.log("Dados enviados para a planilha da PIC!"));
+        }
+    </script>
 </body>
 </html>
