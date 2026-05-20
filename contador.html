@@ -161,7 +161,7 @@
                 const tabuada = Number(numero_da_tabuada.value);
     
                 // Se o campo estiver vazio, avisa o usuário
-                if (numero_da_tabuada.value.length == 0) {
+                if (numero_da_tabuada.value.length == 0 || tabuada > 10 ) {
                     div_res.innerHTML = "Por favor, insira um número para calcular a tabuada!";
                     return;
                 }
