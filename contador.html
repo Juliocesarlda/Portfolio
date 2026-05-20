@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>VAMOS CONTAR !!!</title>
+        <style>
+            body {
+                background-color: black;
+                color: blue;
+                cursor: url('cursorluvalatex.png'), auto;
+            }
+
+            .titulo {
+                font-size: xx-large;
+                color: brown;
+                justify-items: center;
+            }
+
+            .container-flex {
+
+                display: flex;
+                gap: 1rem;
+            }
+
+            .div1 {
+                margin-top: 5rem;
+                margin-left: 5rem;
+                margin-right: 5rem;
+                height: 15rem;
+                width: 80rem;
+                padding: 0.8rem;
+                border-radius: 1.5rem;
+                background-color: bisque;
+                color: blueviolet;
+                font-size: x-large;
+            }
+            
+            .div2 {
+                margin-top: 5rem;
+                margin-left: 5rem;
+                margin-right: 5rem;
+                height: 15rem;
+                width: 80rem;
+                padding: 0.8rem;
+                border-radius: 1.5rem;
+                background-color: bisque;
+                color: blueviolet;
+                font-size: x-large;
+            }
+
+            .div3 {
+                margin-top: 1rem;
+                margin-left: 5rem;
+                margin-right: 5rem;
+                height: 5rem;
+                padding: 3rem;
+                border-radius: 1.5rem;
+                background-color: bisque;
+                color: blueviolet;
+                font-size: x-large;
+            }
+
+        </style>
+    </head>
+
+    <header class="titulo">
+        <h2>
+        _.-={[ VAMOS CONTAR ]}=-._
+        </h2>
+    </header>
+
+    <body>
+
+        <section>
+            <div class="container-flex">
+                <div class="div1">
+                    <br>
+                    Início:
+                    <input type="number" name="inicio" id="inicio" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
+                    <br>
+                    Passo:
+                    <input type="number" name="passo" id="passo" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
+                    <br>
+                    Fim:
+                    <input type="number" name="fim" id="fim" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
+                    <br><br>
+                    <button type="button" id="contando" style="height:5rem; font-weight: 1000; width: 6rem; align-content: center;">VAMOS CONTAR!!!</button>
+                </div>
+                <div2 class="div2">
+                    Insira a tabuada desejada:
+                    <input type="number" name="tabuada" id="tabuada" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
+                    <br><br>
+                    <button type="button" name="calcular" id="calcular" style="height:5rem; font-weight: 1000; width: 6rem; align-content: center;">TABUADA</button>
+                </div2>
+            </div>
+            <div class="div3" id="contador"></div>
+            
+        </section>
+        <script>
+
+            const numero_inicial = document.getElementById("inicio");
+            const numero_final = document.getElementById("fim");
+            const numero_do_passo = document.getElementById("passo");
+            const vamos_contar = document.getElementById("contando");
+            const div_res = document.getElementById("contador");
+        
+            vamos_contar.addEventListener('click', function(){
+                const inicio = Number(numero_inicial.value);
+                let passo = Number(numero_do_passo.value);
+                const final = Number(numero_final.value);
+                //div_res.innerHTML="V A M O S  C O N T A R";
+                let resultado = '👉 Contando... <br><br>';
+                if ( passo <= 0 ){
+                    passo = 1;
+                }
+
+                // VERSÃO UTILIZANDO SETINTERVAL NO LUGAR DO LAÇO FOR E COM TEMPORIZADOR
+
+                let conta = inicio;
+
+                const cronometro = setInterval(function(){
+                    resultado += ` ${conta} `;
+                    div_res.innerHTML = resultado;
+
+                    // CONTAGEM CRESCENTE
+
+                    if ( inicio < final ){
+                        conta += passo;
+                        if (conta > final){
+                            clearInterval(cronometro);
+                            div_res.innerHTML += ' 🏁';
+                        }
+                    }
+
+                    // CONTAGEM DECRESCENTE
+
+                    if ( inicio > final ){
+                        conta -= passo;
+                        if ( conta < final ){
+                            clearInterval(cronometro);
+                            div_res.innerHTML += ' 🏁';
+                        }
+                    }
+                }, 1000);
+
+                // VERSÃO UTILIZANDO LAÇO FOR MAS SEM O TEMPORIZADOR
+                /*
+                if ( inicio < final ) {
+                    for ( let conta = inicio; conta <= final; conta += passo ) {
+                        setTimeout(() => {}, 2000 );
+                        resultado += ` ${conta} `;
+                    }
+                }else {
+                    for ( let conta = inicio; conta >= final; conta -= passo ) {
+                        resultado += ` ${conta} `;
+                    }
+                }
+                div_res.innerHTML = resultado;*/
+            })
+
+        </script>
+
+    </body>
+</html>
