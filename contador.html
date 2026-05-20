@@ -1,196 +1,229 @@
 <!DOCTYPE html>
 <html lang="pt">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>VAMOS CONTAR !!!</title>
-        <style>
-            body {
-                background-color: black;
-                color: blue;
-                cursor: url('cursorluvalatex.png'), auto;
-            }
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VAMOS CONTAR !!!</title>
+    <style>
+        /* RESET BÁSICO E CONFIGURAÇÕES GERAIS */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
+        body {
+            background-color: black;
+            color: blue;
+            font-family: Arial, sans-serif;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .titulo {
+            font-size: 1.8rem;
+            color: brown;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        /* CONTAINER PRINCIPAL RESPONSIVO */
+        .container-flex {
+            display: flex;
+            flex-direction: column; /* Empilha os blocos no celular */
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 800px; /* Limita a largura máxima em telas grandes */
+        }
+
+        /* ESTILIZAÇÃO DOS CARDS (DIV 1 E DIV 2) */
+        .card {
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            background-color: bisque;
+            color: blueviolet;
+            font-size: 1.2rem;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Alinhamento interno dos inputs */
+        .form-group {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card input {
+            height: 2rem;
+            font-weight: 1000;
+            width: 5rem;
+            text-align: center;
+            border-radius: 0.5rem;
+            border: 1px solid #ccc;
+        }
+
+        /* ESTILIZAÇÃO DOS BOTÕES */
+        .btn {
+            height: 3.5rem;
+            font-weight: 1000;
+            width: 100%; /* Botão ocupa toda a largura do card no mobile */
+            margin-top: 1rem;
+            border-radius: 0.8rem;
+            border: none;
+            background-color: blueviolet;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #5a2d82;
+        }
+
+        /* ÁREA DE RESULTADO (DIV 3) */
+        .div3 {
+            margin-top: 1.5rem;
+            width: 100%;
+            max-width: 800px;
+            min-height: 8rem;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            background-color: bisque;
+            color: blueviolet;
+            font-size: 1.1rem;
+            word-wrap: break-word; /* Força a quebra de linha de números longos */
+        }
+
+        /* MEDIA QUERIES: Ajustes para telas maiores (Tablets e PCs) */
+        @media (min-width: 768px) {
             .titulo {
-                font-size: xx-large;
-                color: brown;
-                justify-items: center;
+                font-size: 2.5rem;
             }
 
             .container-flex {
-
-                display: flex;
-                gap: 1rem;
+                flex-direction: row; /* Coloca um ao lado do outro em telas grandes */
             }
 
-            .div1 {
-                margin-top: 1rem;
-                margin-left: 5rem;
-                height: 15rem;
-                width: 80rem;
-                padding: 0.8rem;
-                border-radius: 1.5rem;
-                background-color: bisque;
-                color: blueviolet;
-                font-size: x-large;
-            }
-            
-            .div2 {
-                margin-top: 1rem;
-                margin-right: 5rem;
-                height: 15rem;
-                width: 80rem;
-                padding: 0.8rem;
-                border-radius: 1.5rem;
-                background-color: bisque;
-                color: blueviolet;
-                font-size: x-large;
+            .card {
+                flex: 1; /* Distribui o espaço igualmente entre os dois cards */
             }
 
-            .div3 {
-                margin-top: 1rem;
-                margin-left: 5rem;
-                margin-right: 5rem;
-                height: 15rem;
-                padding: 3rem;
-                border-radius: 1.5rem;
-                background-color: bisque;
-                color: blueviolet;
-                font-size:medium;
+            .btn {
+                width: auto;
+                padding: 0 1.5rem;
             }
+        }
+    </style>
+</head>
 
-        </style>
-    </head>
+<body>
 
     <header class="titulo">
-        <h2>
-        _.-={[ VAMOS CONTAR ]}=-._
-        </h2>
+        <h2>_.-={[ VAMOS CONTAR ]}=-._</h2>
     </header>
 
-    <body>
-
-        <section>
-            <div class="container-flex">
-                <div class="div1">
-                    <br>
-                    Início:
-                    <input type="number" name="inicio" id="inicio" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
-                    <br>
-                    Passo:
-                    <input type="number" name="passo" id="passo" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
-                    <br>
-                    Fim:
-                    <input type="number" name="fim" id="fim" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
-                    <br><br>
-                    <button type="button" id="contando" style="height:5rem; font-weight: 1000; width: 6rem; align-content: center;">VAMOS CONTAR!!!</button>
-                </div>
-                <div2 class="div2">
-                    Insira a tabuada desejada:
-                    <input type="number" name="tabuada" id="tabuada" style="height:1.5rem; font-weight: 1000; width: 3rem; align-content: center;"></input>
-                    <br><br>
-                    <button type="button" name="calcular" id="calcular" style="height:5rem; font-weight: 1000; width: 6rem; align-content: center;">TABUADA</button>
-                </div2>
+    <main class="container-flex">
+        <!-- CARD 1: CONTADOR -->
+        <div class="card">
+            <div class="form-group">
+                <label for="inicio">Início:</label>
+                <input type="number" name="inicio" id="inicio">
             </div>
-            <div class="div3" id="contador"></div>
+            <div class="form-group">
+                <label for="passo">Passo:</label>
+                <input type="number" name="passo" id="passo">
+            </div>
+            <div class="form-group">
+                <label for="fim">Fim:</label>
+                <input type="number" name="fim" id="fim">
+            </div>
+            <button type="button" id="contando" class="btn">VAMOS CONTAR!!!</button>
+        </div>
+
+        <!-- CARD 2: TABUADA (Corrigido de div2 para div) -->
+        <div class="card">
+            <div class="form-group">
+                <label for="tabuada">Insira a tabuada:</label>
+                <input type="number" name="tabuada" id="tabuada">
+            </div>
+            <button type="button" name="calcular" id="calcular" class="btn">TABUADA</button>
+        </div>
+    </main>
+
+    <!-- ÁREA DE RESULTADO -->
+    <div class="div3" id="contador">O resultado aparecerá aqui...</div>
+
+    <script>
+        // O JavaScript permanece exatamente igual ao seu, pois a lógica já estava correta!
+        const numero_inicial = document.getElementById("inicio");
+        const numero_final = document.getElementById("fim");
+        const numero_do_passo = document.getElementById("passo");
+        const vamos_contar = document.getElementById("contando");
+        const div_res = document.getElementById("contador");
+        const numero_da_tabuada = document.getElementById("tabuada");
+        const botao_calcular = document.getElementById("calcular");
+
+        vamos_contar.addEventListener('click', function(){
+            const inicio = Number(numero_inicial.value);
+            let passo = Number(numero_do_passo.value);
+            const final = Number(numero_final.value);
+
+            let resultado = 'Contando... <br><br>';
             
-        </section>
-        <script>
+            if (numero_inicial.value.length == 0 || numero_final.value.length == 0) {
+                div_res.innerHTML = `DIGITE UM VALOR VÁLIDO!!!`;
+                return;
+            }
+            
+            if (passo <= 0){
+                passo = 1;
+            }
 
+            let conta = inicio;
 
-            // MAPEAMENTO DE TODOS OS ELEMENTOS (Executa ao carregar a página)
+            const cronometro = setInterval(function(){
+                resultado += ` ${conta} `;
+                div_res.innerHTML = resultado;
 
-            const numero_inicial = document.getElementById("inicio");
-            const numero_final = document.getElementById("fim");
-            const numero_do_passo = document.getElementById("passo");
-            const vamos_contar = document.getElementById("contando");
-            const div_res = document.getElementById("contador");
-
-            // Elementos da Tabuada
-
-            const numero_da_tabuada = document.getElementById("tabuada");
-            const botao_calcular = document.getElementById("calcular");
-
-            // EVENTO: BOTÃO VAMOS CONTAR
-
-            vamos_contar.addEventListener('click', function(){
-                const inicio = Number(numero_inicial.value);
-                let passo = Number(numero_do_passo.value);
-                const final = Number(numero_final.value);
-    
-                let resultado = 'Contando... <br><br>';
-                
-                if (numero_inicial.value.length == 0 || numero_final.value.length == 0) {
-                    div_res.innerHTML = `DIGITE UM VALOR VALIDO!!!`;
-                    return;
-                }
-                
-                if (passo <= 0){
-                    passo = 1;
-                }
-
-                let conta = inicio;
-
-                const cronometro = setInterval(function(){
-                    resultado += ` ${conta} `;
-                    div_res.innerHTML = resultado;
-
-                    // Contagem Crescente
-                    if (inicio < final){
-                        conta += passo;
-                        if (conta > final){
-                            clearInterval(cronometro);
-                            div_res.innerHTML += ' 🏁';
-                        }
-                    }
-
-                    // Contagem Decrescente
-                    if (inicio > final){
-                        conta -= passo;
-                        if (conta < final){
-                            clearInterval(cronometro);
-                            div_res.innerHTML += ' 🏁';
-                        }
-                    }
-                }, 1000);
-            });
-
-            // EVENTO: BOTÃO TABUADA (Totalmente independente)
-
-            botao_calcular.addEventListener('click', function() {
-                const tabuada = Number(numero_da_tabuada.value);
-    
-                // Se o campo estiver vazio, avisa o usuário
-                if (numero_da_tabuada.value.length == 0 || tabuada > 10 ) {
-                    div_res.innerHTML = "Por favor, insira um número para calcular a tabuada!";
-                    return;
-                }
-
-                let resultado_tabuada = `Tabuada do ${tabuada}:<br><br>`;
-
-                // Gera a tabuada de 1 a 10
-                for (let i = 1; i <= 10; i++) {
-                    resultado_tabuada += `${tabuada} x ${i} = <strong>${tabuada * i}</strong><br>`;
-                }
-
-                // Alimenta a div de resultado diretamente
-                div_res.innerHTML = resultado_tabuada;
-            });
-                // VERSÃO UTILIZANDO LAÇO FOR MAS SEM O TEMPORIZADOR
-                /*
-                if ( inicio < final ) {
-                    for ( let conta = inicio; conta <= final; conta += passo ) {
-                        setTimeout(() => {}, 2000 );
-                        resultado += ` ${conta} `;
-                    }
-                }else {
-                    for ( let conta = inicio; conta >= final; conta -= passo ) {
-                        resultado += ` ${conta} `;
+                if (inicio < final){
+                    conta += passo;
+                    if (conta > final){
+                        clearInterval(cronometro);
+                        div_res.innerHTML += ' 🏁';
                     }
                 }
-                div_res.innerHTML = resultado;*/
 
-        </script>
+                if (inicio > final){
+                    conta -= passo;
+                    if (conta < final){
+                        clearInterval(cronometro);
+                        div_res.innerHTML += ' 🏁';
+                    }
+                }
+            }, 1000);
+        });
 
-    </body>
+        botao_calcular.addEventListener('click', function() {
+            const tabuada = Number(numero_da_tabuada.value);
+
+            if (numero_da_tabuada.value.length == 0 || tabuada > 10 ) {
+                div_res.innerHTML = "Por favor, insira um número para calcular a tabuada (máx. 10)!";
+                return;
+            }
+
+            let resultado_tabuada = `Tabuada do ${tabuada}:<br><br>`;
+
+            for (let i = 1; i <= 10; i++) {
+                resultado_tabuada += `${tabuada} x ${i} = <strong>${tabuada * i}</strong><br>`;
+            }
+
+            div_res.innerHTML = resultado_tabuada;
+        });
+    </script>
+</body>
 </html>
