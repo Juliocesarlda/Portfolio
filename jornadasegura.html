@@ -511,6 +511,15 @@
     </div>
 
 <script>
+   /* // Verifica se o jogo já foi concluído anteriormente neste dispositivo
+    if (localStorage.getItem('jornadaConcluida') === 'true') {
+        document.body.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px;">
+                <h1 style="color:var(--blue); font-family: 'Cinzel';">JORNADA DA SEGURANÇA</h1>
+                <p>Você já participou desta jornada neste dispositivo.</p>
+                <p style="color:rgba(255,255,255,0.5);">Obrigado pela sua contribuição com a segurança!</p>
+            </div>`;
+    }*/
     let userData = { nome: "", re: "", turno: "" };
     let step = 0;
     let score = 0;
@@ -526,7 +535,7 @@
         q: "Você encontra óleo no chão da fábrica. Qual a ação correta?",
         nr: "NR-01",
         tema: "Organização",
-        img: "2_manchadeoleonochao.png",
+        img: "1_manchadeoleonochao.png",
         choices: [
             { text: "Ignorar", feedback: "Negligência grave. Óleo no piso é uma das principais causas de queda e afastamento.", trait: "Negligente", pts: 0 },
             { text: "Sinalizar e reportar", feedback: "Correto! Sinalizar protege os colegas enquanto o problema é resolvido adequadamente.", trait: "Cauteloso", pts: 100 },
@@ -537,7 +546,7 @@
         q: "Qual EPI protege contra ruídos excessivos?",
         nr: "NR-06",
         tema: "EPI",
-        img: "4_protecaoauricular.png",
+        img: "2_barulhoaltoqualepiusar.jpg",
         choices: [
             { text: "Capacete", feedback: "O capacete protege o crânio, não os ouvidos.", trait: "Negligente", pts: 0 },
             { text: "Protetor auricular", feedback: "Correto! O protetor auricular é o EPI específico para proteção auditiva.", trait: "Cauteloso", pts: 100 },
@@ -548,7 +557,7 @@
         q: "As faixas amarelas no piso servem para:",
         nr: "NR-26",
         tema: "Sinalização",
-        img: "",
+        img: "3_faixasamarelasnopiso.png",
         choices: [
             { text: "Circulação segura", feedback: "Correto! As faixas amarelas delimitam rotas seguras de circulação de pedestres.", trait: "Cauteloso", pts: 100 },
             { text: "Estética", feedback: "Incorreto. Toda sinalização de piso tem função de segurança.", trait: "Negligente", pts: 0 },
@@ -559,7 +568,7 @@
         q: "Antes de operar uma máquina nova, você deve:",
         nr: "NR-12",
         tema: "Máquinas",
-        img: "5_sensordeseguranca.png",
+        img: "4_antesdeoperaramaquinanova.png",
         choices: [
             { text: "Tentar sozinho", feedback: "Operar sem treinamento é uma das principais causas de acidentes graves.", trait: "Negligente", pts: 0 },
             { text: "Ler o manual e treinar", feedback: "Correto! Treinamento e leitura do manual garantem operação segura.", trait: "Cauteloso", pts: 100 },
@@ -570,7 +579,7 @@
         q: "Viu um colega sem óculos de proteção? O que fazer?",
         nr: "NR-06",
         tema: "EPI",
-        img: "",
+        img: "5_semoculosdeprotecao.png",
         choices: [
             { text: "Ficar em silêncio", feedback: "O silêncio é cumplicidade. Acidentes oculares são irreversíveis.", trait: "Negligente", pts: 0 },
             { text: "Alertar o colega", feedback: "Correto! Alertar o colega é uma atitude de respeito e cuidado com a equipe.", trait: "Cauteloso", pts: 100 },
@@ -1088,7 +1097,7 @@
         const scoreDisp = document.getElementById("m-score");
         const livesDisp = document.getElementById("m-lives");
 
-        let mScore = 0; let mLives = 3;
+        let mScore = 0; let mLives = 1;
         let bx = canvas.width / 2; let by = canvas.height - 30;
         let bdx = 3; let bdy = -3;
         let pX = (canvas.width - 75) / 2;
@@ -1179,6 +1188,8 @@
             alert("Por favor, preencha todos os campos para registrar seu resultado!");
             return;
         }
+
+        //localStorage.setItem('jornadaConcluida', 'true');
 
         userData.nome = nome;
         userData.re = re;
@@ -1327,7 +1338,7 @@
                     </tbody>
                 </table>
 
-                <button onclick="location.reload()" class="choice-btn" style="text-align:center; margin-top: 35px; border-color: var(--blue);">↺ JOGAR NOVAMENTE</button>
+                <button onclick="window.close()" class="choice-btn" style="text-align:center; margin-top: 35px; border-color: var(--red);">✖ FINALIZAR JOGO</button>
             </div>
         `;
     }
