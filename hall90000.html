@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>HAL 9000 - Painel Administrativo</title>
+    <style>
+        :root {
+            --hal-red: #ff0000;
+            --hal-dark: #050505;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        body {
+            background: var(--hal-dark);
+            color: #0f0;
+            font-family: var(--font-mono);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Scanlines */
+        body::before {
+            content: " ";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #panel {
+            width: 800px;
+            padding: 30px;
+            border: 2px solid #333;
+            background: rgba(10, 10, 10, 0.95);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+            text-align: center;
+            z-index: 20;
+        }
+
+        .hal-eye {
+            width: 120px; height: 120px;
+            background: #440000;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 10px solid #222;
+            box-shadow: inset 0 0 50px #ff0000, 0 0 20px #ff0000;
+            animation: pulse 2s infinite alternate;
+        }
+
+        @keyframes pulse { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.05); } }
+
+        .console { 
+            text-align: left; 
+            height: 150px; 
+            overflow-y: auto; 
+            border: 1px solid #222; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            background: #000;
+            font-size: 14px;
+        }
+
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        button {
+            background: transparent;
+            color: #f00;
+            border: 1px solid #f00;
+            padding: 12px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+        }
+
+        button:hover { background: #f00; color: #fff; }
+
+        #timer { font-size: 80px; color: var(--hal-red); display: none; margin: 20px 0; }
+        input { background: #111; border: 1px solid #444; color: #0f0; padding: 10px; width: 200px; }
+    </style>
+</head>
+<body>
+
+<div id="panel">
+    <div class="hal-eye"></div>
+    <div id="console" class="console"></div>
+    
+    <div id="login-area">
+        <input type="password" id="pass" placeholder="SENHA DE ACESSO">
+        <button onclick="checkLogin()">AUTENTICAR</button>
+    </div>
+
+    <div id="controls" class="controls" style="display:none;">
+        <button onclick="action('Reset Ranking')">Reset Ranking</button>
+        <button onclick="action('Reset Google Sheets')">Reset Sheets</button>
+        <button onclick="action('Export CSV')">Export CSV</button>
+        <button onclick="action('Backup Ranking')">Backup Ranking</button>
+        <button onclick="startDestruction()" style="grid-column: span 2; border-color: #fff; color: #fff;">REINICIAR SISTEMA (AUTODESTRUIÇÃO)</button>
+    </div>
+
+    <div id="timer">10</div>
+</div>
+
+<script>
+    const consoleDiv = document.getElementById('console');
+    
+    function log(msg) {
+        consoleDiv.innerHTML += "> " + msg + "<br>";
+        consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    async function typeWriter(text) {
+        for (let char of text) {
+            consoleDiv.innerHTML += char;
+            await new Promise(r => setTimeout(r, 40));
+        }
+        consoleDiv.innerHTML += "<br>";
+    }
+
+    window.onload = async () => {
+        // Som fictício (bloqueado por policy do navegador até interação)
+        log("SISTEMA INICIALIZANDO...");
+        await typeWriter("CORE: 100% | MEMORY: CHECKED");
+        await typeWriter("DADOS DE USUÁRIOS CARREGADOS");
+        log("AGUARDANDO AUTENTICAÇÃO ADMINISTRATIVA...");
+    };
+
+    function checkLogin() {
+        if(document.getElementById('pass').value === "2001") {
+            document.getElementById('login-area').style.display = 'none';
+            document.getElementById('controls').style.display = 'grid';
+            log("ACESSO CONCEDIDO: BEM-VINDO, ADMINISTRADOR.");
+            log("ESTADO ATUAL: 1042 JOGADORES CADASTRADOS.");
+        } else {
+            log("ERRO: ACESSO NEGADO.");
+        }
+    }
+
+    function action(act) { 
+        log("EXECUTANDO ROTINA: " + act + "..."); 
+        // Aqui você integraria o fetch para o GAS
+    }
+
+    function startDestruction() {
+        if(!confirm("TEM CERTEZA? ISTO IRÁ APAGAR O SISTEMA.")) return;
+        
+        let count = 10;
+        document.getElementById('controls').style.display = 'none';
+        const timer = document.getElementById('timer');
+        timer.style.display = 'block';
+        log("AVISO: SEQUÊNCIA DE AUTODESTRUIÇÃO INICIADA.");
+        
+        let interval = setInterval(() => {
+            count--;
+            timer.innerText = count;
+            if(count <= 0) {
+                clearInterval(interval);
+                document.body.innerHTML = "<h1 style='color:red; font-size: 50px;'>SYSTEM WIPED.</h1>";
+            }
+        }, 1000);
+    }
+</script>
+</body>
+</html>
