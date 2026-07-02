@@ -206,12 +206,16 @@ document.getElementById('btn-sair').onclick = () => {
 // ===== LOGIN/APP =====
 function entrarApp(nome){
   usuarioAtual = nome;
+  // Força a leitura do que está salvo no localStorage antes de exibir
+  feed = JSON.parse(localStorage.getItem(CHAVE_FEED)) || []; 
+  
   document.getElementById('usuario-logado').innerText = `Olá, ${nome}`;
   document.getElementById('nome-perfil').innerText = nome;
   document.getElementById('tela-login').classList.add('hidden');
   document.getElementById('tela-app').classList.remove('hidden');
+  
   adicionarOnline(nome);
-  renderFeed();
+  renderFeed(); // Agora renderiza com os dados atualizados
   renderAvisos();
   renderOnline();
 }
