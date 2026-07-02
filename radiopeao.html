@@ -1,0 +1,315 @@
+'<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RADIO PEÃO - A rede de quem monta o que imprime</title>
+<style>
+:root{
+  --azul-orkut: #3E5B92;
+  --azul-claro: #EFF2F7;
+  --borda: #D4D4D4;
+  --texto: #333;
+  --amarelo: #FFF2A8;
+  --verde: #5CB85C;
+}
+
+*{ box-sizing: border-box; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; }
+body{ margin: 0; background: var(--azul-claro); color: var(--texto); font-size: 17px; }
+.hidden{ display: none !important; }
+.container{ max-width: 1200px; margin: 0 auto; padding: 10px; }
+
+button{ cursor: pointer; border: 0; border-radius: 6px; font-weight: bold; }
+input, textarea{ font-size: 16px; border: 1px solid var(--borda); border-radius: 6px; padding: 10px; width: 100%; }
+
+/* TELA LOGIN */
+#tela-login{ display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.box-orkut{
+  background: white; border: 1px solid var(--borda); border-radius: 10px;
+  padding: 30px; max-width: 420px; width: 95%;
+  text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.box-orkut h1{ color: var(--azul-orkut); margin: 0 0 5px 0; font-size: 42px; }
+.slogan{ margin: 0 0 20px 0; color: #666; }
+.box-orkut label{ display: block; text-align: left; font-weight: bold; margin-bottom: 5px; }
+.box-orkut button{ width: 100%; padding: 14px; font-size: 18px; background: var(--azul-orkut); color: white; margin-top: 10px; }
+.box-orkut button:hover{ background: #2c426a; }
+small{ color: #777; }
+
+/* HEADER */
+header{
+  background: var(--azul-orkut); color: white;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 15px; border-radius: 8px; position: sticky; top: 10px; z-index: 10;
+}
+header h2{ margin: 0; font-size: 22px; }
+#usuario-logado{ font-weight: bold; }
+.btn-sair{ padding: 8px 12px; font-size: 14px; background: white; color: var(--azul-orkut); }
+
+/* GRID ORKUT */
+.grid-orkut{
+  display: grid; grid-template-columns: 260px 1fr 300px; gap: 15px; margin-top: 15px;
+}
+.card{
+  background: white; border: 1px solid var(--borda);
+  border-radius: 8px; padding: 15px; margin-bottom: 15px;
+}
+.card h3{ margin: 0 0 10px 0; color: var(--azul-orkut); font-size: 18px; }
+.card img.avatar{ width: 100%; border-radius: 8px; border: 3px solid var(--azul-claro); }
+
+/* COLUNA CENTRO - POSTAR */
+.postar-box textarea{ min-height: 80px; resize: vertical; margin-bottom: 10px; }
+.postar-acoes{ display: flex; gap: 10px; align-items: center; }
+.btn-foto{ background: var(--verde); color: white; padding: 12px 16px; font-size: 16px; }
+.btn-postar{ background: var(--azul-orkut); color: white; padding: 12px 20px; font-size: 16px; flex-grow: 1; }
+#preview-foto{ max-width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+
+/* FEED */
+.post{
+  background: white; border-left: 5px solid var(--azul-orkut);
+}
+.post .topo{ display: flex; justify-content: space-between; margin-bottom: 8px; }
+.post .autor{ font-weight: bold; color: var(--azul-orkut); }
+.post .hora{ font-size: 13px; color: #777; }
+.post img.feed-img{ width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid var(--borda); }
+.vazio{ text-align: center; color: #777; padding: 20px; }
+
+/* COLUNA DIREITA */
+.btn-chat{
+  width: 100%; padding: 14px; font-size: 18px;
+  background: var(--verde); color: white; text-decoration: none;
+  display: block; text-align: center; border-radius: 6px;
+}
+.btn-chat:hover{ background: #4cae4c; }
+.aviso-item{ background: var(--amarelo); padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 15px; }
+
+/* LISTA ONLINE */
+#lista-online{ list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
+#lista-online li{ padding: 4px 0; border-bottom: 1px dashed var(--borda); }
+
+/* MOBILE */
+@media (max-width: 980px){
+  .grid-orkut{ grid-template-columns: 1fr; }
+  .coluna-esq{ order: 2; }
+  .coluna-centro{ order: 1; }
+  .coluna-dir{ order: 3; }
+  header{ position: static; }
+}
+</style>
+</head>
+<body>
+
+<!-- TELA 1: LOGIN FAKE ORKUT -->
+<div id="tela-login">
+  <div class="box-orkut">
+    <h1>📻 RADIO PEÃO</h1>
+    <p class="slogan">A rede de quem monta o que imprime</p>
+    
+    <label for="apelido">Seu Apelido de Fábrica:</label>
+    <input type="text" id="apelido" placeholder="Ex: Peão da Preparação de Serviços" maxlength="25">
+    <button id="btn-entrar">ENTRAR NA RÁDIO PEÃO</button>
+    
+    <small>Sem senha. Sem cadastro. Só chegar e falar.</small>
+  </div>
+</div>
+
+<!-- TELA 2: APP -->
+<div id="tela-app" class="container hidden">
+  <header>
+    <h2>📻 RADIO PEÃO</h2>
+    <div>
+      <span id="usuario-logado"></span>
+      <button id="btn-sair" class="btn-sair">Sair</button>
+    </div>
+  </header>
+
+  <main class="grid-orkut">
+    <!-- ESQUERDA: PERFIL -->
+    <aside class="coluna-esq">
+      <div class="card">
+        <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/921/921347.png" alt="Avatar Peão">
+        <h3 id="nome-perfil">Peão</h3>
+        <hr style="margin: 10px 0;">
+        <p><b>🟢 ONLINE AGORA</b></p>
+        <ul id="lista-online"></ul>
+      </div>
+    </aside>
+
+    <!-- CENTRO: MURAL -->
+    <section class="coluna-centro">
+      <div class="card postar-box">
+        <textarea id="texto-post" placeholder="Deixa um recado pro turno..."></textarea>
+        <img id="preview-foto" alt="Preview">
+        <div class="postar-acoes">
+          <label class="btn-foto" for="input-foto">📷 Foto</label>
+          <input type="file" id="input-foto" accept="image/*" style="display:none;">
+          <button id="btn-postar" class="btn-postar">Postar no Mural</button>
+        </div>
+      </div>
+
+      <div id="feed-mural"></div>
+    </section>
+
+    <!-- DIREITA: CHAT + AVISOS -->
+    <aside class="coluna-dir">
+      <div class="card">
+        <h3>💬 Bate-Papo Geral</h3>
+        <p style="font-size:14px; margin-top:0;">Sala com emoji, cor e apelido</p>
+        <a id="link-chat" class="btn-chat" href="https://juliocesarlda.github.io/chat-firebase/index.html" target="_blank">ABRIR O CHAT</a>
+      </div>
+      <div class="card">
+        <h3>⚠️ Avisos do Turno</h3>
+        <div id="lista-avisos"></div>
+        <button id="btn-aviso" style="width:100%; padding:10px; background:var(--azul-orkut); color:white; margin-top:5px;">+ Novo Aviso</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+// ===== CONFIG =====
+const CHAVE_USER = 'radiopeao_user';
+const CHAVE_FEED = 'radiopeao_feed';
+const CHAVE_AVISOS = 'radiopeao_avisos';
+const CHAVE_ONLINE = 'radiopeao_online';
+const LINK_CHAT_FIREBASE = 'https://juliocesarlda.github.io/chat-firebase/index.html';
+
+// ===== ESTADO =====
+let usuarioAtual = localStorage.getItem(CHAVE_USER);
+let feed = JSON.parse(localStorage.getItem(CHAVE_FEED)) || [];
+let avisos = JSON.parse(localStorage.getItem(CHAVE_AVISOS)) || [
+  'Churrasco ...',
+  'Cerveja ...'
+];
+let fotoBase64 = null;
+
+// ===== INICIO =====
+document.getElementById('link-chat').href = LINK_CHAT_FIREBASE;
+
+if(usuarioAtual){
+  entrarApp(usuarioAtual);
+}
+
+document.getElementById('btn-entrar').onclick = () => {
+  const apelido = document.getElementById('apelido').value.trim();
+  if(apelido.length < 3){ return alert('Apelido precisa ter 3 letras no mínimo!'); }
+  localStorage.setItem(CHAVE_USER, apelido);
+  entrarApp(apelido);
+}
+
+document.getElementById('btn-sair').onclick = () => {
+  removerOnline(usuarioAtual);
+  localStorage.removeItem(CHAVE_USER);
+  location.reload();
+}
+
+// ===== LOGIN/APP =====
+function entrarApp(nome){
+  usuarioAtual = nome;
+  document.getElementById('usuario-logado').innerText = `Olá, ${nome}`;
+  document.getElementById('nome-perfil').innerText = nome;
+  document.getElementById('tela-login').classList.add('hidden');
+  document.getElementById('tela-app').classList.remove('hidden');
+  adicionarOnline(nome);
+  renderFeed();
+  renderAvisos();
+  renderOnline();
+}
+
+// ===== FOTO =====
+document.getElementById('input-foto').onchange = (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    fotoBase64 = ev.target.result;
+    const preview = document.getElementById('preview-foto');
+    preview.src = fotoBase64;
+    preview.style.display = 'block';
+  }
+  reader.readAsDataURL(file); // vira base64 pra salvar no localStorage
+}
+
+// ===== POSTAR =====
+document.getElementById('btn-postar').onclick = () => {
+  const texto = document.getElementById('texto-post').value.trim();
+  if(!texto && !fotoBase64){ return alert('Escreve algo ou manda uma foto!'); }
+
+  const novoPost = {
+    id: Date.now(),
+    autor: usuarioAtual,
+    texto: texto,
+    foto: fotoBase64,
+    hora: new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
+  };
+
+  feed.unshift(novoPost);
+  localStorage.setItem(CHAVE_FEED, JSON.stringify(feed));
+  
+  // Limpa campos
+  document.getElementById('texto-post').value = '';
+  document.getElementById('preview-foto').style.display = 'none';
+  document.getElementById('input-foto').value = '';
+  fotoBase64 = null;
+  
+  renderFeed();
+}
+
+function renderFeed(){
+  const div = document.getElementById('feed-mural');
+  if(feed.length === 0){
+    div.innerHTML = `<div class="card vazio">Seja o primeiro a postar no rádio 📻</div>`;
+    return;
+  }
+  div.innerHTML = feed.map(p => `
+    <div class="card post">
+      <div class="topo">
+        <span class="autor">${p.autor}</span>
+        <span class="hora">${p.hora}</span>
+      </div>
+      ${p.texto ? `<p>${p.texto}</p>` : ''}
+      ${p.foto ? `<img class="feed-img" src="${p.foto}" alt="Foto do post">` : ''}
+    </div>
+  `).join('');
+}
+
+// ===== AVISOS =====
+function renderAvisos(){
+  document.getElementById('lista-avisos').innerHTML = avisos.map(a => 
+    `<div class="aviso-item">⚠️ ${a}</div>`
+  ).join('');
+}
+
+document.getElementById('btn-aviso').onclick = () => {
+  const novo = prompt('Digite o novo aviso do turno:');
+  if(novo && novo.trim()){
+    avisos.unshift(novo.trim());
+    localStorage.setItem(CHAVE_AVISOS, JSON.stringify(avisos));
+    renderAvisos();
+  }
+}
+
+// ===== ONLINE - SIMULADO =====
+function adicionarOnline(nome){
+  let online = JSON.parse(localStorage.getItem(CHAVE_ONLINE) || '[]');
+  if(!online.includes(nome)) online.push(nome);
+  localStorage.setItem(CHAVE_ONLINE, JSON.stringify(online));
+}
+
+function removerOnline(nome){
+  let online = JSON.parse(localStorage.getItem(CHAVE_ONLINE) || '[]');
+  online = online.filter(n => n !== nome);
+  localStorage.setItem(CHAVE_ONLINE, JSON.stringify(online));
+}
+
+function renderOnline(){
+  const online = JSON.parse(localStorage.getItem(CHAVE_ONLINE) || '[]');
+  document.getElementById('lista-online').innerHTML = online.map(n => 
+    `<li>🟢 ${n}</li>`
+  ).join('');
+  // Atualiza a cada 10s caso outro PC entre
+  setInterval(renderOnline, 10000);
+}
+</script>
+</body>
+</html>
