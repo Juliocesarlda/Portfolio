@@ -1262,6 +1262,10 @@
     endGame();
 }
 
+    function jogarNovamente() {
+        window.location.reload();
+    }
+
     function saveScore(name, re, shift, finalScore) {
         let rankings = JSON.parse(localStorage.getItem('amcorRankings')) || [];
         rankings.push({ name, re, shift, score: finalScore });
@@ -1348,7 +1352,8 @@
                     </tbody>
                 </table>
 
-                <button onclick="window.close()" class="choice-btn" style="text-align:center; margin-top: 35px; border-color: var(--red);">✖ FINALIZAR JOGO</button>
+                <button onclick="jogarNovamente()" class="choice-btn" style="text-align:center; margin-top: 35px; border-color: var(--blue);">🔄 JOGAR NOVAMENTE</button>
+
             </div>
         `;
     }
