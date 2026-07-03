@@ -19,6 +19,21 @@
   --verde: #5CB85C;
 }
 
+/* Isso força o menu a flutuar sobre o feed */
+[id^="menu-"] {
+  display: none; 
+  position: absolute; 
+  background: white !important; 
+  border: 1px solid #ccc !important; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; 
+  padding: 8px !important; 
+  z-index: 999 !important; 
+  border-radius: 20px !important;
+  margin-top: 5px;
+}
+/* O container que segura o menu precisa ter position: relative */
+.area-reacoes { position: relative; }
+
 *{ box-sizing: border-box; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; }
 body{ margin: 0; background: var(--azul-claro); color: var(--texto); font-size: 17px; }
 .hidden{ display: none !important; }
@@ -300,7 +315,7 @@ function entrarApp(nome){
   });
 
   db.ref('feed').on('value', (s) => {
-    feed = s.val() ? Object.values(s.val()).reverse() : [];
+    feed = s.val() ? Object.entries(s.val()).map(([key, value]) => ({ ...value, key })).reverse() : [];
     renderFeed();
   });
   
@@ -336,11 +351,20 @@ document.getElementById('btn-postar').onclick = () => {
 }
 
 function reagirPost(postId, emoji) {
-  const userId = usuarioAtual.replace(/\s+/g, '');
-  // Salva a reação do usuário no Firebase, permitindo apenas uma reação por pessoa por post
-  db.ref(`feed/${postId}/reacoes/${userId}`).set(emoji);
-  // Oculta o menu de emojis após o clique
-  document.getElementById(`menu-${postId}`).style.display = 'none';
+  // Garante que o ID do usuário seja um texto limpo
+  const userId = usuarioAtual.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  
+  // Registra a reação no caminho correto do Firebase
+  db.ref(`feed/${postId}/reacoes/${userId}`).set(emoji)
+    .then(() => {
+      // Fecha o menu após sucesso
+      const menu = document.getElementById(`menu-${postId}`);
+      if(menu) menu.style.display = 'none';
+      console.log('Reação registrada com sucesso!');
+    })
+    .catch((error) => {
+      console.error('Erro ao reagir:', error);
+    });
 }
 
 function alternarMenuReacoes(postId) {
@@ -360,7 +384,8 @@ function renderFeed(){
     return;
   }
 
-  div.innerHTML = feed.map(p => {
+  // Filtra posts que possuem autor e texto, ignorando dados corrompidos
+  div.innerHTML = feed.filter(p => p.autor && p.texto).map(p => {
     const reacoes = p.reacoes || {};
     const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
     Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
@@ -372,17 +397,17 @@ function renderFeed(){
       ${p.foto ? `<img class="feed-img" src="${p.foto}">` : ''}
       
       <div style="margin-top:10px; position: relative;">
-        <button onclick="alternarMenuReacoes('${p.key}')" style="background:var(--azul-orkut); color:white; padding:5px 10px; border:0; border-radius:4px;">
+        <button onclick="alternarMenuReacoes('${p.key}')" style="background:var(--azul-orkut); color:white; padding:5px 10px; border:0; border-radius:4px; cursor:pointer;">
           Reagir
         </button>
         
-        <div id="menu-${p.key}" style="display:none; position:absolute; background:white; border:1px solid #ccc; padding:5px; z-index:100; border-radius:5px;">
+        <div id="menu-${p.key}" style="display:none; position:absolute; background:white; border:1px solid #ccc; padding:8px; z-index:999; border-radius:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-top:5px;">
           ${['💩', '🤮', '🦇', '👍', '👎'].map(e => `
-            <button onclick="reagirPost('${p.key}', '${e}')" style="font-size:20px; border:none; background:none; cursor:pointer;">${e}</button>
+            <button onclick="reagirPost('${p.key}', '${e}')" style="font-size:20px; border:none; background:none; cursor:pointer; padding: 2px 5px;">${e}</button>
           `).join('')}
         </div>
 
-        <div style="margin-top:5px; font-size: 14px;">
+        <div style="margin-top:10px; font-size: 14px;">
           ${Object.keys(contagem).map(e => `<span>${e} ${contagem[e]}</span>`).join(' ')}
         </div>
       </div>
