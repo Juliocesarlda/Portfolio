@@ -176,11 +176,8 @@ const LINK_CHAT_FIREBASE = 'https://juliocesarlda.github.io/chat-firebase/index.
 
 // ===== ESTADO =====
 let usuarioAtual = localStorage.getItem(CHAVE_USER);
-let feed = JSON.parse(localStorage.getItem(CHAVE_FEED)) || [];
-let avisos = JSON.parse(localStorage.getItem(CHAVE_AVISOS)) || [
-  'Churrasco ...',
-  'Cerveja ...'
-];
+let feed = [];
+let avisos = [];
 let fotoBase64 = null;
 
 // ===== INICIO =====
@@ -206,16 +203,40 @@ document.getElementById('btn-sair').onclick = () => {
 // ===== LOGIN/APP =====
 function entrarApp(nome){
   usuarioAtual = nome;
-  // Força a leitura do que está salvo no localStorage antes de exibir
-  feed = JSON.parse(localStorage.getItem(CHAVE_FEED)) || []; 
   
+  // Dentro da função entrarApp(nome)
+firebase.database().ref('avisos').on('value', (snapshot) => {
+  const dados = snapshot.val();
+  // Se houver dados, converte para array, senão, mantém lista vazia
+  avisos = dados ? Object.values(dados) : [];
+  renderAvisos();
+});
+
+  // 1. Configura o ouvinte em tempo real para o Feed no Firebase
+  // Isso garante que, quando o João ou o Pedro postarem, todos vejam automaticamente
+  firebase.database().ref('feed').on('value', (snapshot) => {
+    const dados = snapshot.val();
+    
+    // Converte os dados do Firebase para o formato que sua função renderFeed espera
+    if (dados) {
+      // Object.values transforma os dados do Firebase em um array
+      // .reverse() coloca os posts mais novos no topo
+      feed = Object.values(dados).reverse(); 
+    } else {
+      feed = [];
+    }
+    
+    renderFeed(); // Atualiza a tela de todos os usuários conectados
+  });
+  
+  // 2. Atualiza a interface do usuário
   document.getElementById('usuario-logado').innerText = `Olá, ${nome}`;
   document.getElementById('nome-perfil').innerText = nome;
   document.getElementById('tela-login').classList.add('hidden');
   document.getElementById('tela-app').classList.remove('hidden');
   
+  // 3. Mantém suas outras funções de apoio
   adicionarOnline(nome);
-  renderFeed(); // Agora renderiza com os dados atualizados
   renderAvisos();
   renderOnline();
 }
@@ -247,8 +268,7 @@ document.getElementById('btn-postar').onclick = () => {
     hora: new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
   };
 
-  feed.unshift(novoPost);
-  localStorage.setItem(CHAVE_FEED, JSON.stringify(feed));
+  firebase.database().ref('feed').push(novoPost);
   
   // Limpa campos
   document.getElementById('texto-post').value = '';
@@ -287,9 +307,8 @@ function renderAvisos(){
 document.getElementById('btn-aviso').onclick = () => {
   const novo = prompt('Digite o novo aviso do turno:');
   if(novo && novo.trim()){
-    avisos.unshift(novo.trim());
-    localStorage.setItem(CHAVE_AVISOS, JSON.stringify(avisos));
-    renderAvisos();
+    // Agora enviamos direto para o banco de dados do Firebase
+    firebase.database().ref('avisos').push(novo.trim());
   }
 }
 
