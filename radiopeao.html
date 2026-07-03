@@ -136,6 +136,20 @@ header h2{ margin: 0; font-size: 22px; }
     </aside>
 
     <section class="coluna-centro">
+
+      <div class="card">
+        <h3>🌡️ Termômetro do Turno</h3>
+        <div style="height: 20px; background: #eee; border-radius: 10px; overflow: hidden;">
+        <div id="barra-clima" style="height: 100%; width: 50%; background: var(--verde); transition: width 0.5s;"></div>
+      </div>
+      <p id="texto-clima" style="font-size: 14px; text-align: center; margin-top: 5px;">Clima: Calmo</p>
+      <div style="display: flex; gap: 5px;">
+        <button onclick="votarClima(1)" style="flex:1; background:var(--verde); color:white;">Tranquilo</button>
+        <button onclick="votarClima(2)" style="flex:1; background:#f0ad4e; color:white;">Correria</button>
+        <button onclick="votarClima(3)" style="flex:1; background:#d9534f; color:white;">Caos!</button>
+      </div>
+      </div>
+
       <div class="card postar-box">
         <textarea id="texto-post" placeholder="Deixa um recado pro turno..."></textarea>
         <img id="preview-foto" alt="Preview">
@@ -163,6 +177,7 @@ header h2{ margin: 0; font-size: 22px; }
 </div>
 
 <script>
+
 // ===== CONFIGURAÇÃO FIREBASE =====
 const firebaseConfig = {
   apiKey: "AizaSyBJQ94Ty6lurovUXe07P9ph8C30-ZdqX2g",
@@ -200,6 +215,38 @@ document.getElementById('btn-sair').onclick = () => {
   localStorage.removeItem(CHAVE_USER);
   location.reload();
 }
+
+// Função para votar
+function votarClima(valor) {
+  // Salva o voto do usuário atual no Firebase
+  db.ref('clima/' + usuarioAtual.replace(/\s+/g, '')).set(valor);
+}
+
+// Ouvinte para atualizar o termômetro em tempo real
+db.ref('clima').on('value', (s) => {
+  const votos = s.val() ? Object.values(s.val()) : [];
+  if (votos.length === 0) return;
+
+  // Calcula a média dos votos
+  const media = votos.reduce((a, b) => a + b, 0) / votos.length;
+  const barra = document.getElementById('barra-clima');
+  const texto = document.getElementById('texto-clima');
+
+  // Ajusta a barra conforme a média (1=33%, 2=66%, 3=100%)
+  const percentual = (media / 3) * 100;
+  barra.style.width = percentual + '%';
+
+  if (media < 1.5) {
+    barra.style.background = 'var(--verde)';
+    texto.innerText = 'Clima: Tranquilo';
+  } else if (media < 2.5) {
+    barra.style.background = '#f0ad4e';
+    texto.innerText = 'Clima: Correria';
+  } else {
+    barra.style.background = '#d9534f';
+    texto.innerText = 'Clima: CAOS TOTAL!';
+  }
+});
 
 // ===== LOGIN/APP =====
 function entrarApp(nome){
