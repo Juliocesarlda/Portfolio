@@ -150,6 +150,19 @@ header h2{ margin: 0; font-size: 22px; }
       </div>
       </div>
 
+      <div class="card" id="card-satisfacao">
+  <h3>📊 Como está seu Nível de Satisfação no trabalho?</h3>
+  <div id="grafico-satisfacao" style="margin: 15px 0;">
+    <!-- O gráfico de barras será injetado aqui -->
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+    <button onclick="votarSatisfacao('Satisfeito')" style="background:#5CB85C; color:white; padding: 8px;">Satisfeito</button>
+    <button onclick="votarSatisfacao('Nao Satisfeito')" style="background:#d9534f; color:white; padding: 8px;">Não Satisfeito</button>
+    <button onclick="votarSatisfacao('Mais ou menos')" style="background:#f0ad4e; color:white; padding: 8px;">Mais ou menos</button>
+    <button onclick="votarSatisfacao('Tanto faz')" style="background:#666; color:white; padding: 8px;">Tanto faz</button>
+  </div>
+</div>
+
       <div class="card postar-box">
         <textarea id="texto-post" placeholder="Deixa um recado pro turno..."></textarea>
         <img id="preview-foto" alt="Preview">
@@ -246,6 +259,34 @@ db.ref('clima').on('value', (s) => {
     barra.style.background = '#d9534f';
     texto.innerText = 'Clima: CAOS TOTAL!';
   }
+});
+
+// Função para registrar o voto do usuário
+function votarSatisfacao(opcao) {
+  // Salva ou atualiza o voto do usuário no Firebase
+  db.ref('satisfacao/' + usuarioAtual.replace(/\s+/g, '')).set(opcao);
+}
+
+// Ouvinte para renderizar o gráfico em tempo real conforme os dados mudam
+db.ref('satisfacao').on('value', (s) => {
+  const todosVotos = s.val() ? Object.values(s.val()) : [];
+  const categorias = ['Satisfeito', 'Nao Satisfeito', 'Mais ou menos', 'Tanto faz'];
+  const contagem = { 'Satisfeito': 0, 'Nao Satisfeito': 0, 'Mais ou menos': 0, 'Tanto faz': 0 };
+
+  // Contagem dos votos
+  todosVotos.forEach(v => { if(contagem.hasOwnProperty(v)) contagem[v]++; });
+  const total = todosVotos.length || 1;
+
+  // Atualização visual do gráfico de barras
+  const div = document.getElementById('grafico-satisfacao');
+  div.innerHTML = categorias.map(cat => `
+    <div style="margin-bottom: 10px;">
+      <div style="font-size: 13px; font-weight: bold; margin-bottom: 2px;">${cat} (${contagem[cat]})</div>
+      <div style="background: #e0e0e0; height: 14px; border-radius: 7px; overflow: hidden;">
+        <div style="width: ${(contagem[cat] / total) * 100}%; background: #3E5B92; height: 100%; transition: width 0.5s;"></div>
+      </div>
+    </div>
+  `).join('');
 });
 
 // ===== LOGIN/APP =====
