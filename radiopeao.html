@@ -384,15 +384,19 @@ function renderFeed(){
     return;
   }
 
-  // Filtra posts que possuem autor e texto, ignorando dados corrompidos
   div.innerHTML = feed.filter(p => p.autor && p.texto).map(p => {
-    const reacoes = p.reacoes || {};
-    const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
-    Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
+  const reacoes = p.reacoes || {};
+  const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
+  Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
 
-    return `
+  // Botão de excluir só aparece se for o autor
+  const btnExcluir = p.autor === usuarioAtual 
+    ? `<button onclick="excluirPost('${p.key}', '${p.autor}')" style="background:#d9534f; color:white; padding:2px 8px; font-size:12px; margin-left:10px;">Excluir</button>` 
+    : '';
+
+  return `
     <div class="card post">
-      <div class="topo"><b>${p.autor}</b><span>${p.hora}</span></div>
+      <div class="topo"><b>${p.autor}</b><span>${p.hora} ${btnExcluir}</span></div>
       <p>${p.texto}</p>
       ${p.foto ? `<img class="feed-img" src="${p.foto}">` : ''}
       
@@ -412,7 +416,20 @@ function renderFeed(){
         </div>
       </div>
     </div>`;
-  }).join('');
+}).join('');
+}
+
+function excluirPost(postId, autorPost) {
+  // Verifica se o usuário logado é o autor do post
+  if (usuarioAtual !== autorPost) {
+    return alert('Você só pode excluir os seus próprios posts!');
+  }
+  
+  if (confirm('Tem certeza que deseja excluir este recado?')) {
+    db.ref('feed/' + postId).remove()
+      .then(() => console.log('Post removido!'))
+      .catch((error) => alert('Erro ao excluir: ' + error.message));
+  }
 }
 
 function renderAvisos(){
