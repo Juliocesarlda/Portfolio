@@ -153,6 +153,7 @@ header h2{ margin: 0; font-size: 22px; }
         <h3 id="nome-perfil">Peão</h3>
         <hr style="margin: 10px 0;">
         <p><b>🟢 ONLINE AGORA</b></p>
+        <p id="contador-online" style="font-size: 12px; color: var(--azul-orkut); font-weight: bold;"></p>
         <ul id="lista-online"></ul>
       </div>
     </aside>
@@ -225,6 +226,27 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+
+// ===== PRESENÇA (PEÕES ONLINE) =====
+const conectadosRef = db.ref('status');
+
+// Monitora a contagem de usuários conectados
+conectadosRef.on('value', (snapshot) => {
+  const contador = document.getElementById('contador-online');
+  if (contador) {
+    contador.innerText = snapshot.numChildren() + ' peões online';
+  }
+});
+
+// Função para registrar o peão quando ele loga
+function definirStatusOnline(nomeUsuario) {
+  const nomeLimpo = nomeUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  const meuStatusRef = db.ref('status/' + nomeLimpo);
+  
+  // Remove o registro ao fechar/atualizar a página
+  meuStatusRef.onDisconnect().remove();
+  meuStatusRef.set('online');
+}
 
 // ===== CONSTANTES E ESTADO =====
 const CHAVE_USER = 'radiopeao_user';
@@ -314,6 +336,9 @@ db.ref('satisfacao').on('value', (s) => {
 // ===== LOGIN/APP =====
 function entrarApp(nome){
   usuarioAtual = nome;
+  
+  // Ativa o status
+  definirStatusOnline(nome);
   
   // Ouvintes Firebase
   db.ref('avisos').on('value', (s) => {
