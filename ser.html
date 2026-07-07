@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RADIO PEÃO - A rede de quem monta o que imprime</title>
+<title>S.E.R. - Sistema de Engajamento e Risco</title>
 
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -122,20 +122,20 @@ header h2{ margin: 0; font-size: 22px; }
 <div id="tela-login">
     <div class="box-orkut">
 
-        <img src="radiopeao.png" alt="Avatar Peão" style="width: 100%;">
+        <img src="serlogointro.png" alt="Avatar Peão" style="width: 100%;">
 
-      <h1>📻 RADIO PEÃO</h1>
-    <p class="slogan">A rede de quem monta o que imprime</p>
-    <label for="apelido">Seu Apelido de Fábrica:</label>
-    <input type="text" id="apelido" placeholder="Ex: Peão da Preparação de Serviços" maxlength="25">
-    <button id="btn-entrar">ENTRAR NA RÁDIO PEÃO</button>
-    <small>Sem senha. Sem cadastro. Só chegar e falar.</small>
+      <h1>S.E.R.<br></h1>
+      <h3>(Sistema de Engajamento e Risco)</h3>
+    <p class="slogan">Conectando quem constrói com segurança</p>
+    <label for="apelido">Seu Nome:</label>
+    <input type="text" id="apelido" maxlength="25">
+    <button id="btn-entrar">ENTRAR NA REDE</button>
   </div>
 </div>
 
 <div id="tela-app" class="container hidden">
   <header>
-    <h2>📻 RADIO PEÃO</h2>
+    <h2>S.E.R. (Sistema de Engajamento e Risco)</h2>
     <div>
       <span id="usuario-logado"></span>
       <button id="btn-sair" class="btn-sair">Sair</button>
@@ -150,7 +150,7 @@ header h2{ margin: 0; font-size: 22px; }
 
         <img class="avatar" src="avatarrp.png" alt="Avatar Peão">
 
-        <h3 id="nome-perfil">Peão</h3>
+        <h3 id="nome-perfil">Colaborador</h3>
         <hr style="margin: 10px 0;">
         <p><b>🟢 ONLINE AGORA</b></p>
         <p id="contador-online" style="font-size: 12px; color: var(--azul-orkut); font-weight: bold;"></p>
@@ -161,7 +161,8 @@ header h2{ margin: 0; font-size: 22px; }
     <section class="coluna-centro">
 
       <div class="card">
-        <h3>🌡️ Termômetro do Turno</h3>
+        <strong>Participe da nossa pesquisa rápida de satisfação e ajude a gente a melhorar o dia a dia.</strong><br><br>
+        <h3>🌡️ Como está o clima no seu setor hoje?</h3>
         <div style="height: 20px; background: #eee; border-radius: 10px; overflow: hidden;">
         <div id="barra-clima" style="height: 100%; width: 50%; background: var(--verde); transition: width 0.5s;"></div>
       </div>
@@ -174,7 +175,7 @@ header h2{ margin: 0; font-size: 22px; }
       </div>
 
       <div class="card" id="card-satisfacao">
-  <h3>📊 Como está seu Nível de Satisfação no trabalho?</h3>
+  <h3>📊 Você sente que a equipe está engajada com a segurança hoje?</h3>
   <div id="grafico-satisfacao" style="margin: 15px 0;">
     <!-- O gráfico de barras será injetado aqui -->
   </div>
@@ -204,9 +205,9 @@ header h2{ margin: 0; font-size: 22px; }
         <a id="link-chat" class="btn-chat" href="#" target="_blank">ABRIR O CHAT</a>
       </div>
       <div class="card">
-        <h3>⚠️ Avisos do Turno</h3>
+        <h3>&#9997; A CIPA não é só sobre regras, é sobre você. Tem alguma sugestão para melhorar o conforto do seu posto? Deixe aqui.</h3>
         <div id="lista-avisos"></div>
-        <button id="btn-aviso" style="width:100%; padding:10px; background:var(--azul-orkut); color:white; margin-top:5px;">+ Novo Aviso</button>
+        <button id="btn-aviso" style="width:100%; padding:10px; background:var(--azul-orkut); color:white; margin-top:5px;">+ Deixe sua sugestão</button>
       </div>
     </aside>
   </main>
@@ -234,7 +235,7 @@ const conectadosRef = db.ref('status');
 conectadosRef.on('value', (snapshot) => {
   const contador = document.getElementById('contador-online');
   if (contador) {
-    contador.innerText = snapshot.numChildren() + ' peões online';
+    contador.innerText = snapshot.numChildren() + ' 👉 online';
   }
 });
 
@@ -416,20 +417,24 @@ function renderFeed(){
     return;
   }
 
-  div.innerHTML = feed.filter(p => p.autor && p.texto).map(p => {
-  const reacoes = p.reacoes || {};
-  const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
-  Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
+  div.innerHTML = ''; // Limpa o container antes de renderizar
+  feed.filter(p => p.autor && p.texto).forEach(p => {
+    const reacoes = p.reacoes || {};
+    const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
+    Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
 
-  // Botão de excluir só aparece se for o autor
-  const btnExcluir = p.autor === usuarioAtual 
-    ? `<button onclick="excluirPost('${p.key}', '${p.autor}')" style="background:#d9534f; color:white; padding:2px 8px; font-size:12px; margin-left:10px;">Excluir</button>` 
-    : '';
+    const btnExcluir = p.autor === usuarioAtual 
+      ? `<button onclick="excluirPost('${p.key}', '${p.autor}')" style="background:#d9534f; color:white; padding:2px 8px; font-size:12px; margin-left:10px;">Excluir</button>` 
+      : '';
 
-  return `
-    <div class="card post">
+    // Cria o card do post de forma segura
+    const postCard = document.createElement('div');
+    postCard.className = 'card post';
+    
+    // Cria o conteúdo interno
+    const conteudo = `
       <div class="topo"><b>${p.autor}</b><span>${p.hora} ${btnExcluir}</span></div>
-      <p>${p.texto}</p>
+      <p id="texto-${p.key}"></p>
       ${p.foto ? `<img class="feed-img" src="${p.foto}">` : ''}
       
       <div style="margin-top:10px; position: relative;">
@@ -446,9 +451,15 @@ function renderFeed(){
         <div style="margin-top:10px; font-size: 14px;">
           ${Object.keys(contagem).map(e => `<span>${e} ${contagem[e]}</span>`).join(' ')}
         </div>
-      </div>
-    </div>`;
-}).join('');
+      </div>`;
+    
+    postCard.innerHTML = conteudo;
+    div.appendChild(postCard);
+
+    // Sanitização: insere o texto via textContent para prevenir XSS
+    const pTexto = document.getElementById(`texto-${p.key}`);
+    if (pTexto) pTexto.textContent = p.texto;
+  });
 }
 
 function excluirPost(postId, autorPost) {
@@ -465,7 +476,7 @@ function excluirPost(postId, autorPost) {
 }
 
 function renderAvisos(){
-  document.getElementById('lista-avisos').innerHTML = avisos.map(a => `<div class="aviso-item">⚠️ ${a}</div>`).join('');
+  document.getElementById('lista-avisos').innerHTML = avisos.map(a => `<div class="aviso-item"> &#9997; ${a}</div>`).join('');
 }
 
 document.getElementById('btn-aviso').onclick = () => {
