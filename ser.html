@@ -375,38 +375,24 @@ function votarSatisfacao(opcao) {
 
 // Ouvinte para renderizar o gráfico em tempo real conforme os dados mudam
 db.ref('satisfacao').on('value', (s) => {
-  const dados = s.val();
-  const todosVotos = dados ? Object.values(dados) : [];
+  const todosVotos = s.val() ? Object.values(s.val()) : [];
   const categorias = ['Satisfeito', 'Nao Satisfeito', 'Mais ou menos', 'Tanto faz'];
-  
-  // Inicializa contagem
   const contagem = { 'Satisfeito': 0, 'Nao Satisfeito': 0, 'Mais ou menos': 0, 'Tanto faz': 0 };
 
-  // Contagem garantindo que strings batam exatamente
-  todosVotos.forEach(v => {
-    if (contagem.hasOwnProperty(v)) {
-      contagem[v]++;
-    }
-  });
+  // Contagem dos votos
+  todosVotos.forEach(v => { if(contagem.hasOwnProperty(v)) contagem[v]++; });
+  const total = todosVotos.length || 1;
 
-  const total = todosVotos.length > 0 ? todosVotos.length : 1;
+  // Atualização visual do gráfico de barras
   const div = document.getElementById('grafico-satisfacao');
-
-  // Renderiza com segurança
-  div.innerHTML = categorias.map(cat => {
-    const percentual = (contagem[cat] / total) * 100;
-    return `
-      <div style="margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold;">
-          <span>${cat}</span>
-          <span>${contagem[cat]} votos</span>
-        </div>
-        <div style="background: #e0e0e0; height: 14px; border-radius: 7px; overflow: hidden; margin-top: 4px;">
-          <div style="width: ${percentual}%; background: #3E5B92; height: 100%; transition: width 0.5s;"></div>
-        </div>
+  div.innerHTML = categorias.map(cat => `
+    <div style="margin-bottom: 10px;">
+      <div style="font-size: 13px; font-weight: bold; margin-bottom: 2px;">${cat} (${contagem[cat]})</div>
+      <div style="background: #e0e0e0; height: 14px; border-radius: 7px; overflow: hidden;">
+        <div style="width: ${(contagem[cat] / total) * 100}%; background: #3E5B92; height: 100%; transition: width 0.5s;"></div>
       </div>
-    `;
-  }).join('');
+    </div>
+  `).join('');
 });
 
 // ===== LOGIN/APP =====
