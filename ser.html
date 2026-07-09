@@ -235,13 +235,19 @@ const auth = firebase.auth();
 // ===== PRESENÇA (PEÕES ONLINE) =====
 const conectadosRef = db.ref('status');
 
-// Monitora a contagem de usuários conectados
-conectadosRef.on('value', (snapshot) => {
-  const contador = document.getElementById('contador-online');
-  if (contador) {
-    contador.innerText = snapshot.numChildren() + ' 👉 online';
-  }
-});
+
+// Função para votar
+function votarClima(valor) {
+  // Salva o voto do usuário atual no Firebase, indexado pelo RE
+  db.ref('clima/' + reAtual).set(valor);
+}
+
+
+// Função para registrar o voto do usuário
+function votarSatisfacao(opcao) {
+  // Salva ou atualiza o voto do usuário no Firebase, indexado pelo RE
+  db.ref('satisfacao/' + reAtual).set(opcao);
+}
 
 // Função para registrar o peão quando ele loga
 function definirStatusOnline(reUsuario) {
@@ -335,11 +341,29 @@ document.getElementById('btn-sair').onclick = () => {
   auth.signOut().finally(() => location.reload());
 }
 
-// Função para votar
-function votarClima(valor) {
-  // Salva o voto do usuário atual no Firebase, indexado pelo RE
-  db.ref('clima/' + reAtual).set(valor);
-}
+// ===== LOGIN/APP =====
+function entrarApp(nome, re){
+  usuarioAtual = nome;
+  reAtual = re;
+  
+  // Ativa o status (indexado pelo RE, que é único por colaborador)
+  definirStatusOnline(re);
+
+  // Salva/atualiza o perfil do colaborador (nome vinculado ao RE)
+  db.ref('usuarios/' + re).set({
+    nome: nome,
+    ultimoAcesso: new Date().toLocaleString('pt-BR')
+  });
+  
+  // Ouvintes Firebase
+
+  // Monitora a contagem de usuários conectados
+conectadosRef.on('value', (snapshot) => {
+  const contador = document.getElementById('contador-online');
+  if (contador) {
+    contador.innerText = snapshot.numChildren() + ' 👉 online';
+  }
+});
 
 // Ouvinte para atualizar o termômetro em tempo real
 db.ref('clima').on('value', (s) => {
@@ -367,11 +391,6 @@ db.ref('clima').on('value', (s) => {
   }
 });
 
-// Função para registrar o voto do usuário
-function votarSatisfacao(opcao) {
-  // Salva ou atualiza o voto do usuário no Firebase, indexado pelo RE
-  db.ref('satisfacao/' + reAtual).set(opcao);
-}
 
 // Ouvinte para renderizar o gráfico em tempo real conforme os dados mudam
 db.ref('satisfacao').on('value', (s) => {
@@ -395,21 +414,7 @@ db.ref('satisfacao').on('value', (s) => {
   `).join('');
 });
 
-// ===== LOGIN/APP =====
-function entrarApp(nome, re){
-  usuarioAtual = nome;
-  reAtual = re;
-  
-  // Ativa o status (indexado pelo RE, que é único por colaborador)
-  definirStatusOnline(re);
 
-  // Salva/atualiza o perfil do colaborador (nome vinculado ao RE)
-  db.ref('usuarios/' + re).set({
-    nome: nome,
-    ultimoAcesso: new Date().toLocaleString('pt-BR')
-  });
-  
-  // Ouvintes Firebase
   db.ref('avisos').on('value', (s) => {
     avisos = s.val() ? Object.values(s.val()) : [];
     renderAvisos();
