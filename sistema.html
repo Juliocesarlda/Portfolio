@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S.E.R. - Sistema de Engajamento e Risco</title>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<style>
+:root{
+  --azul-orkut: #3E5B92;
+  --azul-claro: #EFF2F7;
+  --borda: #D4D4D4;
+  --texto: #333;
+  --amarelo: #FFF2A8;
+  --verde: #5CB85C;
+}
+
+/* Isso força o menu a flutuar sobre o feed */
+[id^="menu-"] {
+  display: none; 
+  position: absolute; 
+  background: white !important; 
+  border: 1px solid #ccc !important; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; 
+  padding: 8px !important; 
+  z-index: 999 !important; 
+  border-radius: 20px !important;
+  margin-top: 5px;
+}
+/* O container que segura o menu precisa ter position: relative */
+.area-reacoes { position: relative; }
+
+*{ box-sizing: border-box; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; }
+body{ margin: 0; background: var(--azul-claro); color: var(--texto); font-size: 17px; }
+.hidden{ display: none !important; }
+.container{ max-width: 1200px; margin: 0 auto; padding: 10px; }
+
+button{ cursor: pointer; border: 0; border-radius: 6px; font-weight: bold; }
+input, textarea{ font-size: 16px; border: 1px solid var(--borda); border-radius: 6px; padding: 10px; width: 100%; }
+
+/* TELA LOGIN */
+#tela-login{ display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.box-orkut{
+  background: white; border: 1px solid var(--borda); border-radius: 10px;
+  padding: 30px; max-width: 420px; width: 95%;
+  text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.box-orkut h1{ color: var(--azul-orkut); margin: 0 0 5px 0; font-size: 42px; }
+.slogan{ margin: 0 0 20px 0; color: #666; }
+.box-orkut label{ display: block; text-align: left; font-weight: bold; margin-bottom: 5px; }
+.box-orkut button{ width: 100%; padding: 14px; font-size: 18px; background: var(--azul-orkut); color: white; margin-top: 10px; }
+.box-orkut button:hover{ background: #2c426a; }
+small{ color: #777; }
+
+/* HEADER */
+header{
+  background: var(--azul-orkut); color: white;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 15px; border-radius: 8px; position: sticky; top: 10px; z-index: 10;
+}
+header h2{ margin: 0; font-size: 22px; }
+#usuario-logado{ font-weight: bold; }
+.btn-sair{ padding: 8px 12px; font-size: 14px; background: white; color: var(--azul-orkut); }
+
+/* GRID ORKUT */
+.grid-orkut{
+  display: grid; grid-template-columns: 260px 1fr 300px; gap: 15px; margin-top: 15px;
+}
+.card{
+  background: white; border: 1px solid var(--borda);
+  border-radius: 8px; padding: 15px; margin-bottom: 15px;
+}
+.card h3{ margin: 0 0 10px 0; color: var(--azul-orkut); font-size: 18px; }
+.card img.avatar{ width: 100%; border-radius: 8px; border: 3px solid var(--azul-claro); }
+
+/* COLUNA CENTRO - POSTAR */
+.postar-box textarea{ min-height: 80px; resize: vertical; margin-bottom: 10px; }
+.postar-acoes{ display: flex; gap: 10px; align-items: center; }
+.btn-foto{ background: var(--verde); color: white; padding: 12px 16px; font-size: 16px; }
+.btn-postar{ background: var(--azul-orkut); color: white; padding: 12px 20px; font-size: 16px; flex-grow: 1; }
+#preview-foto{ max-width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+
+/* FEED */
+.post{
+  background: white; border-left: 5px solid var(--azul-orkut);
+}
+.post .topo{ display: flex; justify-content: space-between; margin-bottom: 8px; }
+.post .autor{ font-weight: bold; color: var(--azul-orkut); }
+.post .hora{ font-size: 13px; color: #777; }
+.post img.feed-img{ width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid var(--borda); }
+.vazio{ text-align: center; color: #777; padding: 20px; }
+
+/* COLUNA DIREITA */
+.btn-chat{
+  width: 100%; padding: 14px; font-size: 18px;
+  background: var(--verde); color: white; text-decoration: none;
+  display: block; text-align: center; border-radius: 6px;
+}
+.btn-chat:hover{ background: #4cae4c; }
+.aviso-item{ background: var(--amarelo); padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 15px; }
+
+/* LISTA ONLINE */
+#lista-online{ list-style: none; padding: 0; margin: 0; max-height: 150px; overflow-y: auto; }
+#lista-online li{ padding: 4px 0; border-bottom: 1px dashed var(--borda); }
+
+/* MOBILE */
+@media (max-width: 980px){
+  .grid-orkut{ grid-template-columns: 1fr; }
+  .coluna-esq{ order: 2; }
+  .coluna-centro{ order: 1; }
+  .coluna-dir{ order: 3; }
+  header{ position: static; }
+}
+</style>
+</head>
+<body>
+
+<div id="tela-login">
+    <div class="box-orkut">
+
+        <img src="serlogointro.png" alt="Avatar Peão" style="width: 100%;">
+
+      <h1>S.E.R.<br></h1>
+      <h3>(Sistema de Engajamento e Risco)</h3>
+    <p class="slogan">Conectando quem constrói com segurança</p>
+    <label for="apelido">Seu Nome:</label>
+    <input type="text" id="apelido" maxlength="25">
+    <label for="re" style="margin-top:10px;">Número de RE:</label>
+    <input type="text" id="re" maxlength="15" inputmode="numeric" placeholder="Ex: 12345">
+    <button id="btn-entrar">ENTRAR NA REDE</button>
+  </div>
+</div>
+
+<div id="tela-app" class="container hidden">
+  <header>
+    <h2>S.E.R. (Sistema de Engajamento e Risco)</h2>
+    <div>
+      <span id="usuario-logado"></span>
+      <button id="btn-sair" class="btn-sair">Sair</button>
+    </div>
+  </header>
+
+  <main class="grid-orkut">
+    <aside class="coluna-esq">
+      <div class="card">
+        
+        <!-- <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/921/921347.png" alt="Avatar Peão"> -->
+
+        <img class="avatar" src="avatarrp.png" alt="Avatar Peão">
+
+        <h3 id="nome-perfil">Colaborador</h3>
+        <hr style="margin: 10px 0;">
+        <p><b>🟢 ONLINE AGORA</b></p>
+        <p id="contador-online" style="font-size: 12px; color: var(--azul-orkut); font-weight: bold;"></p>
+        <ul id="lista-online"></ul>
+      </div>
+    </aside>
+
+    <section class="coluna-centro">
+
+      <div class="card">
+        <strong>Participe da nossa pesquisa rápida de satisfação e ajude a gente a melhorar o dia a dia.</strong><br><br>
+        <h3>🌡️ Como está o clima no seu setor hoje?</h3>
+        <div style="height: 20px; background: #eee; border-radius: 10px; overflow: hidden;">
+        <div id="barra-clima" style="height: 100%; width: 50%; background: var(--verde); transition: width 0.5s;"></div>
+      </div>
+      <p id="texto-clima" style="font-size: 14px; text-align: center; margin-top: 5px;">Clima: Calmo</p>
+      <div style="display: flex; gap: 5px;">
+        <button onclick="votarClima(1)" style="flex:1; background:var(--verde); color:white;">Tranquilo</button>
+        <button onclick="votarClima(2)" style="flex:1; background:#f0ad4e; color:white;">Correria</button>
+        <button onclick="votarClima(3)" style="flex:1; background:#d9534f; color:white;">Caos!</button>
+      </div>
+      </div>
+
+      <div class="card" id="card-satisfacao">
+  <h3>📊 Você sente que a equipe está engajada com a segurança hoje?</h3>
+  <div id="grafico-satisfacao" style="margin: 15px 0;">
+    <!-- O gráfico de barras será injetado aqui -->
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+    <button onclick="votarSatisfacao('Satisfeito')" style="background:#5CB85C; color:white; padding: 8px;">Satisfeito</button>
+    <button onclick="votarSatisfacao('Nao Satisfeito')" style="background:#d9534f; color:white; padding: 8px;">Não Satisfeito</button>
+    <button onclick="votarSatisfacao('Mais ou menos')" style="background:#f0ad4e; color:white; padding: 8px;">Mais ou menos</button>
+    <button onclick="votarSatisfacao('Tanto faz')" style="background:#666; color:white; padding: 8px;">Tanto faz</button>
+  </div>
+</div>
+
+      <div class="card postar-box">
+        <textarea id="texto-post" placeholder="Deixa um recado pro turno..."></textarea>
+        <img id="preview-foto" alt="Preview">
+        <div class="postar-acoes">
+          <label class="btn-foto" for="input-foto">📷 Foto</label>
+          <input type="file" id="input-foto" accept="image/*" style="display:none;">
+          <button id="btn-postar" class="btn-postar">Postar no Mural</button>
+        </div>
+      </div>
+      <div id="feed-mural"></div>
+    </section>
+
+    <aside class="coluna-dir">
+      <div class="card">
+        <h3>💬 Bate-Papo Geral</h3>
+        <a id="link-chat" class="btn-chat" href="#" target="_blank">ABRIR O CHAT</a>
+      </div>
+      <div class="card">
+        <h3>&#9997; A CIPA não é só sobre regras, é sobre você. Tem alguma sugestão para melhorar o conforto do seu posto? Deixe aqui.</h3>
+        <div id="lista-avisos"></div>
+        <button id="btn-aviso" style="width:100%; padding:10px; background:var(--azul-orkut); color:white; margin-top:5px;">+ Deixe sua sugestão</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<script>
+
+// ===== CONFIGURAÇÃO FIREBASE =====
+const firebaseConfig = {
+  apiKey: "AizaSyBJQ94Ty6lurovUXe07P9ph8C30-ZdqX2g",
+  authDomain: "batepapo-7940a.firebaseapp.com",
+  databaseURL: "https://batepapo-7940a-default-rtdb.firebaseio.com",
+  projectId: "batepapo-7940a",
+  storageBucket: "batepapo-7940a.appspot.com",
+  messagingSenderId: "785173093230",
+  appId: "1:785173093230:web:df0fcdf5e4318397127f7f"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
+
+// ===== PRESENÇA (PEÕES ONLINE) =====
+const conectadosRef = db.ref('status');
+
+// Monitora a contagem de usuários conectados
+conectadosRef.on('value', (snapshot) => {
+  const contador = document.getElementById('contador-online');
+  if (contador) {
+    contador.innerText = snapshot.numChildren() + ' 👉 online';
+  }
+});
+
+// Função para registrar o peão quando ele loga
+function definirStatusOnline(reUsuario) {
+  const reLimpo = reUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  const meuStatusRef = db.ref('status/' + reLimpo);
+  
+  // Remove o registro ao fechar/atualizar a página
+  meuStatusRef.onDisconnect().remove();
+  meuStatusRef.set('online');
+}
+
+// ===== CONSTANTES E ESTADO =====
+const CHAVE_USER = 'radiopeao_user';
+const CHAVE_ONLINE = 'radiopeao_online';
+let usuarioAtual = null;
+let reAtual = null;
+let feed = [];
+let avisos = [];
+let fotoBase64 = null;
+
+const dadosSalvos = localStorage.getItem(CHAVE_USER);
+if (dadosSalvos) {
+  try {
+    const obj = JSON.parse(dadosSalvos);
+    if (obj && obj.nome && obj.re) {
+      usuarioAtual = obj.nome;
+      reAtual = obj.re;
+    }
+  } catch (e) {
+    // dado antigo/inválido, ignora e pede login de novo
+    localStorage.removeItem(CHAVE_USER);
+  }
+}
+
+// Autentica anonimamente no Firebase (exigido pelas regras de segurança "auth != null")
+// e só então libera o app.
+function autenticarEEntrar(nome, re) {
+  auth.signInAnonymously()
+    .then(() => {
+      verificarReEEntrar(nome, re);
+    })
+    .catch((error) => {
+      console.error('Erro de autenticação:', error);
+      alert('Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.');
+    });
+}
+
+// Verifica se o RE já pertence a outro nome cadastrado antes de liberar o acesso.
+// Isso evita que alguém digite o RE de outra pessoa por engano (ou de propósito)
+// e "assuma" a identidade dela nos votos, reações e status.
+function verificarReEEntrar(nome, re) {
+  db.ref('usuarios/' + re).once('value')
+    .then((snap) => {
+      const dados = snap.val();
+      if (dados && dados.nome && dados.nome !== nome) {
+        const confirmar = confirm(
+          `O RE ${re} já está cadastrado como "${dados.nome}".\n\n` +
+          `Tem certeza que você é essa pessoa e quer entrar como "${nome}"?\n\n` +
+          `Se você digitou o RE errado, clique em Cancelar e corrija.`
+        );
+        if (!confirmar) {
+          localStorage.removeItem(CHAVE_USER);
+          return;
+        }
+      }
+      entrarApp(nome, re);
+    })
+    .catch((error) => {
+      console.error('Erro ao verificar RE:', error);
+      // Mesmo se a verificação falhar (ex: sem internet), não trava o acesso ao trabalho
+      entrarApp(nome, re);
+    });
+}
+
+// ===== INICIO =====
+document.getElementById('link-chat').href = 'https://juliocesarlda.github.io/chat-firebase/index.html';
+
+if (usuarioAtual && reAtual) { autenticarEEntrar(usuarioAtual, reAtual); }
+
+document.getElementById('btn-entrar').onclick = () => {
+  const apelido = document.getElementById('apelido').value.trim();
+  const re = document.getElementById('re').value.trim();
+  if (apelido.length < 3) { return alert('Nome precisa ter 3 letras no mínimo!'); }
+  if (re.length < 3) { return alert('Informe seu número de RE (mínimo 3 dígitos)!'); }
+  localStorage.setItem(CHAVE_USER, JSON.stringify({ nome: apelido, re: re }));
+  autenticarEEntrar(apelido, re);
+}
+
+document.getElementById('btn-sair').onclick = () => {
+  localStorage.removeItem(CHAVE_USER);
+  auth.signOut().finally(() => location.reload());
+}
+
+// Função para votar
+function votarClima(valor) {
+  // Salva o voto do usuário atual no Firebase, indexado pelo RE
+  db.ref('clima/' + reAtual).set(valor);
+}
+
+// Ouvinte para atualizar o termômetro em tempo real
+db.ref('clima').on('value', (s) => {
+  const votos = s.val() ? Object.values(s.val()) : [];
+  if (votos.length === 0) return;
+
+  // Calcula a média dos votos
+  const media = votos.reduce((a, b) => a + b, 0) / votos.length;
+  const barra = document.getElementById('barra-clima');
+  const texto = document.getElementById('texto-clima');
+
+  // Ajusta a barra conforme a média (1=33%, 2=66%, 3=100%)
+  const percentual = (media / 3) * 100;
+  barra.style.width = percentual + '%';
+
+  if (media < 1.5) {
+    barra.style.background = 'var(--verde)';
+    texto.innerText = 'Clima: Tranquilo';
+  } else if (media < 2.5) {
+    barra.style.background = '#f0ad4e';
+    texto.innerText = 'Clima: Correria';
+  } else {
+    barra.style.background = '#d9534f';
+    texto.innerText = 'Clima: CAOS TOTAL!';
+  }
+});
+
+// Função para registrar o voto do usuário
+function votarSatisfacao(opcao) {
+  // Salva ou atualiza o voto do usuário no Firebase, indexado pelo RE
+  db.ref('satisfacao/' + reAtual).set(opcao);
+}
+
+// Ouvinte para renderizar o gráfico em tempo real conforme os dados mudam
+db.ref('satisfacao').on('value', (s) => {
+  const todosVotos = s.val() ? Object.values(s.val()) : [];
+  const categorias = ['Satisfeito', 'Nao Satisfeito', 'Mais ou menos', 'Tanto faz'];
+  const contagem = { 'Satisfeito': 0, 'Nao Satisfeito': 0, 'Mais ou menos': 0, 'Tanto faz': 0 };
+
+  // Contagem dos votos
+  todosVotos.forEach(v => { if(contagem.hasOwnProperty(v)) contagem[v]++; });
+  const total = todosVotos.length || 1;
+
+  // Atualização visual do gráfico de barras
+  const div = document.getElementById('grafico-satisfacao');
+  div.innerHTML = categorias.map(cat => `
+    <div style="margin-bottom: 10px;">
+      <div style="font-size: 13px; font-weight: bold; margin-bottom: 2px;">${cat} (${contagem[cat]})</div>
+      <div style="background: #e0e0e0; height: 14px; border-radius: 7px; overflow: hidden;">
+        <div style="width: ${(contagem[cat] / total) * 100}%; background: #3E5B92; height: 100%; transition: width 0.5s;"></div>
+      </div>
+    </div>
+  `).join('');
+});
+
+// ===== LOGIN/APP =====
+function entrarApp(nome, re){
+  usuarioAtual = nome;
+  reAtual = re;
+  
+  // Ativa o status (indexado pelo RE, que é único por colaborador)
+  definirStatusOnline(re);
+
+  // Salva/atualiza o perfil do colaborador (nome vinculado ao RE)
+  db.ref('usuarios/' + re).set({
+    nome: nome,
+    ultimoAcesso: new Date().toLocaleString('pt-BR')
+  });
+  
+  // Ouvintes Firebase
+  db.ref('avisos').on('value', (s) => {
+    avisos = s.val() ? Object.values(s.val()) : [];
+    renderAvisos();
+  });
+
+  db.ref('feed').on('value', (s) => {
+    feed = s.val() ? Object.entries(s.val()).map(([key, value]) => ({ ...value, key })).reverse() : [];
+    renderFeed();
+  });
+  
+  document.getElementById('usuario-logado').innerText = `Olá, ${nome}`;
+  document.getElementById('nome-perfil').innerText = nome;
+  document.getElementById('tela-login').classList.add('hidden');
+  document.getElementById('tela-app').classList.remove('hidden');
+}
+
+// ===== POSTAGENS =====
+document.getElementById('input-foto').onchange = (e) => {
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    fotoBase64 = ev.target.result;
+    document.getElementById('preview-foto').src = fotoBase64;
+    document.getElementById('preview-foto').style.display = 'block';
+  }
+  reader.readAsDataURL(e.target.files[0]);
+}
+
+document.getElementById('btn-postar').onclick = () => {
+  const texto = document.getElementById('texto-post').value.trim();
+  if(!texto && !fotoBase64){ return alert('Escreva algo!'); }
+  db.ref('feed').push({
+    autor: usuarioAtual,
+    texto: texto,
+    foto: fotoBase64,
+    hora: new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
+  });
+  document.getElementById('texto-post').value = '';
+  document.getElementById('preview-foto').style.display = 'none';
+  fotoBase64 = null;
+}
+
+function reagirPost(postId, emoji) {
+  // Garante que o ID do usuário seja um texto limpo (usa o RE, que é único)
+  const userId = reAtual.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  
+  // Registra a reação no caminho correto do Firebase
+  db.ref(`feed/${postId}/reacoes/${userId}`).set(emoji)
+    .then(() => {
+      // Fecha o menu após sucesso
+      const menu = document.getElementById(`menu-${postId}`);
+      if(menu) menu.style.display = 'none';
+      console.log('Reação registrada com sucesso!');
+    })
+    .catch((error) => {
+      console.error('Erro ao reagir:', error);
+    });
+}
+
+function alternarMenuReacoes(postId) {
+  const menu = document.getElementById(`menu-${postId}`);
+  if (menu) {
+    // Alterna a exibição e garante que outros menus fechem
+    const estaVisivel = menu.style.display === 'block';
+    document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
+    menu.style.display = estaVisivel ? 'none' : 'block';
+  }
+}
+
+function renderFeed(){
+  const div = document.getElementById('feed-mural');
+  if(feed.length === 0){
+    div.innerHTML = `<div class="card vazio">Seja o primeiro a postar!</div>`;
+    return;
+  }
+
+  div.innerHTML = ''; // Limpa o container antes de renderizar
+  feed.filter(p => p.autor && p.texto).forEach(p => {
+    const reacoes = p.reacoes || {};
+    const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
+    Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
+
+    const btnExcluir = p.autor === usuarioAtual 
+      ? `<button onclick="excluirPost('${p.key}', '${p.autor}')" style="background:#d9534f; color:white; padding:2px 8px; font-size:12px; margin-left:10px;">Excluir</button>` 
+      : '';
+
+    // Cria o card do post de forma segura
+    const postCard = document.createElement('div');
+    postCard.className = 'card post';
+    
+    // Cria o conteúdo interno
+    const conteudo = `
+      <div class="topo"><b>${p.autor}</b><span>${p.hora} ${btnExcluir}</span></div>
+      <p id="texto-${p.key}"></p>
+      ${p.foto ? `<img class="feed-img" src="${p.foto}">` : ''}
+      
+      <div style="margin-top:10px; position: relative;">
+        <button onclick="alternarMenuReacoes('${p.key}')" style="background:var(--azul-orkut); color:white; padding:5px 10px; border:0; border-radius:4px; cursor:pointer;">
+          Reagir
+        </button>
+        
+        <div id="menu-${p.key}" style="display:none; position:absolute; background:white; border:1px solid #ccc; padding:8px; z-index:999; border-radius:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-top:5px;">
+          ${['💩', '🤮', '🦇', '👍', '👎'].map(e => `
+            <button onclick="reagirPost('${p.key}', '${e}')" style="font-size:20px; border:none; background:none; cursor:pointer; padding: 2px 5px;">${e}</button>
+          `).join('')}
+        </div>
+
+        <div style="margin-top:10px; font-size: 14px;">
+          ${Object.keys(contagem).map(e => `<span>${e} ${contagem[e]}</span>`).join(' ')}
+        </div>
+      </div>`;
+    
+    postCard.innerHTML = conteudo;
+    div.appendChild(postCard);
+
+    // Sanitização: insere o texto via textContent para prevenir XSS
+    const pTexto = document.getElementById(`texto-${p.key}`);
+    if (pTexto) pTexto.textContent = p.texto;
+  });
+}
+
+function excluirPost(postId, autorPost) {
+  // Verifica se o usuário logado é o autor do post
+  if (usuarioAtual !== autorPost) {
+    return alert('Você só pode excluir os seus próprios posts!');
+  }
+  
+  if (confirm('Tem certeza que deseja excluir este recado?')) {
+    db.ref('feed/' + postId).remove()
+      .then(() => console.log('Post removido!'))
+      .catch((error) => alert('Erro ao excluir: ' + error.message));
+  }
+}
+
+function renderAvisos(){
+  document.getElementById('lista-avisos').innerHTML = avisos.map(a => `<div class="aviso-item"> &#9997; ${a}</div>`).join('');
+}
+
+document.getElementById('btn-aviso').onclick = () => {
+  const novo = prompt('Novo aviso:');
+  if(novo) db.ref('avisos').push(novo.trim());
+}
+</script>
+</body>
+</html>
