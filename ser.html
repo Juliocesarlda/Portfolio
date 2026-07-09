@@ -341,15 +341,15 @@ document.getElementById('btn-sair').onclick = () => {
   auth.signOut().finally(() => location.reload());
 }
 
+// Ativa o status (indexado pelo RE, que é único por colaborador)
+  definirStatusOnline(re);
+  
 // ===== LOGIN/APP =====
 function entrarApp(nome, re){
   usuarioAtual = nome;
   reAtual = re;
   
-  // Ativa o status (indexado pelo RE, que é único por colaborador)
-  definirStatusOnline(re);
-
-  // Salva/atualiza o perfil do colaborador (nome vinculado ao RE)
+    // Salva/atualiza o perfil do colaborador (nome vinculado ao RE)
   db.ref('usuarios/' + re).set({
     nome: nome,
     ultimoAcesso: new Date().toLocaleString('pt-BR')
