@@ -147,18 +147,19 @@ header h2{ margin: 0; font-size: 22px; }
 
   <main class="grid-orkut">
     <aside class="coluna-esq">
-      <div class="card">
-        
-        <!-- <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/921/921347.png" alt="Avatar Peão"> -->
-
-        <img class="avatar" src="avatarrp.png" alt="Avatar Peão">
-
-        <h3 id="nome-perfil">Colaborador</h3>
-        <hr style="margin: 10px 0;">
-        <p><b>🟢 ONLINE AGORA</b></p>
-        <p id="contador-online" style="font-size: 12px; color: var(--azul-orkut); font-weight: bold;"></p>
-        <ul id="lista-online" style="list-style: none; padding: 0;"></ul>
-      </div>
+        <div class="card">
+            <img class="avatar" src="avatarrp.png" alt="Avatar Peão">
+            <h3 id="nome-perfil">Colaborador</h3>
+            <hr style="margin: 10px 0;">
+  
+            <p><b>🟢 Usuários on-line:</b></p>
+            <ul id="lista-online" style="list-style: none; padding: 0;"></ul>
+  
+            <hr style="margin: 10px 0;">
+  
+            <p><b>🕒 Ultimos acessos :</b></p>
+            <ul id="lista-historico" style="list-style: none; padding: 0; font-size: 12px;"></ul>
+        </div>
     </aside>
 
     <section class="coluna-centro">
@@ -251,12 +252,18 @@ function votarSatisfacao(opcao) {
 
 // Função para registrar o peão quando ele loga
 function definirStatusOnline(reUsuario) {
-  const reLimpo = reUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-  const meuStatusRef = db.ref('status/' + reLimpo);
-  
-  // Remove o registro ao fechar/atualizar a página
-  meuStatusRef.onDisconnect().remove();
-  meuStatusRef.set('online');
+    const reLimpo = reUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+    const meuStatusRef = db.ref('status/' + reLimpo);
+    
+  //Remove o registro ao fechar/atualizar a página
+  //meuStatusRef.onDisconnect().remove();
+  //meuStatusRef.set('online');
+
+    const statusRef = db.ref('status/' + reLimpo);
+
+    statusRef.onDisconnect().remove();
+    statusRef.set(true);
+
 }
 
 // ===== CONSTANTES E ESTADO =====
@@ -337,9 +344,17 @@ document.getElementById('btn-entrar').onclick = () => {
 }
 
 document.getElementById('btn-sair').onclick = () => {
-  localStorage.removeItem(CHAVE_USER);
-  auth.signOut().finally(() => location.reload());
-}
+    // Recupera o RE que está salvo no localStorage
+    const usuarioSalvo = JSON.parse(localStorage.getItem(CHAVE_USER));
+    
+    if (usuarioSalvo && usuarioSalvo.re) {
+        // Remove o status do Firebase antes de sair
+        db.ref('status/' + usuarioSalvo.re).remove();
+    }
+    
+    localStorage.removeItem(CHAVE_USER);
+    auth.signOut().finally(() => location.reload());
+};
 
 // ===== LOGIN/APP =====
 function entrarApp(nome, re){
@@ -358,31 +373,26 @@ function entrarApp(nome, re){
   // Ouvintes Firebase
 
  // Monitora o nó de status para listar quem está online e seus nomes
+// 1. Lista quem está online agora (nó 'status')
 conectadosRef.on('value', (snapshot) => {
-  const contador = document.getElementById('contador-online');
   const lista = document.getElementById('lista-online');
-  
-  if (contador) {
-    contador.innerText = snapshot.numChildren() + ' 👉 online';
-  }
-  
-  // Limpa a lista antes de atualizar para não duplicar nomes
-  lista.innerHTML = ''; 
-
-  snapshot.forEach((childSnapshot) => {
-    const re = childSnapshot.key;
-    
-    // Busca o nome do usuário no nó 'usuarios' usando o RE como chave
-    db.ref('usuarios/' + re).once('value', (userSnap) => {
-      const userData = userSnap.val();
-      const nome = userData ? userData.nome : "Colaborador";
-      
-      const li = document.createElement('li');
-      li.style.fontSize = "13px";
-      li.style.marginBottom = "5px";
-      li.innerHTML = `👤 ${nome}`;
-      lista.appendChild(li);
+  lista.innerHTML = '';
+  snapshot.forEach((child) => {
+    db.ref('usuarios/' + child.key).once('value', (u) => {
+      const nome = u.val() ? u.val().nome : "Desconhecido";
+      lista.innerHTML += `<li>👤 ${nome}</li>`;
     });
+  });
+});
+
+// 2. Lista todos os usuários e seus últimos acessos (nó 'usuarios')
+db.ref('usuarios').on('value', (snapshot) => {
+  const historico = document.getElementById('lista-historico');
+  historico.innerHTML = '';
+  snapshot.forEach((child) => {
+    const dados = child.val();
+    // Mostra o nome, data e hora salvos no momento do login
+    historico.innerHTML += `<li>👤 ${dados.nome}<br><small>📅 ${dados.ultimoAcesso}</small></li><br>`;
   });
 });
 
