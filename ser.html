@@ -524,7 +524,7 @@ function renderFeed(){
   div.innerHTML = ''; // Limpa o container antes de renderizar
   feed.filter(p => p.autor && p.texto).forEach(p => {
     const reacoes = p.reacoes || {};
-    const contagem = {'💩': 0, '🤮': 0, '🦇': 0, '👍': 0, '👎': 0};
+    const contagem = {'🚀': 0, '🤝': 0, '👏': 0, '👍': 0, '👎': 0};
     Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
 
     const btnExcluir = p.autor === usuarioAtual 
@@ -547,7 +547,7 @@ function renderFeed(){
         </button>
         
         <div id="menu-${p.key}" style="display:none; position:absolute; background:white; border:1px solid #ccc; padding:8px; z-index:999; border-radius:20px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); margin-top:5px;">
-          ${['💩', '🤮', '🦇', '👍', '👎'].map(e => `
+          ${['🚀', '🤝', '👏', '👍', '👎'].map(e => `
             <button onclick="reagirPost('${p.key}', '${e}')" style="font-size:20px; border:none; background:none; cursor:pointer; padding: 2px 5px;">${e}</button>
           `).join('')}
         </div>
