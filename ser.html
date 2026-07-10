@@ -157,7 +157,7 @@ header h2{ margin: 0; font-size: 22px; }
         <hr style="margin: 10px 0;">
         <p><b>🟢 ONLINE AGORA</b></p>
         <p id="contador-online" style="font-size: 12px; color: var(--azul-orkut); font-weight: bold;"></p>
-        <ul id="lista-online"></ul>
+        <ul id="lista-online" style="list-style: none; padding: 0;"></ul>
       </div>
     </aside>
 
@@ -357,12 +357,33 @@ function entrarApp(nome, re){
   
   // Ouvintes Firebase
 
-  // Monitora a contagem de usuários conectados
+ // Monitora o nó de status para listar quem está online e seus nomes
 conectadosRef.on('value', (snapshot) => {
   const contador = document.getElementById('contador-online');
+  const lista = document.getElementById('lista-online');
+  
   if (contador) {
     contador.innerText = snapshot.numChildren() + ' 👉 online';
   }
+  
+  // Limpa a lista antes de atualizar para não duplicar nomes
+  lista.innerHTML = ''; 
+
+  snapshot.forEach((childSnapshot) => {
+    const re = childSnapshot.key;
+    
+    // Busca o nome do usuário no nó 'usuarios' usando o RE como chave
+    db.ref('usuarios/' + re).once('value', (userSnap) => {
+      const userData = userSnap.val();
+      const nome = userData ? userData.nome : "Colaborador";
+      
+      const li = document.createElement('li');
+      li.style.fontSize = "13px";
+      li.style.marginBottom = "5px";
+      li.innerHTML = `👤 ${nome}`;
+      lista.appendChild(li);
+    });
+  });
 });
 
 // Ouvinte para atualizar o termômetro em tempo real
