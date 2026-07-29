@@ -295,6 +295,15 @@ let feed = [];
 let avisos = [];
 let fotoBase64 = null;
 
+document.getElementById('link-chat').addEventListener('click', function(e) {
+  e.preventDefault();
+  // Pega o nome do usuário logado na tela principal
+  const nomeUsuario = usuarioLogado.nome; // substitua 'usuarioLogado.nome' pela sua variável de usuário
+  
+  // Redireciona na MESMA aba passando o usuário
+  window.location.href = `ser-sala-de-bate-papo.html?usuario=${encodeURIComponent(nomeUsuario)}`;
+});
+
 // Alterna entre as abas 'login' e 'cadastro'
 function alternarAba(aba) {
   const loginForm = document.getElementById('form-login');
