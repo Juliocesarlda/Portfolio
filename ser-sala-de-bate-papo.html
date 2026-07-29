@@ -3,101 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chat Firebase com Emojis</title>
+  <title>Sala de Bate-Papo</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: var(--bg-color, #f0f0f0);
-      color: var(--text-color, #000);
-    }
-    .chat-container {
-      width: 80%;
-      margin: 40px auto;
-      padding: 20px;
-      background-color: var(--container-bg, #fff);
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    .chat-header {
-      background-color: #333;
-      color: #fff;
-      padding: 10px;
-      border-bottom: 1px solid #333;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .chat-messages {
-      padding: 20px;
-      overflow-y: auto;
-      max-height: 400px;
-      border-bottom: 1px solid #ccc;
-    }
-    .chat-message {
-      margin-bottom: 10px;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    .chat-message .username {
-      font-weight: bold;
-      color: var(--text-color, #333);
-    }
-    .chat-message .message {
-      color: var(--text-color, #666);
-    }
-    .chat-message .timestamp {
-      font-size: 0.8em;
-      color: #999;
-      margin-left: 10px;
-    }
-    #message-input {
-      width: 75%;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    #send-button, #theme-toggle {
-      padding: 10px 20px;
-      margin-left: 5px;
-      border-radius: 5px;
-      background-color: #333;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    #send-button:hover, #theme-toggle:hover {
-      background-color: #555;
-    }
-    #loading {
-      text-align: center;
-      margin-top: 50px;
-      font-size: 1.2em;
-    }
+    body { font-family: Arial, sans-serif; background-color: var(--bg-color, #f0f0f0); color: var(--text-color, #000); }
+    .chat-container { width: 80%; margin: 40px auto; padding: 20px; background-color: var(--container-bg, #fff); border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+    .chat-header { background-color: #333; color: #fff; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+    .chat-messages { padding: 20px; overflow-y: auto; max-height: 400px; border-bottom: 1px solid #ccc; }
+    .chat-message { margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #ddd; }
+    #message-input { width: 75%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    #send-button { padding: 10px 20px; border-radius: 5px; background-color: #333; color: white; border: none; cursor: pointer; }
+    
+    /* Ajuste para dispositivos móveis */
+@media (max-width: 600px) {
+  .main-wrapper {
+    flex-direction: column !important; /* Empilha coluna e chat */
+    width: 95% !important;
+  }
+  
+  #user-list {
+    width: 100% !important; /* Ocupa toda a largura */
+    margin-bottom: 10px;
+  }
+
+  #message-input {
+    width: 60% !important; /* Ajusta o campo de texto para telas pequenas */
+  }
+}
+
   </style>
 </head>
 <body>
 
-  <!-- Mensagem simples de carregamento enquanto o Firebase verifica a sessão -->
-  <div id="loading">Conectando à sala de bate-papo...</div>
+  <div class="main-wrapper" style="display: flex; gap: 20px; width: 90%; margin: 20px auto;">
+  <!-- Coluna Lateral -->
+  <div id="user-list" style="width: 250px; background: #eee; padding: 15px; border-radius: 10px;">
+    <h3>Usuários</h3>
+    <div id="online-users"></div>
+  </div>
 
-  <div id="chat-container" style="display: none;" class="chat-container">
+  <!-- Chat Principal -->
+  <div id="chat-container" class="chat-container" style="flex: 1; margin: 0;">
     <div class="chat-header">
-      <h2>Sala de Bate-Papo 🙂 😊 😄 ❤ 💛 💙</h2>
-      <button id="theme-toggle">🌙 Alternar Tema</button>
+      <h2>Sala de Bate-Papo <span id="target-user-display"></span></h2>
     </div>
     <div class="chat-messages" id="chat-messages"></div>
     <input type="text" id="message-input" placeholder="Digite sua mensagem...">
     <button id="send-button">Enviar</button>
   </div>
+</div>
 
-  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
   <script>
-   const firebaseConfig = {
+
+// Configuração e Inicialização
+const firebaseConfig = {
   apiKey: "AIzaSyALQICorKSuacosN8YLmRZneufs6mwO4s0",
   authDomain: "sistema-de-engajamento-e-risco.firebaseapp.com",
   projectId: "sistema-de-engajamento-e-risco",
@@ -105,107 +67,81 @@
   messagingSenderId: "473328409083",
   appId: "1:473328409083:web:bc74aded0063776379935e"
 };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
 
-    const loadingElement = document.getElementById('loading');
-    const chatContainer = document.getElementById('chat-container');
-    const chatMessages = document.getElementById('chat-messages');
-    const messageInput = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-button');
-    const themeToggle = document.getElementById('theme-toggle');
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const auth = firebase.auth();
 
-    let username, avatarEmoji;
+const chatMessages = document.getElementById('chat-messages');
+const messageInput = document.getElementById('message-input');
+const sendButton = document.getElementById('send-button');
+const onlineUsersList = document.getElementById('online-users');
+const targetUserDisplay = document.getElementById('target-user-display');
 
-    const emojis = ['😀','😎','🧠','👻','🐱','🐶','🦊','🐵','🦄','🐸','🐯','🐼','🧙‍♂️','🧛‍♀️','👨‍🚀'];
-    const emojiMap = {
-      ':smile:': '😄', ':heart:': '❤️', ':love:': '😍', ':sun:': '☀️',
-      ':moon:': '🌙', ':star:': '⭐', ':thumbsup:': '👍', ':fire:': '🔥'
-    };
+const urlParams = new URLSearchParams(window.location.search);
+const username = urlParams.get('usuario') || "Anônimo";
+let targetUser = null;
 
-    function sanitize(input) {
-      const div = document.createElement('div');
-      div.innerText = input;
-      return div.innerHTML;
-    }
+// Marcar usuário como online
+auth.signInAnonymously().then(() => {
+  const userRef = db.ref("usuarios/" + username);
+  userRef.set({ status: "online", inChat: true });
+  userRef.onDisconnect().remove(); // Remove da lista ao fechar o navegador
+});
 
-    function parseMarkdown(text) {
-      let parsed = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      parsed = parsed.replace(/_(.*?)_/g, '<em>$1</em>');
-      for (const code in emojiMap) {
-        parsed = parsed.replaceAll(code, emojiMap[code]);
-      }
-      return parsed;
-    }
+// Renderizar lista de usuários lateral
+db.ref("usuarios").on("value", (snapshot) => {
+  onlineUsersList.innerHTML = "";
+  snapshot.forEach((child) => {
+    const user = child.key;
+    const div = document.createElement('div');
+    div.style.marginBottom = "10px";
+    div.innerHTML = `
+      <span>${user}</span>
+      <button onclick="setTarget('${user}')" style="margin-left: 5px;">Chamar</button>
+    `;
+    onlineUsersList.appendChild(div);
+  });
+});
 
-    function formatTime(timestamp) {
-      const date = new Date(timestamp);
-      return `${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-    }
+// Função para selecionar destinatário
+window.setTarget = (name) => {
+  targetUser = name;
+  targetUserDisplay.innerText = `(para: ${name})`;
+};
 
-    function sendMessage() {
-      const text = messageInput.value.trim();
-      if (text !== '') {
-        db.ref("mensagens").push({
-          user: username,
-          emoji: avatarEmoji,
-          text: text,
-          timestamp: Date.now()
-        });
-        messageInput.value = '';
-      }
-    }
+// Renderizar mensagens
+function renderMessage(data) {
+  const msg = data.val();
+  // Se for privada e não for para mim ou de mim, ignora (opcional)
+  const isPrivate = msg.to && (msg.to !== username && msg.user !== username);
+  if (isPrivate) return;
 
-    function renderMessage(data) {
-      const { user, emoji, text, timestamp } = data.val();
-      const div = document.createElement('div');
-      div.classList.add('chat-message');
-      div.innerHTML = `<span class="username">${emoji || '👤'} ${sanitize(user)}</span>:
-        <span class="message">${parseMarkdown(sanitize(text))}</span>
-        <span class="timestamp">(${formatTime(timestamp)})</span>`;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+  const div = document.createElement('div');
+  div.className = 'chat-message';
+  div.innerHTML = `<b>${msg.user} ${msg.to ? '→ ' + msg.to : ''}</b>: ${msg.text}`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
-    // Monitora o estado de autenticação do usuário
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        // Pega o nome do cadastro Google/Email ou usa parte do e-mail caso não haja displayName
-        const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'Visitante');
-        username = sanitize(displayName);
-        avatarEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+db.ref("mensagens").limitToLast(50).on("child_added", renderMessage);
 
-        // Oculta mensagem de carregamento e exibe o chat
-        loadingElement.style.display = 'none';
-        chatContainer.style.display = 'block';
-
-        // Escuta novas mensagens no Realtime Database
-        db.ref("mensagens").limitToLast(100).off(); // Garante que não duplique ouvintes
-        db.ref("mensagens").limitToLast(100).on("child_added", renderMessage);
-      } else {
-        // Se o usuário não estiver logado, realiza login anônimo fallback ou pode ser redirecionado
-        auth.signInAnonymously().catch((error) => {
-          console.error("Erro na autenticação:", error);
-          alert("Erro ao conectar ao chat.");
-        });
-      }
+// Enviar mensagem
+sendButton.onclick = () => {
+  const text = messageInput.value.trim();
+  if (text) {
+    db.ref("mensagens").push({ 
+      user: username, 
+      to: targetUser, 
+      text: text, 
+      timestamp: Date.now() 
     });
+    messageInput.value = '';
+    targetUser = null; // Reseta após enviar
+    targetUserDisplay.innerText = '';
+  }
+};
 
-    sendButton.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') sendMessage();
-    });
-
-    // Alternar tema claro/escuro
-    let dark = false;
-    themeToggle.addEventListener('click', () => {
-      dark = !dark;
-      document.documentElement.style.setProperty('--bg-color', dark ? '#1e1e1e' : '#f0f0f0');
-      document.documentElement.style.setProperty('--text-color', dark ? '#f0f0f0' : '#000');
-      document.documentElement.style.setProperty('--container-bg', dark ? '#2c2c2c' : '#fff');
-      themeToggle.innerText = dark ? '☀️ Tema Claro' : '🌙 Tema Escuro';
-    });
   </script>
 </body>
 </html>
