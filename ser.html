@@ -296,10 +296,13 @@ let avisos = [];
 let fotoBase64 = null;
 
 document.getElementById('btn-chat').addEventListener('click', function() {
-  // Pega o usuario ativo no sistema (ajuste a variavel 'usuarioAtual' para a variavel de login da sua aplicacao)
-  const usuarioAtual = localStorage.getItem('usuarioLogado') || "Usuario"; 
+  // Verifica se a variável global usuarioAtual está preenchida
+  if (!usuarioAtual) {
+    alert("Você precisa estar logado para acessar o chat!");
+    return;
+  }
 
-  // Redireciona na MESMA janela/aba passando o parâmetro correto
+  // Redireciona na MESMA janela passando o nome correto do usuário logado
   window.location.href = `ser-sala-de-bate-papo.html?usuario=${encodeURIComponent(usuarioAtual)}`;
 });
 
