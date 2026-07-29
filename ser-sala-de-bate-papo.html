@@ -56,7 +56,19 @@
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
   <script>
-    // Configuração e Inicialização do Firebase
+    // 1. Validação estrita do usuário na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawUser = urlParams.get('usuario');
+
+    // Se não informou usuário ou enviou em branco, redireciona para a página de login/início
+    if (!rawUser || rawUser.trim() === "") {
+      alert("Acesso negado: Você precisa informar um nome de usuário para entrar na sala.");
+      window.location.href = "index.html"; // Altere aqui para a sua página de login/inicial se tiver outro nome
+    }
+
+    const username = rawUser.trim();
+
+    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyALQICorKSuacosN8YLmRZneufs6mwO4s0",
       authDomain: "sistema-de-engajamento-e-risco.firebaseapp.com",
@@ -70,41 +82,27 @@
     const db = firebase.database();
     const auth = firebase.auth();
 
-    // Elementos do DOM
     const chatMessages = document.getElementById('chat-messages');
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-button');
     const onlineUsersList = document.getElementById('online-users');
     const targetUserDisplay = document.getElementById('target-user-display');
 
-    // Captura e sanitização do parâmetro 'usuario'
-    const urlParams = new URLSearchParams(window.location.search);
-    let rawUser = urlParams.get('usuario');
-
-    // Se o usuário não estiver preenchido ou for inválido, gera um identificador padrão
-    if (!rawUser || rawUser.trim() === "") {
-      rawUser = "Visitante_" + Math.floor(1000 + Math.random() * 9000);
-    }
-    const username = rawUser.trim();
-
     let targetUser = null;
 
-    // Autenticação anônima e controle de presenças via UID
+    // Autenticação anônima do Firebase para sessão do banco
     auth.signInAnonymously().then((cred) => {
       const uid = cred.user.uid;
       const userRef = db.ref("usuarios/" + uid);
       
-      // Salva os dados do usuário usando o UID como chave primária
+      // Registra no banco apenas com o nome válido recebido via URL
       userRef.set({ 
         nome: username, 
         status: "online", 
         inChat: true 
       });
 
-      // Remove o usuário da lista ao desconectar (fechar aba ou navegador)
       userRef.onDisconnect().remove();
-    }).catch((error) => {
-      console.error("Erro na autenticação anônima:", error);
     });
 
     // Renderizar lista de usuários online
@@ -112,29 +110,30 @@
       onlineUsersList.innerHTML = "";
       snapshot.forEach((child) => {
         const userData = child.val();
-        const displayName = userData.nome || "Anônimo";
-
-        const div = document.createElement('div');
-        div.style.marginBottom = "10px";
-        div.innerHTML = `
-          <span>${displayName}</span>
-          <button onclick="setTarget('${displayName}')" style="margin-left: 5px;">Chamar</button>
-        `;
-        onlineUsersList.appendChild(div);
+        
+        // Exibe apenas registros que tenham um nome definido
+        if (userData && userData.nome) {
+          const div = document.createElement('div');
+          div.style.marginBottom = "10px";
+          div.innerHTML = `
+            <span>${userData.nome}</span>
+            <button onclick="setTarget('${userData.nome}')" style="margin-left: 5px;">Chamar</button>
+          `;
+          onlineUsersList.appendChild(div);
+        }
       });
     });
 
-    // Função para selecionar destinatário para mensagem privada
+    // Selecionar destinatário
     window.setTarget = (name) => {
       targetUser = name;
       targetUserDisplay.innerText = `(para: ${name})`;
     };
 
-    // Renderizar mensagens no chat
+    // Renderizar mensagens
     function renderMessage(data) {
       const msg = data.val();
       
-      // Filtro para mensagens privadas
       const isPrivate = msg.to && (msg.to !== username && msg.user !== username);
       if (isPrivate) return;
 
@@ -145,10 +144,9 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Ouvinte em tempo real para novas mensagens
     db.ref("mensagens").limitToLast(50).on("child_added", renderMessage);
 
-    // Envio de mensagem
+    // Enviar mensagem
     sendButton.onclick = () => {
       const text = messageInput.value.trim();
       if (text) {
@@ -164,7 +162,6 @@
       }
     };
 
-    // Suporte para enviar com a tecla Enter
     messageInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         sendButton.click();
