@@ -14,134 +14,162 @@
     #send-button { padding: 10px 20px; border-radius: 5px; background-color: #333; color: white; border: none; cursor: pointer; }
     
     /* Ajuste para dispositivos móveis */
-@media (max-width: 600px) {
-  .main-wrapper {
-    flex-direction: column !important; /* Empilha coluna e chat */
-    width: 95% !important;
-  }
-  
-  #user-list {
-    width: 100% !important; /* Ocupa toda a largura */
-    margin-bottom: 10px;
-  }
+    @media (max-width: 600px) {
+      .main-wrapper {
+        flex-direction: column !important;
+        width: 95% !important;
+      }
+      
+      #user-list {
+        width: 100% !important;
+        margin-bottom: 10px;
+      }
 
-  #message-input {
-    width: 60% !important; /* Ajusta o campo de texto para telas pequenas */
-  }
-}
-
+      #message-input {
+        width: 60% !important;
+      }
+    }
   </style>
 </head>
 <body>
 
   <div class="main-wrapper" style="display: flex; gap: 20px; width: 90%; margin: 20px auto;">
-  <!-- Coluna Lateral -->
-  <div id="user-list" style="width: 250px; background: #eee; padding: 15px; border-radius: 10px;">
-    <h3>Usuários</h3>
-    <div id="online-users"></div>
-  </div>
-
-  <!-- Chat Principal -->
-  <div id="chat-container" class="chat-container" style="flex: 1; margin: 0;">
-    <div class="chat-header">
-      <h2>Sala de Bate-Papo <span id="target-user-display"></span></h2>
+    <!-- Coluna Lateral -->
+    <div id="user-list" style="width: 250px; background: #eee; padding: 15px; border-radius: 10px;">
+      <h3>Usuários Online</h3>
+      <div id="online-users"></div>
     </div>
-    <div class="chat-messages" id="chat-messages"></div>
-    <input type="text" id="message-input" placeholder="Digite sua mensagem...">
-    <button id="send-button">Enviar</button>
+
+    <!-- Chat Principal -->
+    <div id="chat-container" class="chat-container" style="flex: 1; margin: 0;">
+      <div class="chat-header">
+        <h2>Sala de Bate-Papo <span id="target-user-display"></span></h2>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+      <button id="send-button">Enviar</button>
+    </div>
   </div>
-</div>
 
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 
   <script>
+    // Configuração e Inicialização do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyALQICorKSuacosN8YLmRZneufs6mwO4s0",
+      authDomain: "sistema-de-engajamento-e-risco.firebaseapp.com",
+      projectId: "sistema-de-engajamento-e-risco",
+      storageBucket: "sistema-de-engajamento-e-risco.firebasestorage.app",
+      messagingSenderId: "473328409083",
+      appId: "1:473328409083:web:bc74aded0063776379935e"
+    };
 
-// Configuração e Inicialização
-const firebaseConfig = {
-  apiKey: "AIzaSyALQICorKSuacosN8YLmRZneufs6mwO4s0",
-  authDomain: "sistema-de-engajamento-e-risco.firebaseapp.com",
-  projectId: "sistema-de-engajamento-e-risco",
-  storageBucket: "sistema-de-engajamento-e-risco.firebasestorage.app",
-  messagingSenderId: "473328409083",
-  appId: "1:473328409083:web:bc74aded0063776379935e"
-};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const auth = firebase.auth();
+    // Elementos do DOM
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const onlineUsersList = document.getElementById('online-users');
+    const targetUserDisplay = document.getElementById('target-user-display');
 
-const chatMessages = document.getElementById('chat-messages');
-const messageInput = document.getElementById('message-input');
-const sendButton = document.getElementById('send-button');
-const onlineUsersList = document.getElementById('online-users');
-const targetUserDisplay = document.getElementById('target-user-display');
+    // Captura e sanitização do parâmetro 'usuario'
+    const urlParams = new URLSearchParams(window.location.search);
+    let rawUser = urlParams.get('usuario');
 
-const urlParams = new URLSearchParams(window.location.search);
-const username = urlParams.get('usuario') || "Anônimo";
-let targetUser = null;
+    // Se o usuário não estiver preenchido ou for inválido, gera um identificador padrão
+    if (!rawUser || rawUser.trim() === "") {
+      rawUser = "Visitante_" + Math.floor(1000 + Math.random() * 9000);
+    }
+    const username = rawUser.trim();
 
-// Marcar usuário como online
-auth.signInAnonymously().then(() => {
-  const userRef = db.ref("usuarios/" + username);
-  userRef.set({ status: "online", inChat: true });
-  userRef.onDisconnect().remove(); // Remove da lista ao fechar o navegador
-});
+    let targetUser = null;
 
-// Renderizar lista de usuários lateral
-db.ref("usuarios").on("value", (snapshot) => {
-  onlineUsersList.innerHTML = "";
-  snapshot.forEach((child) => {
-    const user = child.key;
-    const div = document.createElement('div');
-    div.style.marginBottom = "10px";
-    div.innerHTML = `
-      <span>${user}</span>
-      <button onclick="setTarget('${user}')" style="margin-left: 5px;">Chamar</button>
-    `;
-    onlineUsersList.appendChild(div);
-  });
-});
+    // Autenticação anônima e controle de presenças via UID
+    auth.signInAnonymously().then((cred) => {
+      const uid = cred.user.uid;
+      const userRef = db.ref("usuarios/" + uid);
+      
+      // Salva os dados do usuário usando o UID como chave primária
+      userRef.set({ 
+        nome: username, 
+        status: "online", 
+        inChat: true 
+      });
 
-// Função para selecionar destinatário
-window.setTarget = (name) => {
-  targetUser = name;
-  targetUserDisplay.innerText = `(para: ${name})`;
-};
-
-// Renderizar mensagens
-function renderMessage(data) {
-  const msg = data.val();
-  // Se for privada e não for para mim ou de mim, ignora (opcional)
-  const isPrivate = msg.to && (msg.to !== username && msg.user !== username);
-  if (isPrivate) return;
-
-  const div = document.createElement('div');
-  div.className = 'chat-message';
-  div.innerHTML = `<b>${msg.user} ${msg.to ? '→ ' + msg.to : ''}</b>: ${msg.text}`;
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-db.ref("mensagens").limitToLast(50).on("child_added", renderMessage);
-
-// Enviar mensagem
-sendButton.onclick = () => {
-  const text = messageInput.value.trim();
-  if (text) {
-    db.ref("mensagens").push({ 
-      user: username, 
-      to: targetUser, 
-      text: text, 
-      timestamp: Date.now() 
+      // Remove o usuário da lista ao desconectar (fechar aba ou navegador)
+      userRef.onDisconnect().remove();
+    }).catch((error) => {
+      console.error("Erro na autenticação anônima:", error);
     });
-    messageInput.value = '';
-    targetUser = null; // Reseta após enviar
-    targetUserDisplay.innerText = '';
-  }
-};
 
+    // Renderizar lista de usuários online
+    db.ref("usuarios").on("value", (snapshot) => {
+      onlineUsersList.innerHTML = "";
+      snapshot.forEach((child) => {
+        const userData = child.val();
+        const displayName = userData.nome || "Anônimo";
+
+        const div = document.createElement('div');
+        div.style.marginBottom = "10px";
+        div.innerHTML = `
+          <span>${displayName}</span>
+          <button onclick="setTarget('${displayName}')" style="margin-left: 5px;">Chamar</button>
+        `;
+        onlineUsersList.appendChild(div);
+      });
+    });
+
+    // Função para selecionar destinatário para mensagem privada
+    window.setTarget = (name) => {
+      targetUser = name;
+      targetUserDisplay.innerText = `(para: ${name})`;
+    };
+
+    // Renderizar mensagens no chat
+    function renderMessage(data) {
+      const msg = data.val();
+      
+      // Filtro para mensagens privadas
+      const isPrivate = msg.to && (msg.to !== username && msg.user !== username);
+      if (isPrivate) return;
+
+      const div = document.createElement('div');
+      div.className = 'chat-message';
+      div.innerHTML = `<b>${msg.user} ${msg.to ? '→ ' + msg.to : ''}</b>: ${msg.text}`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Ouvinte em tempo real para novas mensagens
+    db.ref("mensagens").limitToLast(50).on("child_added", renderMessage);
+
+    // Envio de mensagem
+    sendButton.onclick = () => {
+      const text = messageInput.value.trim();
+      if (text) {
+        db.ref("mensagens").push({ 
+          user: username, 
+          to: targetUser, 
+          text: text, 
+          timestamp: Date.now() 
+        });
+        messageInput.value = '';
+        targetUser = null;
+        targetUserDisplay.innerText = '';
+      }
+    };
+
+    // Suporte para enviar com a tecla Enter
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendButton.click();
+      }
+    });
   </script>
 </body>
 </html>
