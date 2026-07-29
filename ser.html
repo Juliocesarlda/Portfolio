@@ -253,7 +253,7 @@ header h2{ margin: 0; font-size: 22px; }
     <aside class="coluna-dir">
       <div class="card">
         <h3>💬 Bate-Papo Geral</h3>
-        <a id="link-chat" class="btn-chat" href="ser-sala-de-bate-papo.html">ABRIR O CHAT</a>
+        <button id="btn-chat" class="btn-chat">ABRIR O CHAT</button>
       </div>
       <div class="card">
         <h3>✍️ A CIPA não é só sobre regras, é sobre você. Tem alguma sugestão para melhorar o conforto do seu posto? Deixe aqui.</h3>
@@ -295,13 +295,12 @@ let feed = [];
 let avisos = [];
 let fotoBase64 = null;
 
-document.getElementById('link-chat').addEventListener('click', function(e) {
-  e.preventDefault();
-  // Pega o nome do usuário logado na tela principal
-  const nomeUsuario = usuarioLogado.nome; // substitua 'usuarioLogado.nome' pela sua variável de usuário
-  
-  // Redireciona na MESMA aba passando o usuário
-  window.location.href = `ser-sala-de-bate-papo.html?usuario=${encodeURIComponent(nomeUsuario)}`;
+document.getElementById('btn-chat').addEventListener('click', function() {
+  // Pega o usuario ativo no sistema (ajuste a variavel 'usuarioAtual' para a variavel de login da sua aplicacao)
+  const usuarioAtual = localStorage.getItem('usuarioLogado') || "Usuario"; 
+
+  // Redireciona na MESMA janela/aba passando o parâmetro correto
+  window.location.href = `ser-sala-de-bate-papo.html?usuario=${encodeURIComponent(usuarioAtual)}`;
 });
 
 // Alterna entre as abas 'login' e 'cadastro'
