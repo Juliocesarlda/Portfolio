@@ -60,10 +60,10 @@
     const urlParams = new URLSearchParams(window.location.search);
     const rawUser = urlParams.get('usuario');
 
-    // Se não informou usuário ou enviou em branco, redireciona para a página de login/início
+    // Se não houver nome na URL, redireciona na MESMA janela/aba para o login
     if (!rawUser || rawUser.trim() === "") {
       alert("Acesso negado: Você precisa informar um nome de usuário para entrar na sala.");
-      window.location.href = "index.html"; // Altere aqui para a sua página de login/inicial se tiver outro nome
+      window.location.replace("index.html"); // Substitui a URL atual na mesma aba
     }
 
     const username = rawUser.trim();
@@ -90,12 +90,12 @@
 
     let targetUser = null;
 
-    // Autenticação anônima do Firebase para sessão do banco
+    // Autenticação anônima do Firebase para controle de presença
     auth.signInAnonymously().then((cred) => {
       const uid = cred.user.uid;
       const userRef = db.ref("usuarios/" + uid);
       
-      // Registra no banco apenas com o nome válido recebido via URL
+      // Registra no banco apenas o nome válido vindo da URL
       userRef.set({ 
         nome: username, 
         status: "online", 
@@ -111,7 +111,7 @@
       snapshot.forEach((child) => {
         const userData = child.val();
         
-        // Exibe apenas registros que tenham um nome definido
+        // Exibe apenas quem tem nome válido (impede o aparecimento de Visitante ou ID numérico)
         if (userData && userData.nome) {
           const div = document.createElement('div');
           div.style.marginBottom = "10px";
