@@ -1,172 +1,192 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sala de Bate-Papo</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: var(--bg-color, #f0f0f0); color: var(--text-color, #000); }
-    .chat-container { width: 80%; margin: 40px auto; padding: 20px; background-color: var(--container-bg, #fff); border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-    .chat-header { background-color: #333; color: #fff; padding: 10px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-    .chat-messages { padding: 20px; overflow-y: auto; max-height: 400px; border-bottom: 1px solid #ccc; }
-    .chat-message { margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #ddd; }
-    #message-input { width: 75%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    #send-button { padding: 10px 20px; border-radius: 5px; background-color: #333; color: white; border: none; cursor: pointer; }
+    * { box-sizing: border-box; font-family: sans-serif; }
+    body { display: flex; background-color: #f0f2f5; margin: 0; padding: 20px; gap: 20px; }
     
-    /* Ajuste para dispositivos móveis */
-    @media (max-width: 600px) {
-      .main-wrapper {
-        flex-direction: column !important;
-        width: 95% !important;
-      }
-      
-      #user-list {
-        width: 100% !important;
-        margin-bottom: 10px;
-      }
+    /* Sidebar */
+    .sidebar { width: 280px; display: flex; flex-direction: column; gap: 20px; }
+    .section-box { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .section-title { font-weight: bold; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    
+    .user-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .btn-action { background: #e4e6eb; border: 1px solid #ccc; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
+    .btn-action:hover { background: #d8dadf; }
+    .btn-invite { background: #28a745; color: white; border: none; }
+    .btn-invite:hover { background: #218838; }
 
-      #message-input {
-        width: 60% !important;
-      }
-    }
+    /* Chat Area */
+    .chat-area { flex: 1; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 85vh; }
+    .chat-header { background: #333; color: white; padding: 15px; font-size: 1.3rem; border-radius: 4px; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-voltar-home { background: #555; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s; }
+    .btn-voltar-home:hover { background: #777; }
+    .chat-messages { flex: 1; border: 1px solid #eee; padding: 10px; border-radius: 4px; overflow-y: auto; margin-bottom: 15px; background: #fafafa; }
+    .chat-messages p { margin: 5px 0; }
+    .chat-input-group { display: flex; gap: 10px; }
+    .chat-input-group input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .chat-input-group button { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
   </style>
+
+  <!-- SDKs do Firebase (Compat Version) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <div class="main-wrapper" style="display: flex; gap: 20px; width: 90%; margin: 20px auto;">
-    <!-- Coluna Lateral -->
-    <div id="user-list" style="width: 250px; background: #eee; padding: 15px; border-radius: 10px;">
-      <h3>Usuários Online</h3>
-      <div id="online-users"></div>
+  <!-- Sidebar com Usuários -->
+  <div class="sidebar">
+    <div class="section-box">
+      <div class="section-title">Na Sala de Bate-Papo</div>
+      <div id="lista-na-sala"></div>
     </div>
 
-    <!-- Chat Principal -->
-    <div id="chat-container" class="chat-container" style="flex: 1; margin: 0;">
-      <div class="chat-header">
-        <h2>Sala de Bate-Papo <span id="target-user-display"></span></h2>
-      </div>
-      <div class="chat-messages" id="chat-messages"></div>
-      <input type="text" id="message-input" placeholder="Digite sua mensagem...">
-      <button id="send-button">Enviar</button>
+    <div class="section-box">
+      <div class="section-title">Online no Sistema (Fora)</div>
+      <div id="lista-fora-da-sala"></div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <!-- Área do Chat -->
+  <div class="chat-area">
+    <div class="chat-header">
+      <span>Sala de Bate-Papo</span>
+      <button class="btn-voltar-home" onclick="voltarParaInicio()">← Voltar para o Início</button>
+    </div>
+    <div class="chat-messages" id="mensagens"></div>
+    <div class="chat-input-group">
+      <input type="text" id="input-msg" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter') enviarMensagem()">
+      <button onclick="enviarMensagem()">Enviar</button>
+    </div>
+  </div>
 
   <script>
-    // 1. Validação estrita do usuário na URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const rawUser = urlParams.get('usuario');
-
-    // Se não houver nome na URL, redireciona na MESMA janela/aba para o login
-    if (!rawUser || rawUser.trim() === "") {
-      alert("Acesso negado: Você precisa informar um nome de usuário para entrar na sala.");
-      window.location.replace("index.html"); // Substitui a URL atual na mesma aba
-    }
-
-    const username = rawUser.trim();
-
-    // Configuração do Firebase
+    // 1. Configuração do Firebase apontando para o seu Realtime Database
     const firebaseConfig = {
-      apiKey: "AIzaSyALQICorKSuacosN8YLmRZneufs6mwO4s0",
-      authDomain: "sistema-de-engajamento-e-risco.firebaseapp.com",
-      projectId: "sistema-de-engajamento-e-risco",
-      storageBucket: "sistema-de-engajamento-e-risco.firebasestorage.app",
-      messagingSenderId: "473328409083",
-      appId: "1:473328409083:web:bc74aded0063776379935e"
+      databaseURL: "https://sistema-de-engajamento-e-risco-default-rtdb.firebaseio.com"
     };
-
+    
+    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const auth = firebase.auth();
 
-    const chatMessages = document.getElementById('chat-messages');
-    const messageInput = document.getElementById('message-input');
-    const sendButton = document.getElementById('send-button');
-    const onlineUsersList = document.getElementById('online-users');
-    const targetUserDisplay = document.getElementById('target-user-display');
+    // 2. Obtém usuário atual via URL (?usuario=lucky)
+    const urlParams = new URLSearchParams(window.location.search);
+    const usuarioAtual = urlParams.get('usuario') || 'lucky';
 
-    let targetUser = null;
-
-    // Autenticação anônima do Firebase para controle de presença
-    auth.signInAnonymously().then((cred) => {
-      const uid = cred.user.uid;
-      const userRef = db.ref("usuarios/" + uid);
-      
-      // Registra no banco apenas o nome válido vindo da URL
-      userRef.set({ 
-        nome: username, 
-        status: "online", 
-        inChat: true 
-      });
-
-      userRef.onDisconnect().remove();
+    // 3. Marca o usuário atual como ativo no nó /usuarios e presente na sala
+    const userRef = db.ref('usuarios/' + usuarioAtual);
+    userRef.set({
+      nome: usuarioAtual,
+      naSala: true,
+      online: true
     });
 
-    // Renderizar lista de usuários online
-    db.ref("usuarios").on("value", (snapshot) => {
-      onlineUsersList.innerHTML = "";
-      snapshot.forEach((child) => {
-        const userData = child.val();
-        
-        // Exibe apenas quem tem nome válido (impede o aparecimento de Visitante ou ID numérico)
-        if (userData && userData.nome) {
+    // Remove ou atualiza estado se o usuário fechar a aba
+    userRef.onDisconnect().update({ naSala: false, online: false });
+
+    // 4. Escuta os Usuários em Tempo Real do Banco
+    db.ref('usuarios').on('value', (snapshot) => {
+      const usuarios = snapshot.val() || {};
+      
+      const containerNaSala = document.getElementById('lista-na-sala');
+      const containerForaDaSala = document.getElementById('lista-fora-da-sala');
+
+      // Limpa os containers para EVITAR DUPLICAÇÃO na tela
+      containerNaSala.innerHTML = '';
+      containerForaDaSala.innerHTML = '';
+
+      Object.keys(usuarios).forEach(key => {
+        const u = usuarios[key];
+        if (!u || !u.nome) return;
+
+        const isMe = u.nome === usuarioAtual;
+
+        if (u.naSala) {
+          // Usuários DENTRO da Sala
           const div = document.createElement('div');
-          div.style.marginBottom = "10px";
+          div.className = 'user-item';
           div.innerHTML = `
-            <span>${userData.nome}</span>
-            <button onclick="setTarget('${userData.nome}')" style="margin-left: 5px;">Chamar</button>
+            <span>${u.nome} ${isMe ? '<b>(Você)</b>' : ''}</span>
+            ${!isMe ? `<button class="btn-action" onclick="chamarUsuario('${u.nome}')">Chamar</button>` : ''}
           `;
-          onlineUsersList.appendChild(div);
+          containerNaSala.appendChild(div);
+        } else if (u.online) {
+          // Usuários FORA da Sala (no Sistema)
+          const div = document.createElement('div');
+          div.className = 'user-item';
+          div.innerHTML = `
+            <span>${u.nome}</span>
+            <button class="btn-action btn-invite" onclick="convidarParaSala('${u.nome}')">Convidar</button>
+          `;
+          containerForaDaSala.appendChild(div);
         }
       });
     });
 
-    // Selecionar destinatário
-    window.setTarget = (name) => {
-      targetUser = name;
-      targetUserDisplay.innerText = `(para: ${name})`;
-    };
-
-    // Renderizar mensagens
-    function renderMessage(data) {
-      const msg = data.val();
+    // 5. Escuta as Mensagens em Tempo Real
+    db.ref('mensagens').on('value', (snapshot) => {
+      const msgBox = document.getElementById('mensagens');
+      msgBox.innerHTML = '';
       
-      const isPrivate = msg.to && (msg.to !== username && msg.user !== username);
-      if (isPrivate) return;
+      const mensagens = snapshot.val() || {};
+      Object.keys(mensagens).forEach(key => {
+        const msg = mensagens[key];
+        if (msg && msg.autor && msg.texto) {
+          const p = document.createElement('p');
+          if (msg.tipo === 'sistema') {
+            p.innerHTML = `<i>* <b>${msg.autor}</b> ${msg.texto} *</i>`;
+          } else {
+            p.innerHTML = `<b>${msg.autor}:</b> ${msg.texto}`;
+          }
+          msgBox.appendChild(p);
+        }
+      });
+      msgBox.scrollTop = msgBox.scrollHeight;
+    });
 
-      const div = document.createElement('div');
-      div.className = 'chat-message';
-      div.innerHTML = `<b>${msg.user} ${msg.to ? '→ ' + msg.to : ''}</b>: ${msg.text}`;
-      chatMessages.appendChild(div);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+    // 6. Funções de Ação
+    function enviarMensagem() {
+      const input = document.getElementById('input-msg');
+      const texto = input.value.trim();
+      
+      if (texto !== '') {
+        db.ref('mensagens').push({
+          autor: usuarioAtual,
+          texto: texto,
+          timestamp: Date.now()
+        });
+        input.value = '';
+      }
     }
 
-    db.ref("mensagens").limitToLast(50).on("child_added", renderMessage);
+    function chamarUsuario(nome) {
+      alert(`Você chamou @${nome} no bate-papo!`);
+    }
 
-    // Enviar mensagem
-    sendButton.onclick = () => {
-      const text = messageInput.value.trim();
-      if (text) {
-        db.ref("mensagens").push({ 
-          user: username, 
-          to: targetUser, 
-          text: text, 
-          timestamp: Date.now() 
-        });
-        messageInput.value = '';
-        targetUser = null;
-        targetUserDisplay.innerText = '';
-      }
-    };
+    function convidarParaSala(nome) {
+      alert(`Convite enviado para ${nome} entrar na sala!`);
+      
+      // Registra mensagem no chat avisando sobre o convite
+      db.ref('mensagens').push({
+        autor: usuarioAtual,
+        texto: `enviou um convite para ${nome} entrar na sala de bate-papo.`,
+        tipo: 'sistema',
+        timestamp: Date.now()
+      });
+    }
 
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        sendButton.click();
-      }
-    });
+    function voltarParaInicio() {
+      // Atualiza o estado do usuário no Firebase informando que ele saiu da sala (mantendo online se necessário)
+      userRef.update({ naSala: false }).then(() => {
+        window.location.href = 'ser.html'; // Redireciona para a página de início
+      }).catch(() => {
+        window.location.href = 'ser.html';
+      });
+    }
   </script>
 </body>
 </html>
