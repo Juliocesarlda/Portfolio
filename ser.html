@@ -20,7 +20,7 @@
   --verde: #5CB85C;
 }
 
-/* Isso força o menu a flutuar sobre o feed */
+/* Menu de reações */
 [id^="menu-"] {
   display: none; 
   position: absolute; 
@@ -32,7 +32,6 @@
   border-radius: 20px !important;
   margin-top: 5px;
 }
-/* O container que segura o menu precisa ter position: relative */
 .area-reacoes { position: relative; }
 
 *{ box-sizing: border-box; font-family: 'Segoe UI', Arial, Helvetica, sans-serif; }
@@ -43,8 +42,8 @@ body{ margin: 0; background: var(--azul-claro); color: var(--texto); font-size: 
 button{ cursor: pointer; border: 0; border-radius: 6px; font-weight: bold; }
 input, textarea{ font-size: 16px; border: 1px solid var(--borda); border-radius: 6px; padding: 10px; width: 100%; }
 
-/* TELA LOGIN */
-#tela-login{ display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+/* TELA LOGIN & CADASTRO */
+#tela-login{ display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px 0; }
 .box-orkut{
   background: white; border: 1px solid var(--borda); border-radius: 10px;
   padding: 30px; max-width: 420px; width: 95%;
@@ -52,10 +51,23 @@ input, textarea{ font-size: 16px; border: 1px solid var(--borda); border-radius:
 }
 .box-orkut h1{ color: var(--azul-orkut); margin: 0 0 5px 0; font-size: 42px; }
 .slogan{ margin: 0 0 20px 0; color: #666; }
-.box-orkut label{ display: block; text-align: left; font-weight: bold; margin-bottom: 5px; }
-.box-orkut button{ width: 100%; padding: 14px; font-size: 18px; background: var(--azul-orkut); color: white; margin-top: 10px; }
-.box-orkut button:hover{ background: #2c426a; }
-small{ color: #777; }
+.box-orkut label{ display: block; text-align: left; font-weight: bold; margin-bottom: 5px; margin-top: 10px; }
+.box-orkut button.btn-principal{ width: 100%; padding: 14px; font-size: 18px; background: var(--azul-orkut); color: white; margin-top: 15px; }
+.box-orkut button.btn-principal:hover{ background: #2c426a; }
+
+/* ABAS DE LOGIN / CADASTRO */
+.abas-auth { display: flex; margin-bottom: 15px; border-bottom: 2px solid var(--borda); }
+.aba-btn { flex: 1; padding: 10px; background: none; border: none; font-size: 16px; color: #666; border-bottom: 3px solid transparent; cursor: pointer; }
+.aba-btn.ativa { color: var(--azul-orkut); border-bottom-color: var(--azul-orkut); font-weight: bold; }
+
+/* BOTÃO GOOGLE */
+.btn-google {
+  width: 100%; padding: 12px; background: #fff; color: #757575; border: 1px solid #ddd;
+  border-radius: 6px; display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 15px; font-size: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer;
+}
+.btn-google:hover { background: #f8f8f8; }
+.divisor-or { margin: 15px 0 5px 0; color: #aaa; font-size: 13px; position: relative; }
 
 /* HEADER */
 header{
@@ -67,7 +79,7 @@ header h2{ margin: 0; font-size: 22px; }
 #usuario-logado{ font-weight: bold; }
 .btn-sair{ padding: 8px 12px; font-size: 14px; background: white; color: var(--azul-orkut); }
 
-/* GRID ORKUT */
+/* GRID */
 .grid-orkut{
   display: grid; grid-template-columns: 260px 1fr 300px; gap: 15px; margin-top: 15px;
 }
@@ -81,14 +93,12 @@ header h2{ margin: 0; font-size: 22px; }
 /* COLUNA CENTRO - POSTAR */
 .postar-box textarea{ min-height: 80px; resize: vertical; margin-bottom: 10px; }
 .postar-acoes{ display: flex; gap: 10px; align-items: center; }
-.btn-foto{ background: var(--verde); color: white; padding: 12px 16px; font-size: 16px; }
+.btn-foto{ background: var(--verde); color: white; padding: 12px 16px; font-size: 16px; cursor: pointer; border-radius: 6px; }
 .btn-postar{ background: var(--azul-orkut); color: white; padding: 12px 20px; font-size: 16px; flex-grow: 1; }
 #preview-foto{ max-width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
 
 /* FEED */
-.post{
-  background: white; border-left: 5px solid var(--azul-orkut);
-}
+.post{ background: white; border-left: 5px solid var(--azul-orkut); }
 .post .topo{ display: flex; justify-content: space-between; margin-bottom: 8px; }
 .post .autor{ font-weight: bold; color: var(--azul-orkut); }
 .post .hora{ font-size: 13px; color: #777; }
@@ -99,7 +109,7 @@ header h2{ margin: 0; font-size: 22px; }
 .btn-chat{
   width: 100%; padding: 14px; font-size: 18px;
   background: var(--verde); color: white; text-decoration: none;
-  display: block; text-align: center; border-radius: 6px;
+  display: block; text-align: center; border-radius: 6px; font-weight: bold;
 }
 .btn-chat:hover{ background: #4cae4c; }
 .aviso-item{ background: var(--amarelo); padding: 8px; border-radius: 5px; margin-bottom: 8px; font-size: 15px; }
@@ -120,22 +130,61 @@ header h2{ margin: 0; font-size: 22px; }
 </head>
 <body>
 
+<!-- TELA UNIFICADA DE LOGIN / CADASTRO -->
 <div id="tela-login">
-    <div class="box-orkut">
-
-        <img src="serlogointro.png" alt="Avatar Peão" style="width: 100%;">
-
-      <h1>S.E.R.<br></h1>
-      <h3>(Sistema de Engajamento e Risco)</h3>
+  <div class="box-orkut">
+    <img src="serlogointro.png" alt="Logo S.E.R." style="width: 100%; border-radius: 6px;">
+    <h1>S.E.R.</h1>
+    <h3>(Sistema de Engajamento e Risco)</h3>
     <p class="slogan">Conectando quem constrói com segurança</p>
-    <label for="apelido">Seu Nome:</label>
-    <input type="text" id="apelido" maxlength="25">
-    <label for="re" style="margin-top:10px;">Número de RE:</label>
-    <input type="text" id="re" maxlength="15" inputmode="numeric" placeholder="Ex: 12345">
-    <button id="btn-entrar">ENTRAR NA REDE</button>
+
+    <!-- Alternar entre Entrar e Cadastrar -->
+    <div class="abas-auth">
+      <button class="aba-btn ativa" id="aba-login" onclick="alternarAba('login')">Ja sou cadastrado</button>
+      <button class="aba-btn" id="aba-cadastro" onclick="alternarAba('cadastro')">Cadastro para primeiro acesso</button>
+    </div>
+
+    <!-- FORMULÁRIO DE LOGIN (NOME E SENHA) -->
+    <div id="form-login">
+      <label for="login-nome">Nome:</label>
+      <input type="text" id="login-nome" maxlength="40" placeholder="Ex: João Silva">
+      
+      <label for="login-senha">Senha:</label>
+      <input type="password" id="login-senha" maxlength="30" placeholder="Digite sua senha">
+      
+      <button class="btn-principal" id="btn-entrar">ENTRAR NA REDE</button>
+    </div>
+
+    <!-- FORMULÁRIO DE CADASTRO -->
+    <div id="form-cadastro" class="hidden">
+      <label for="cad-nome">Nome:</label>
+      <input type="text" id="cad-nome" maxlength="30" placeholder="Ex: João Silva">
+
+      <label for="cad-re">Número de RE:</label>
+      <input type="text" id="cad-re" maxlength="15" placeholder="Ex: 123456">
+
+      <label for="cad-senha">Crie uma Senha:</label>
+      <input type="password" id="cad-senha" maxlength="30" placeholder="Crie uma senha segura">
+
+      <button class="btn-principal" id="btn-cadastrar" style="background: var(--verde);">CRIAR CADASTRO</button>
+    </div>
+
+    <div class="divisor-or">OU</div>
+
+    <!-- BOTÃO LOGIN GOOGLE -->
+    <button class="btn-google" id="btn-google">
+      <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Entrar com Google
+    </button>
   </div>
 </div>
 
+<!-- TELA PRINCIPAL DO APLICATIVO -->
 <div id="tela-app" class="container hidden">
   <header>
     <h2>S.E.R. (Sistema de Engajamento e Risco)</h2>
@@ -148,16 +197,16 @@ header h2{ margin: 0; font-size: 22px; }
   <main class="grid-orkut">
     <aside class="coluna-esq">
         <div class="card">
-            <img class="avatar" src="avatarrp.png" alt="Avatar Peão">
+            <img class="avatar" src="avatarrp.png" alt="Avatar Peão" onerror="this.src='https://via.placeholder.com/150'">
             <h3 id="nome-perfil">Colaborador</h3>
             <hr style="margin: 10px 0;">
   
             <p><b>🟢 Usuários on-line:</b></p>
-            <ul id="lista-online" style="list-style: none; padding: 0;"></ul>
+            <ul id="lista-online"></ul>
   
             <hr style="margin: 10px 0;">
   
-            <p><b>🕒 Ultimos acessos :</b></p>
+            <p><b>🕒 Últimos acessos:</b></p>
             <ul id="lista-historico" style="list-style: none; padding: 0; font-size: 12px;"></ul>
         </div>
     </aside>
@@ -168,28 +217,26 @@ header h2{ margin: 0; font-size: 22px; }
         <strong>Participe da nossa pesquisa rápida de satisfação e ajude a gente a melhorar o dia a dia.</strong><br><br>
         <h3>🌡️ Como está o clima no seu setor hoje?</h3>
         <div style="height: 20px; background: #eee; border-radius: 10px; overflow: hidden;">
-        <div id="barra-clima" style="height: 100%; width: 50%; background: var(--verde); transition: width 0.5s;"></div>
-      </div>
-      <p id="texto-clima" style="font-size: 14px; text-align: center; margin-top: 5px;">Clima: Calmo</p>
-      <div style="display: flex; gap: 5px;">
-        <button onclick="votarClima(1)" style="flex:1; background:var(--verde); color:white;">Tranquilo</button>
-        <button onclick="votarClima(2)" style="flex:1; background:#f0ad4e; color:white;">Correria</button>
-        <button onclick="votarClima(3)" style="flex:1; background:#d9534f; color:white;">Caos!</button>
-      </div>
+          <div id="barra-clima" style="height: 100%; width: 50%; background: var(--verde); transition: width 0.5s;"></div>
+        </div>
+        <p id="texto-clima" style="font-size: 14px; text-align: center; margin-top: 5px;">Clima: Calmo</p>
+        <div style="display: flex; gap: 5px;">
+          <button onclick="votarClima(1)" style="flex:1; background:var(--verde); color:white; padding:8px;">Tranquilo</button>
+          <button onclick="votarClima(2)" style="flex:1; background:#f0ad4e; color:white; padding:8px;">Correria</button>
+          <button onclick="votarClima(3)" style="flex:1; background:#d9534f; color:white; padding:8px;">Caos!</button>
+        </div>
       </div>
 
       <div class="card" id="card-satisfacao">
-  <h3>📊 Você sente que a equipe está engajada com a segurança hoje?</h3>
-  <div id="grafico-satisfacao" style="margin: 15px 0;">
-    <!-- O gráfico de barras será injetado aqui -->
-  </div>
-  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-    <button onclick="votarSatisfacao('Satisfeito')" style="background:#5CB85C; color:white; padding: 8px;">Satisfeito</button>
-    <button onclick="votarSatisfacao('Nao Satisfeito')" style="background:#d9534f; color:white; padding: 8px;">Não Satisfeito</button>
-    <button onclick="votarSatisfacao('Mais ou menos')" style="background:#f0ad4e; color:white; padding: 8px;">Mais ou menos</button>
-    <button onclick="votarSatisfacao('Tanto faz')" style="background:#666; color:white; padding: 8px;">Tanto faz</button>
-  </div>
-</div>
+        <h3>📊 Você sente que a equipe está engajada com a segurança hoje?</h3>
+        <div id="grafico-satisfacao" style="margin: 15px 0;"></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+          <button onclick="votarSatisfacao('Satisfeito')" style="background:#5CB85C; color:white; padding: 8px;">Satisfeito</button>
+          <button onclick="votarSatisfacao('Nao Satisfeito')" style="background:#d9534f; color:white; padding: 8px;">Não Satisfeito</button>
+          <button onclick="votarSatisfacao('Mais ou menos')" style="background:#f0ad4e; color:white; padding: 8px;">Mais ou menos</button>
+          <button onclick="votarSatisfacao('Tanto faz')" style="background:#666; color:white; padding: 8px;">Tanto faz</button>
+        </div>
+      </div>
 
       <div class="card postar-box">
         <textarea id="texto-post" placeholder="Deixa um recado pro turno..."></textarea>
@@ -206,10 +253,10 @@ header h2{ margin: 0; font-size: 22px; }
     <aside class="coluna-dir">
       <div class="card">
         <h3>💬 Bate-Papo Geral</h3>
-        <a id="link-chat" class="btn-chat" href="#" target="_blank">ABRIR O CHAT</a>
+        <button id="btn-chat" class="btn-chat">ABRIR O CHAT</button>
       </div>
       <div class="card">
-        <h3>&#9997; A CIPA não é só sobre regras, é sobre você. Tem alguma sugestão para melhorar o conforto do seu posto? Deixe aqui.</h3>
+        <h3>✍️ A CIPA não é só sobre regras, é sobre você. Tem alguma sugestão para melhorar o conforto do seu posto? Deixe aqui.</h3>
         <div id="lista-avisos"></div>
         <button id="btn-aviso" style="width:100%; padding:10px; background:var(--azul-orkut); color:white; margin-top:5px;">+ Deixe sua sugestão</button>
       </div>
@@ -219,233 +266,275 @@ header h2{ margin: 0; font-size: 22px; }
 
 <script>
 
-// ===== CONFIGURAÇÃO FIREBASE =====
+  // Import the functions you need from the SDKs you need
+// import { initializeApp } from "firebase/app";
+
+  // ===== CONFIGURAÇÃO FIREBASE ORIGINAL =====  
 const firebaseConfig = {
-  apiKey: "AIzaSyBJQ94Ty6lurovUXe07P9ph8C30-ZdqX2g",
-  authDomain: "batepapo-7940a.firebaseapp.com",
-  databaseURL: "https://batepapo-7940a-default-rtdb.firebaseio.com",
-  projectId: "batepapo-7940a",
-  storageBucket: "batepapo-7940a.appspot.com",
-  messagingSenderId: "785173093230",
-  appId: "1:785173093230:web:df0fcdf5e4318397127f7f"
+  apiKey: "AIzaSyALQICorKSuacosN8YLmRZneufs6mwO4s0",
+  authDomain: "sistema-de-engajamento-e-risco.firebaseapp.com",
+  projectId: "sistema-de-engajamento-e-risco",
+  storageBucket: "sistema-de-engajamento-e-risco.firebasestorage.app",
+  messagingSenderId: "473328409083",
+  appId: "1:473328409083:web:bc74aded0063776379935e"
 };
-firebase.initializeApp(firebaseConfig);
+  
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
 const db = firebase.database();
 const auth = firebase.auth();
-
-// ===== PRESENÇA (PEÕES ONLINE) =====
 const conectadosRef = db.ref('status');
 
-
-// Função para votar
-function votarClima(valor) {
-  // Salva o voto do usuário atual no Firebase, indexado pelo RE
-  db.ref('clima/' + reAtual).set(valor);
-}
-
-
-// Função para registrar o voto do usuário
-function votarSatisfacao(opcao) {
-  // Salva ou atualiza o voto do usuário no Firebase, indexado pelo RE
-  db.ref('satisfacao/' + reAtual).set(opcao);
-}
-
-// Função para registrar o peão quando ele loga
-function definirStatusOnline(reUsuario) {
-    const reLimpo = reUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-    const meuStatusRef = db.ref('status/' + reLimpo);
-    
-  //Remove o registro ao fechar/atualizar a página
-  //meuStatusRef.onDisconnect().remove();
-  //meuStatusRef.set('online');
-
-    const statusRef = db.ref('status/' + reLimpo);
-
-    statusRef.onDisconnect().remove();
-    statusRef.set(true);
-
-}
-
-// ===== CONSTANTES E ESTADO =====
+// ESTADO GLOBAL
 const CHAVE_USER = 'radiopeao_user';
-const CHAVE_ONLINE = 'radiopeao_online';
 let usuarioAtual = null;
 let reAtual = null;
 let feed = [];
 let avisos = [];
 let fotoBase64 = null;
 
+document.getElementById('btn-chat').addEventListener('click', function() {
+  // Verifica se a variável global usuarioAtual está preenchida
+  if (!usuarioAtual) {
+    alert("Você precisa estar logado para acessar o chat!");
+    return;
+  }
+
+  // Redireciona na MESMA janela passando o nome correto do usuário logado
+  window.location.href = `ser-sala-de-bate-papo.html?usuario=${encodeURIComponent(usuarioAtual)}`;
+});
+
+// Alterna entre as abas 'login' e 'cadastro'
+function alternarAba(aba) {
+  const loginForm = document.getElementById('form-login');
+  const cadForm = document.getElementById('form-cadastro');
+  const abaLogin = document.getElementById('aba-login');
+  const abaCad = document.getElementById('aba-cadastro');
+
+  if (aba === 'login') {
+    loginForm.classList.remove('hidden');
+    cadForm.classList.add('hidden');
+    abaLogin.classList.add('ativa');
+    abaCad.classList.remove('ativa');
+  } else {
+    loginForm.classList.add('hidden');
+    cadForm.classList.remove('hidden');
+    abaLogin.classList.remove('ativa');
+    abaCad.classList.add('ativa');
+  }
+}
+
+// Garante que o usuário está autenticado no Firebase Auth para evitar erro 'permission_denied'
+function garantirAutenticacao() {
+  if (auth.currentUser) {
+    return Promise.resolve(auth.currentUser);
+  }
+  return auth.signInAnonymously().then(cred => cred.user);
+}
+
+// ===== CADASTRO DE NOVO USUÁRIO =====
+document.getElementById('btn-cadastrar').onclick = () => {
+  const nome = document.getElementById('cad-nome').value.trim();
+  const re = document.getElementById('cad-re').value.trim();
+  const senha = document.getElementById('cad-senha').value.trim();
+
+  if (nome.length < 3) return alert('Por favor, digite seu nome completo (mínimo 3 letras)!');
+  if (re.length < 3) return alert('Informe um número de RE válido!');
+  if (senha.length < 4) return alert('Sua senha deve ter no mínimo 4 caracteres!');
+
+  const reLimpo = re.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+
+  garantirAutenticacao().then(() => {
+    return db.ref('usuarios/' + reLimpo).once('value');
+  }).then((snap) => {
+    if (snap.exists()) {
+      alert('Este RE já está cadastrado! Alterne para a aba "Entrar" e faça seu login.');
+      alternarAba('login');
+      document.getElementById('login-nome').value = nome;
+      return;
+    }
+
+    return db.ref('usuarios/' + reLimpo).set({
+      nome: nome,
+      senha: senha,
+      criadoEm: new Date().toLocaleString('pt-BR')
+    }).then(() => {
+      alert('Cadastro realizado com sucesso!');
+      localStorage.setItem(CHAVE_USER, JSON.stringify({ nome: nome, re: reLimpo }));
+      entrarApp(nome, reLimpo);
+    });
+  }).catch((err) => {
+    alert('Erro ao realizar cadastro: ' + err.message);
+  });
+};
+
+// ===== LOGIN COM NOME E SENHA =====
+document.getElementById('btn-entrar').onclick = () => {
+  const nomeDigitado = document.getElementById('login-nome').value.trim();
+  const senhaDigitada = document.getElementById('login-senha').value.trim();
+
+  if (!nomeDigitado || !senhaDigitada) return alert('Preencha seu Nome Completo e a Senha para entrar!');
+
+  garantirAutenticacao().then(() => {
+    return db.ref('usuarios').once('value');
+  }).then((snap) => {
+    let usuarioEncontrado = null;
+    let reEncontrado = null;
+
+    // Busca nas contas cadastradas o usuário com o mesmo nome
+    snap.forEach((child) => {
+      const dados = child.val();
+      if (dados.nome && dados.nome.trim().toLowerCase() === nomeDigitado.toLowerCase()) {
+        usuarioEncontrado = dados;
+        reEncontrado = child.key;
+      }
+    });
+
+    if (!usuarioEncontrado) {
+      alert('Nome de usuário não encontrado! Verifique se digitou seu nome corretamente ou faça o cadastro no botão ao lado.');
+      return;
+    }
+
+    if (usuarioEncontrado.senha !== senhaDigitada) {
+      alert('Senha incorreta! Verifique a senha digitada.');
+      return;
+    }
+
+    localStorage.setItem(CHAVE_USER, JSON.stringify({ nome: usuarioEncontrado.nome, re: reEncontrado }));
+    entrarApp(usuarioEncontrado.nome, reEncontrado);
+  }).catch((err) => {
+    alert('Erro ao realizar login: ' + err.message);
+  });
+};
+
+// ===== LOGIN COM GOOGLE =====
+document.getElementById('btn-google').onclick = () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  
+  auth.signInWithPopup(provider)
+    .then((result) => {
+      const user = result.user;
+      const nomeGoogle = user.displayName || user.email.split('@')[0];
+      const reGoogle = 'G_' + user.uid.substring(0, 8);
+
+      return db.ref('usuarios/' + reGoogle).once('value').then((snap) => {
+        if (!snap.exists()) {
+          db.ref('usuarios/' + reGoogle).set({
+            nome: nomeGoogle,
+            email: user.email,
+            criadoEm: new Date().toLocaleString('pt-BR')
+          });
+        }
+        localStorage.setItem(CHAVE_USER, JSON.stringify({ nome: nomeGoogle, re: reGoogle }));
+        entrarApp(nomeGoogle, reGoogle);
+      });
+    })
+    .catch((error) => {
+      alert("Falha na autenticação com o Google: " + error.message);
+    });
+};
+
+// RECUPERA SESSÃO SALVA
 const dadosSalvos = localStorage.getItem(CHAVE_USER);
 if (dadosSalvos) {
   try {
     const obj = JSON.parse(dadosSalvos);
     if (obj && obj.nome && obj.re) {
-      usuarioAtual = obj.nome;
-      reAtual = obj.re;
+      garantirAutenticacao().then(() => {
+        entrarApp(obj.nome, obj.re);
+      });
     }
   } catch (e) {
-    // dado antigo/inválido, ignora e pede login de novo
     localStorage.removeItem(CHAVE_USER);
   }
 }
 
-// Autentica anonimamente no Firebase (exigido pelas regras de segurança "auth != null")
-// e só então libera o app.
-function autenticarEEntrar(nome, re) {
-  auth.signInAnonymously()
-    .then(() => {
-      verificarReEEntrar(nome, re);
-    })
-    .catch((error) => {
-      console.error('Erro de autenticação:', error);
-      alert('Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.');
-    });
-}
-
-// Verifica se o RE já pertence a outro nome cadastrado antes de liberar o acesso.
-// Isso evita que alguém digite o RE de outra pessoa por engano (ou de propósito)
-// e "assuma" a identidade dela nos votos, reações e status.
-function verificarReEEntrar(nome, re) {
-  db.ref('usuarios/' + re).once('value')
-    .then((snap) => {
-      const dados = snap.val();
-      if (dados && dados.nome && dados.nome !== nome) {
-        const confirmar = confirm(
-          `O RE ${re} já está cadastrado como "${dados.nome}".\n\n` +
-          `Tem certeza que você é essa pessoa e quer entrar como "${nome}"?\n\n` +
-          `Se você digitou o RE errado, clique em Cancelar e corrija.`
-        );
-        if (!confirmar) {
-          localStorage.removeItem(CHAVE_USER);
-          return;
-        }
-      }
-      entrarApp(nome, re);
-    })
-    .catch((error) => {
-      console.error('Erro ao verificar RE:', error);
-      // Mesmo se a verificação falhar (ex: sem internet), não trava o acesso ao trabalho
-      entrarApp(nome, re);
-    });
-}
-
-// ===== INICIO =====
-//document.getElementById('link-chat').href = 'https://juliocesarlda.github.io/chat-firebase/index.html';
-document.getElementById('link-chat').href = 'ser-sala-de-bate-papo.html';
-
-if (usuarioAtual && reAtual) { autenticarEEntrar(usuarioAtual, reAtual); }
-
-document.getElementById('btn-entrar').onclick = () => {
-  const apelido = document.getElementById('apelido').value.trim();
-  const re = document.getElementById('re').value.trim();
-  if (apelido.length < 3) { return alert('Nome precisa ter 3 letras no mínimo!'); }
-  if (re.length < 3) { return alert('Informe seu número de RE (mínimo 3 dígitos)!'); }
-  localStorage.setItem(CHAVE_USER, JSON.stringify({ nome: apelido, re: re }));
-  autenticarEEntrar(apelido, re);
-}
-
+// LOGOUT
 document.getElementById('btn-sair').onclick = () => {
-    // Recupera o RE que está salvo no localStorage
     const usuarioSalvo = JSON.parse(localStorage.getItem(CHAVE_USER));
-    
     if (usuarioSalvo && usuarioSalvo.re) {
-        // Remove o status do Firebase antes de sair
         db.ref('status/' + usuarioSalvo.re).remove();
     }
-    
     localStorage.removeItem(CHAVE_USER);
     auth.signOut().finally(() => location.reload());
 };
 
-// ===== LOGIN/APP =====
+// ===== INICIALIZAÇÃO DO APP APÓS LOGIN =====
 function entrarApp(nome, re){
   usuarioAtual = nome;
   reAtual = re;
   
-  // Ativa o status (indexado pelo RE, que é único por colaborador)
   definirStatusOnline(re);
 
-  // Salva/atualiza o perfil do colaborador (nome vinculado ao RE)
-  db.ref('usuarios/' + re).set({
-    nome: nome,
+  db.ref('usuarios/' + re).update({
     ultimoAcesso: new Date().toLocaleString('pt-BR')
   });
-  
-  // Ouvintes Firebase
 
- // Monitora o nó de status para listar quem está online e seus nomes
-// 1. Lista quem está online agora (nó 'status')
-conectadosRef.on('value', (snapshot) => {
-  const lista = document.getElementById('lista-online');
-  lista.innerHTML = '';
-  snapshot.forEach((child) => {
-    db.ref('usuarios/' + child.key).once('value', (u) => {
-      const nome = u.val() ? u.val().nome : "Desconhecido";
-      lista.innerHTML += `<li>👤 ${nome}</li>`;
+  conectadosRef.on('value', (snapshot) => {
+    const lista = document.getElementById('lista-online');
+    lista.innerHTML = '';
+    snapshot.forEach((child) => {
+      db.ref('usuarios/' + child.key).once('value', (u) => {
+        const n = u.val() ? u.val().nome : "Desconhecido";
+        lista.innerHTML += `<li>👤 ${n}</li>`;
+      });
     });
   });
-});
 
-// 2. Lista todos os usuários e seus últimos acessos (nó 'usuarios')
-db.ref('usuarios').on('value', (snapshot) => {
-  const historico = document.getElementById('lista-historico');
-  historico.innerHTML = '';
-  snapshot.forEach((child) => {
-    const dados = child.val();
-    // Mostra o nome, data e hora salvos no momento do login
-    historico.innerHTML += `<li>👤 ${dados.nome}<br><small>📅 ${dados.ultimoAcesso}</small></li><br>`;
+  db.ref('usuarios').on('value', (snapshot) => {
+    const historico = document.getElementById('lista-historico');
+    historico.innerHTML = '';
+    snapshot.forEach((child) => {
+      const dados = child.val();
+      if(dados.ultimoAcesso) {
+        historico.innerHTML += `<li>👤 ${dados.nome}<br><small>📅 ${dados.ultimoAcesso}</small></li><br>`;
+      }
+    });
   });
-});
 
-// Ouvinte para atualizar o termômetro em tempo real
-db.ref('clima').on('value', (s) => {
-  const votos = s.val() ? Object.values(s.val()) : [];
-  if (votos.length === 0) return;
+  db.ref('clima').on('value', (s) => {
+    const votos = s.val() ? Object.values(s.val()) : [];
+    if (votos.length === 0) return;
 
-  // Calcula a média dos votos
-  const media = votos.reduce((a, b) => a + b, 0) / votos.length;
-  const barra = document.getElementById('barra-clima');
-  const texto = document.getElementById('texto-clima');
+    const media = votos.reduce((a, b) => a + b, 0) / votos.length;
+    const barra = document.getElementById('barra-clima');
+    const texto = document.getElementById('texto-clima');
 
-  // Ajusta a barra conforme a média (1=33%, 2=66%, 3=100%)
-  const percentual = (media / 3) * 100;
-  barra.style.width = percentual + '%';
+    const percentual = (media / 3) * 100;
+    barra.style.width = percentual + '%';
 
-  if (media < 1.5) {
-    barra.style.background = 'var(--verde)';
-    texto.innerText = 'Clima: Tranquilo';
-  } else if (media < 2.5) {
-    barra.style.background = '#f0ad4e';
-    texto.innerText = 'Clima: Correria';
-  } else {
-    barra.style.background = '#d9534f';
-    texto.innerText = 'Clima: CAOS TOTAL!';
-  }
-});
+    if (media < 1.5) {
+      barra.style.background = 'var(--verde)';
+      texto.innerText = 'Clima: Tranquilo';
+    } else if (media < 2.5) {
+      barra.style.background = '#f0ad4e';
+      texto.innerText = 'Clima: Correria';
+    } else {
+      barra.style.background = '#d9534f';
+      texto.innerText = 'Clima: CAOS TOTAL!';
+    }
+  });
 
+  db.ref('satisfacao').on('value', (s) => {
+    const todosVotos = s.val() ? Object.values(s.val()) : [];
+    const categorias = ['Satisfeito', 'Nao Satisfeito', 'Mais ou menos', 'Tanto faz'];
+    const contagem = { 'Satisfeito': 0, 'Nao Satisfeito': 0, 'Mais ou menos': 0, 'Tanto faz': 0 };
 
-// Ouvinte para renderizar o gráfico em tempo real conforme os dados mudam
-db.ref('satisfacao').on('value', (s) => {
-  const todosVotos = s.val() ? Object.values(s.val()) : [];
-  const categorias = ['Satisfeito', 'Nao Satisfeito', 'Mais ou menos', 'Tanto faz'];
-  const contagem = { 'Satisfeito': 0, 'Nao Satisfeito': 0, 'Mais ou menos': 0, 'Tanto faz': 0 };
+    todosVotos.forEach(v => { if(contagem.hasOwnProperty(v)) contagem[v]++; });
+    const total = todosVotos.length || 1;
 
-  // Contagem dos votos
-  todosVotos.forEach(v => { if(contagem.hasOwnProperty(v)) contagem[v]++; });
-  const total = todosVotos.length || 1;
-
-  // Atualização visual do gráfico de barras
-  const div = document.getElementById('grafico-satisfacao');
-  div.innerHTML = categorias.map(cat => `
-    <div style="margin-bottom: 10px;">
-      <div style="font-size: 13px; font-weight: bold; margin-bottom: 2px;">${cat} (${contagem[cat]})</div>
-      <div style="background: #e0e0e0; height: 14px; border-radius: 7px; overflow: hidden;">
-        <div style="width: ${(contagem[cat] / total) * 100}%; background: #3E5B92; height: 100%; transition: width 0.5s;"></div>
+    const div = document.getElementById('grafico-satisfacao');
+    div.innerHTML = categorias.map(cat => `
+      <div style="margin-bottom: 10px;">
+        <div style="font-size: 13px; font-weight: bold; margin-bottom: 2px;">${cat} (${contagem[cat]})</div>
+        <div style="background: #e0e0e0; height: 14px; border-radius: 7px; overflow: hidden;">
+          <div style="width: ${(contagem[cat] / total) * 100}%; background: #3E5B92; height: 100%; transition: width 0.5s;"></div>
+        </div>
       </div>
-    </div>
-  `).join('');
-});
-
+    `).join('');
+  });
 
   db.ref('avisos').on('value', (s) => {
     avisos = s.val() ? Object.values(s.val()) : [];
@@ -463,7 +552,22 @@ db.ref('satisfacao').on('value', (s) => {
   document.getElementById('tela-app').classList.remove('hidden');
 }
 
-// ===== POSTAGENS =====
+function definirStatusOnline(reUsuario) {
+  const reLimpo = reUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+  const statusRef = db.ref('status/' + reLimpo);
+  statusRef.onDisconnect().remove();
+  statusRef.set(true);
+}
+
+function votarClima(valor) {
+  db.ref('clima/' + reAtual).set(valor);
+}
+
+function votarSatisfacao(opcao) {
+  db.ref('satisfacao/' + reAtual).set(opcao);
+}
+
+// POSTAGENS
 document.getElementById('input-foto').onchange = (e) => {
   const reader = new FileReader();
   reader.onload = (ev) => {
@@ -489,26 +593,17 @@ document.getElementById('btn-postar').onclick = () => {
 }
 
 function reagirPost(postId, emoji) {
-  // Garante que o ID do usuário seja um texto limpo (usa o RE, que é único)
   const userId = reAtual.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
-  
-  // Registra a reação no caminho correto do Firebase
   db.ref(`feed/${postId}/reacoes/${userId}`).set(emoji)
     .then(() => {
-      // Fecha o menu após sucesso
       const menu = document.getElementById(`menu-${postId}`);
       if(menu) menu.style.display = 'none';
-      console.log('Reação registrada com sucesso!');
-    })
-    .catch((error) => {
-      console.error('Erro ao reagir:', error);
     });
 }
 
 function alternarMenuReacoes(postId) {
   const menu = document.getElementById(`menu-${postId}`);
   if (menu) {
-    // Alterna a exibição e garante que outros menus fechem
     const estaVisivel = menu.style.display === 'block';
     document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
     menu.style.display = estaVisivel ? 'none' : 'block';
@@ -522,7 +617,7 @@ function renderFeed(){
     return;
   }
 
-  div.innerHTML = ''; // Limpa o container antes de renderizar
+  div.innerHTML = '';
   feed.filter(p => p.autor && p.texto).forEach(p => {
     const reacoes = p.reacoes || {};
     const contagem = {'🚀': 0, '🤝': 0, '👏': 0, '👍': 0, '👎': 0};
@@ -532,12 +627,10 @@ function renderFeed(){
       ? `<button onclick="excluirPost('${p.key}', '${p.autor}')" style="background:#d9534f; color:white; padding:2px 8px; font-size:12px; margin-left:10px;">Excluir</button>` 
       : '';
 
-    // Cria o card do post de forma segura
     const postCard = document.createElement('div');
     postCard.className = 'card post';
     
-    // Cria o conteúdo interno
-    const conteudo = `
+    postCard.innerHTML = `
       <div class="topo"><b>${p.autor}</b><span>${p.hora} ${btnExcluir}</span></div>
       <p id="texto-${p.key}"></p>
       ${p.foto ? `<img class="feed-img" src="${p.foto}">` : ''}
@@ -558,30 +651,23 @@ function renderFeed(){
         </div>
       </div>`;
     
-    postCard.innerHTML = conteudo;
     div.appendChild(postCard);
-
-    // Sanitização: insere o texto via textContent para prevenir XSS
     const pTexto = document.getElementById(`texto-${p.key}`);
     if (pTexto) pTexto.textContent = p.texto;
   });
 }
 
 function excluirPost(postId, autorPost) {
-  // Verifica se o usuário logado é o autor do post
   if (usuarioAtual !== autorPost) {
     return alert('Você só pode excluir os seus próprios posts!');
   }
-  
   if (confirm('Tem certeza que deseja excluir este recado?')) {
-    db.ref('feed/' + postId).remove()
-      .then(() => console.log('Post removido!'))
-      .catch((error) => alert('Erro ao excluir: ' + error.message));
+    db.ref('feed/' + postId).remove();
   }
 }
 
 function renderAvisos(){
-  document.getElementById('lista-avisos').innerHTML = avisos.map(a => `<div class="aviso-item"> &#9997; ${a}</div>`).join('');
+  document.getElementById('lista-avisos').innerHTML = avisos.map(a => `<div class="aviso-item"> ✍️ ${a}</div>`).join('');
 }
 
 document.getElementById('btn-aviso').onclick = () => {
