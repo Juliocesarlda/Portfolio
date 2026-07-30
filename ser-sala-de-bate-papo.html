@@ -29,78 +29,6 @@
     .chat-input-group { display: flex; gap: 10px; }
     .chat-input-group input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
     .chat-input-group button { background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-
-    /* Modal / Pop-up de Convite */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(3px);
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-    .modal-overlay.active {
-      display: flex;
-    }
-    .modal-card {
-      background: #ffffff;
-      padding: 24px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      max-width: 420px;
-      width: 90%;
-      text-align: center;
-      animation: modalFadeIn 0.3s ease-out;
-    }
-    @keyframes modalFadeIn {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal-card h3 {
-      margin-top: 0;
-      color: #1e293b;
-      font-size: 1.25rem;
-    }
-    .modal-card p {
-      color: #475569;
-      font-size: 1rem;
-      margin: 15px 0 25px;
-      line-height: 1.4;
-    }
-    .modal-buttons {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-    }
-    .btn-accept {
-      background-color: #16a34a;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      flex: 1;
-      transition: background 0.2s;
-    }
-    .btn-accept:hover { background-color: #15803d; }
-    .btn-decline {
-      background-color: #dc2626;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      flex: 1;
-      transition: background 0.2s;
-    }
-    .btn-decline:hover { background-color: #b91c1c; }
   </style>
 
   <!-- SDKs do Firebase (Compat Version) -->
@@ -135,187 +63,173 @@
     </div>
   </div>
 
-  <!-- Pop-up (Modal) de Convite Recebido -->
-  <div class="modal-overlay" id="modal-convite">
-    <div class="modal-card">
-      <h3>📩 Convite para Bate-Papo</h3>
-      <p id="modal-texto-convite">Você recebeu um convite!</p>
-      <div class="modal-buttons">
-        <button class="btn-accept" onclick="aceitarConvite()">Aceitar</button>
-        <button class="btn-decline" onclick="recusarConvite()">Recusar</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // 1. Configuração do Firebase apontando para o seu Realtime Database
-    const firebaseConfig = {
-      databaseURL: "https://sistema-de-engajamento-e-risco-default-rtdb.firebaseio.com"
-    };
-    
-    // Inicializa o Firebase
+<script>
+  const firebaseConfig = {
+    databaseURL: "https://sistema-de-engajamento-e-risco-default-rtdb.firebaseio.com"
+  };
+  
+  if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  }
+  const db = firebase.database();
 
-    // 2. Obtém usuário atual via URL (?usuario=lucky)
-    const urlParams = new URLSearchParams(window.location.search);
-    const usuarioAtual = urlParams.get('usuario') || 'lucky';
+  // Obtém usuário atual via URL (?usuario=Nome)
+  const urlParams = new URLSearchParams(window.location.search);
+  const usuarioAtual = urlParams.get('usuario') || 'Usuário';
 
-    // 3. Marca o usuário atual como ativo no nó /usuarios
-    const userRef = db.ref('usuarios/' + usuarioAtual);
-    userRef.set({
+  // VARIÁVEIS DE ESTADO GLOBAL NA SALA
+  let listaUsuarios = {};
+  let listaStatus = {};
+
+  // 1. REGISTRA QUE O USUÁRIO ENTROU NA SALA DE CHAT
+  db.ref('usuarios').once('value', (snapshot) => {
+    let userKey = null;
+    snapshot.forEach(child => {
+      const u = child.val();
+      if (u && u.nome && u.nome.trim().toLowerCase() === usuarioAtual.trim().toLowerCase()) {
+        userKey = child.key;
+      }
+    });
+
+    const keyFinal = userKey || usuarioAtual.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
+    const userRef = db.ref('usuarios/' + keyFinal);
+
+    // Marca como estando dentro da sala e online
+    userRef.update({
       nome: usuarioAtual,
       naSala: true,
       online: true
     });
 
-    // Remove ou atualiza estado se o usuário fechar a aba
+    // Ao fechar a aba ou desconectar, remove da sala
     userRef.onDisconnect().update({ naSala: false, online: false });
+  });
 
-    // Variavel global para armazenar quem enviou o convite atual
-    let conviteAtualRemetente = null;
+  // 2. FUNÇÃO QUE RENDERIZA AS LISTAS DE USUÁRIOS NA TELA
+  function atualizarListaTela() {
+    const containerNaSala = document.getElementById('lista-na-sala');
+    const containerForaDaSala = document.getElementById('lista-fora-da-sala');
 
-    // 4. Escuta Convites em Tempo Real direcionados ao usuarioAtual
-    db.ref('convites/' + usuarioAtual).on('value', (snapshot) => {
-      const convite = snapshot.val();
-      const modal = document.getElementById('modal-convite');
-      const textoModal = document.getElementById('modal-texto-convite');
+    containerNaSala.innerHTML = '';
+    containerForaDaSala.innerHTML = '';
 
-      if (convite && convite.status === 'pendente') {
-        conviteAtualRemetente = convite.remetente;
-        textoModal.innerHTML = `<b>${convite.remetente}</b> convidou você para entrar na sala de bate-papo!`;
-        modal.classList.add('active');
-      } else {
-        modal.classList.remove('active');
-        conviteAtualRemetente = null;
+    const meuNomeNorm = usuarioAtual.trim().toLowerCase();
+
+    Object.keys(listaUsuarios).forEach(key => {
+      const u = listaUsuarios[key];
+      if (!u || !u.nome) return;
+
+      const nomeOutroNorm = u.nome.trim().toLowerCase();
+      const isMe = meuNomeNorm === nomeOutroNorm;
+
+      // Verifica se o usuário está ativo no nó 'status' OU no nó 'usuarios'
+      const estaOnline = (listaStatus && listaStatus[key] === true) || u.online === true || u.online === 'true';
+
+      // REGRA A: Usuário DENTRO da Sala de Bate-Papo
+      if (u.naSala === true) {
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        div.innerHTML = `
+          <span>👤 ${u.nome} ${isMe ? '<b>(Você)</b>' : ''}</span>
+          ${!isMe ? `<button class="btn-action" onclick="chamarUsuario('${u.nome}')">Chamar</button>` : ''}
+        `;
+        containerNaSala.appendChild(div);
+      } 
+      // REGRA B: Usuário ONLINE no sistema, mas FORA da Sala
+      else if (estaOnline && !u.naSala && !isMe) {
+        const div = document.createElement('div');
+        div.className = 'user-item';
+        div.innerHTML = `
+          <span>👤 ${u.nome}</span>
+          <button class="btn-action btn-invite" onclick="convidarParaSala('${u.nome}')">Convidar</button>
+        `;
+        containerForaDaSala.appendChild(div);
       }
     });
+  }
 
-    // 5. Escuta os Usuários em Tempo Real do Banco
-    db.ref('usuarios').on('value', (snapshot) => {
-      const usuarios = snapshot.val() || {};
-      
-      const containerNaSala = document.getElementById('lista-na-sala');
-      const containerForaDaSala = document.getElementById('lista-fora-da-sala');
+  // 3. LISTENERS EM TEMPO REAL (Ouvindo Mudanças no Banco)
+  db.ref('usuarios').on('value', (snapshot) => {
+    listaUsuarios = snapshot.val() || {};
+    atualizarListaTela();
+  });
 
-      containerNaSala.innerHTML = '';
-      containerForaDaSala.innerHTML = '';
+  db.ref('status').on('value', (snapshot) => {
+    listaStatus = snapshot.val() || {};
+    atualizarListaTela();
+  });
 
-      Object.keys(usuarios).forEach(key => {
-        const u = usuarios[key];
-        if (!u || !u.nome) return;
-
-        const isMe = u.nome === usuarioAtual;
-
-        if (u.naSala) {
-          // Usuários DENTRO da Sala
-          const div = document.createElement('div');
-          div.className = 'user-item';
-          div.innerHTML = `
-            <span>${u.nome} ${isMe ? '<b>(Você)</b>' : ''}</span>
-            ${!isMe ? `<button class="btn-action" onclick="chamarUsuario('${u.nome}')">Chamar</button>` : ''}
-          `;
-          containerNaSala.appendChild(div);
-        } else if (u.online) {
-          // Usuários FORA da Sala (no Sistema)
-          const div = document.createElement('div');
-          div.className = 'user-item';
-          div.innerHTML = `
-            <span>${u.nome}</span>
-            <button class="btn-action btn-invite" onclick="convidarParaSala('${u.nome}')">Convidar</button>
-          `;
-          containerForaDaSala.appendChild(div);
+  // 4. ESCUTA MENSAGENS EM TEMPO REAL
+  db.ref('mensagens').on('value', (snapshot) => {
+    const msgBox = document.getElementById('mensagens');
+    msgBox.innerHTML = '';
+    
+    const mensagens = snapshot.val() || {};
+    Object.keys(mensagens).forEach(key => {
+      const msg = mensagens[key];
+      if (msg && msg.autor && msg.texto) {
+        const p = document.createElement('p');
+        if (msg.tipo === 'sistema') {
+          p.innerHTML = `<i>* <b>${msg.autor}</b> ${msg.texto} *</i>`;
+        } else {
+          p.innerHTML = `<b>${msg.autor}:</b> ${msg.texto}`;
         }
-      });
-    });
-
-    // 6. Escuta as Mensagens em Tempo Real
-    db.ref('mensagens').on('value', (snapshot) => {
-      const msgBox = document.getElementById('mensagens');
-      msgBox.innerHTML = '';
-      
-      const mensagens = snapshot.val() || {};
-      Object.keys(mensagens).forEach(key => {
-        const msg = mensagens[key];
-        if (msg && msg.autor && msg.texto) {
-          const p = document.createElement('p');
-          if (msg.tipo === 'sistema') {
-            p.innerHTML = `<i>* <b>${msg.autor}</b> ${msg.texto} *</i>`;
-          } else {
-            p.innerHTML = `<b>${msg.autor}:</b> ${msg.texto}`;
-          }
-          msgBox.appendChild(p);
-        }
-      });
-      msgBox.scrollTop = msgBox.scrollHeight;
-    });
-
-    // 7. Funções de Ação
-    function enviarMensagem() {
-      const input = document.getElementById('input-msg');
-      const texto = input.value.trim();
-      
-      if (texto !== '') {
-        db.ref('mensagens').push({
-          autor: usuarioAtual,
-          texto: texto,
-          timestamp: Date.now()
-        });
-        input.value = '';
+        msgBox.appendChild(p);
       }
-    }
+    });
+    msgBox.scrollTop = msgBox.scrollHeight;
+  });
 
-    function chamarUsuario(nome) {
-      alert(`Você chamou @${nome} no bate-papo!`);
-    }
-
-    function convidarParaSala(nomeDestinatario) {
-      // Grava o convite em tempo real no banco do Firebase no nó /convites/{nomeDestinatario}
-      db.ref('convites/' + nomeDestinatario).set({
-        remetente: usuarioAtual,
-        status: 'pendente',
-        timestamp: Date.now()
-      }).then(() => {
-        alert(`Convite enviado com sucesso para ${nomeDestinatario}!`);
-      });
-
-      // Registra aviso no bate-papo
+  // ENVIAR MENSAGEM NO CHAT
+  function enviarMensagem() {
+    const input = document.getElementById('input-msg');
+    const texto = input.value.trim();
+    
+    if (texto !== '') {
       db.ref('mensagens').push({
         autor: usuarioAtual,
-        texto: `enviou um convite para ${nomeDestinatario} entrar na sala.`,
-        tipo: 'sistema',
+        texto: texto,
         timestamp: Date.now()
       });
+      input.value = '';
     }
+  }
 
-    function aceitarConvite() {
-      // 1. Marca usuário como dentro da sala
-      userRef.update({ naSala: true });
+  function chamarUsuario(nome) {
+    alert(`Você chamou @${nome} no bate-papo!`);
+  }
 
-      // 2. Notifica o sistema no chat
-      db.ref('mensagens').push({
-        autor: usuarioAtual,
-        texto: `aceitou o convite de ${conviteAtualRemetente} e entrou na sala!`,
-        tipo: 'sistema',
-        timestamp: Date.now()
+  // CONVIDAR USUÁRIO
+  function convidarParaSala(nomeDestinatario) {
+    db.ref('convites/' + nomeDestinatario).set({
+      remetente: usuarioAtual,
+      status: 'pendente',
+      timestamp: Date.now()
+    }).then(() => {
+      alert(`Convite enviado com sucesso para ${nomeDestinatario}!`);
+    });
+
+    db.ref('mensagens').push({
+      autor: usuarioAtual,
+      texto: `enviou um convite para ${nomeDestinatario} entrar na sala.`,
+      tipo: 'sistema',
+      timestamp: Date.now()
+    });
+  }
+
+  // VOLTAR PARA A PÁGINA INICIAL
+  function voltarParaInicio() {
+    db.ref('usuarios').once('value', (snapshot) => {
+      snapshot.forEach(child => {
+        const u = child.val();
+        if (u && u.nome && u.nome.trim().toLowerCase() === usuarioAtual.trim().toLowerCase()) {
+          db.ref('usuarios/' + child.key).update({ naSala: false });
+        }
       });
+      window.location.href = 'ser.html';
+    });
+  }
+</script>
 
-      // 3. Limpa o convite pendente no Firebase
-      db.ref('convites/' + usuarioAtual).remove();
-    }
-
-    function recusarConvite() {
-      // Remove o convite no banco e fecha a janela pop-up
-      db.ref('convites/' + usuarioAtual).remove();
-    }
-
-    function voltarParaInicio() {
-      userRef.update({ naSala: false }).then(() => {
-        window.location.href = 'ser.html';
-      }).catch(() => {
-        window.location.href = 'ser.html';
-      });
-    }
-  </script>
 </body>
 </html>
