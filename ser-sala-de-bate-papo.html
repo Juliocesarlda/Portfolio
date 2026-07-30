@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sala de Bate-Papo</title>
+  <title>Sala de Bate-Papo - Projeto S.E.R.</title>
   <style>
-    * { box-sizing: border-box; font-family: sans-serif; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { display: flex; background-color: #f0f2f5; margin: 0; padding: 20px; gap: 20px; }
     
     /* Sidebar */
     .sidebar { width: 280px; display: flex; flex-direction: column; gap: 20px; }
     .section-box { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .section-title { font-weight: bold; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    .section-title { font-weight: bold; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; color: #1e293b; }
     
     .user-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
     .btn-action { background: #e4e6eb; border: 1px solid #ccc; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; }
@@ -21,14 +21,86 @@
 
     /* Chat Area */
     .chat-area { flex: 1; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 85vh; }
-    .chat-header { background: #333; color: white; padding: 15px; font-size: 1.3rem; border-radius: 4px; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-    .btn-voltar-home { background: #555; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s; }
-    .btn-voltar-home:hover { background: #777; }
+    .chat-header { background: #1e293b; color: white; padding: 15px; font-size: 1.3rem; border-radius: 4px; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-voltar-home { background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s; }
+    .btn-voltar-home:hover { background: #475569; }
     .chat-messages { flex: 1; border: 1px solid #eee; padding: 10px; border-radius: 4px; overflow-y: auto; margin-bottom: 15px; background: #fafafa; }
     .chat-messages p { margin: 5px 0; }
     .chat-input-group { display: flex; gap: 10px; }
     .chat-input-group input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-    .chat-input-group button { background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+    .chat-input-group button { background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+    /* Modal / Pop-up de Convite */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      animation: modalFadeIn 0.3s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-card h3 {
+      margin-top: 0;
+      color: #1e293b;
+      font-size: 1.25rem;
+    }
+    .modal-card p {
+      color: #475569;
+      font-size: 1rem;
+      margin: 15px 0 25px;
+      line-height: 1.4;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .btn-accept {
+      background-color: #16a34a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-accept:hover { background-color: #15803d; }
+    .btn-decline {
+      background-color: #dc2626;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      transition: background 0.2s;
+    }
+    .btn-decline:hover { background-color: #b91c1c; }
   </style>
 
   <!-- SDKs do Firebase (Compat Version) -->
@@ -63,6 +135,18 @@
     </div>
   </div>
 
+  <!-- Pop-up (Modal) de Convite Recebido -->
+  <div class="modal-overlay" id="modal-convite">
+    <div class="modal-card">
+      <h3>📩 Convite para Bate-Papo</h3>
+      <p id="modal-texto-convite">Você recebeu um convite!</p>
+      <div class="modal-buttons">
+        <button class="btn-accept" onclick="aceitarConvite()">Aceitar</button>
+        <button class="btn-decline" onclick="recusarConvite()">Recusar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 1. Configuração do Firebase apontando para o seu Realtime Database
     const firebaseConfig = {
@@ -77,7 +161,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const usuarioAtual = urlParams.get('usuario') || 'lucky';
 
-    // 3. Marca o usuário atual como ativo no nó /usuarios e presente na sala
+    // 3. Marca o usuário atual como ativo no nó /usuarios
     const userRef = db.ref('usuarios/' + usuarioAtual);
     userRef.set({
       nome: usuarioAtual,
@@ -88,14 +172,32 @@
     // Remove ou atualiza estado se o usuário fechar a aba
     userRef.onDisconnect().update({ naSala: false, online: false });
 
-    // 4. Escuta os Usuários em Tempo Real do Banco
+    // Variavel global para armazenar quem enviou o convite atual
+    let conviteAtualRemetente = null;
+
+    // 4. Escuta Convites em Tempo Real direcionados ao usuarioAtual
+    db.ref('convites/' + usuarioAtual).on('value', (snapshot) => {
+      const convite = snapshot.val();
+      const modal = document.getElementById('modal-convite');
+      const textoModal = document.getElementById('modal-texto-convite');
+
+      if (convite && convite.status === 'pendente') {
+        conviteAtualRemetente = convite.remetente;
+        textoModal.innerHTML = `<b>${convite.remetente}</b> convidou você para entrar na sala de bate-papo!`;
+        modal.classList.add('active');
+      } else {
+        modal.classList.remove('active');
+        conviteAtualRemetente = null;
+      }
+    });
+
+    // 5. Escuta os Usuários em Tempo Real do Banco
     db.ref('usuarios').on('value', (snapshot) => {
       const usuarios = snapshot.val() || {};
       
       const containerNaSala = document.getElementById('lista-na-sala');
       const containerForaDaSala = document.getElementById('lista-fora-da-sala');
 
-      // Limpa os containers para EVITAR DUPLICAÇÃO na tela
       containerNaSala.innerHTML = '';
       containerForaDaSala.innerHTML = '';
 
@@ -127,7 +229,7 @@
       });
     });
 
-    // 5. Escuta as Mensagens em Tempo Real
+    // 6. Escuta as Mensagens em Tempo Real
     db.ref('mensagens').on('value', (snapshot) => {
       const msgBox = document.getElementById('mensagens');
       msgBox.innerHTML = '';
@@ -148,7 +250,7 @@
       msgBox.scrollTop = msgBox.scrollHeight;
     });
 
-    // 6. Funções de Ação
+    // 7. Funções de Ação
     function enviarMensagem() {
       const input = document.getElementById('input-msg');
       const texto = input.value.trim();
@@ -167,22 +269,49 @@
       alert(`Você chamou @${nome} no bate-papo!`);
     }
 
-    function convidarParaSala(nome) {
-      alert(`Convite enviado para ${nome} entrar na sala!`);
-      
-      // Registra mensagem no chat avisando sobre o convite
+    function convidarParaSala(nomeDestinatario) {
+      // Grava o convite em tempo real no banco do Firebase no nó /convites/{nomeDestinatario}
+      db.ref('convites/' + nomeDestinatario).set({
+        remetente: usuarioAtual,
+        status: 'pendente',
+        timestamp: Date.now()
+      }).then(() => {
+        alert(`Convite enviado com sucesso para ${nomeDestinatario}!`);
+      });
+
+      // Registra aviso no bate-papo
       db.ref('mensagens').push({
         autor: usuarioAtual,
-        texto: `enviou um convite para ${nome} entrar na sala de bate-papo.`,
+        texto: `enviou um convite para ${nomeDestinatario} entrar na sala.`,
         tipo: 'sistema',
         timestamp: Date.now()
       });
     }
 
+    function aceitarConvite() {
+      // 1. Marca usuário como dentro da sala
+      userRef.update({ naSala: true });
+
+      // 2. Notifica o sistema no chat
+      db.ref('mensagens').push({
+        autor: usuarioAtual,
+        texto: `aceitou o convite de ${conviteAtualRemetente} e entrou na sala!`,
+        tipo: 'sistema',
+        timestamp: Date.now()
+      });
+
+      // 3. Limpa o convite pendente no Firebase
+      db.ref('convites/' + usuarioAtual).remove();
+    }
+
+    function recusarConvite() {
+      // Remove o convite no banco e fecha a janela pop-up
+      db.ref('convites/' + usuarioAtual).remove();
+    }
+
     function voltarParaInicio() {
-      // Atualiza o estado do usuário no Firebase informando que ele saiu da sala (mantendo online se necessário)
       userRef.update({ naSala: false }).then(() => {
-        window.location.href = 'ser.html'; // Redireciona para a página de início
+        window.location.href = 'ser.html';
       }).catch(() => {
         window.location.href = 'ser.html';
       });
