@@ -137,10 +137,6 @@ footer{
     color:rgba(255,255,255,0.3);
 }
 
-.btn-voltar-home {
-        width: 100%;
-        justify-content: center;
-}
 /* ===================================== */
 /* RESPONSIVO MOBILE */
 /* ===================================== */
@@ -250,7 +246,7 @@ footer{
         🔄 ATUALIZAR DADOS
     </button>
 
-    <button class="btn-voltar-home" onclick="voltarParaInicio()">← Voltar para o Início</button>
+    <button class="btn-refresh" onclick="voltarParaInicio()">← VOLTAR PARA O INÍCIO</button>
 
 </div>
 
@@ -314,18 +310,6 @@ footer{
 
 <script>
 
-function voltarParaInicio() {
-    db.ref('usuarios').once('value', (snapshot) => {
-      snapshot.forEach(child => {
-        const u = child.val();
-        if (u && u.nome && u.nome.trim().toLowerCase() === usuarioAtual.trim().toLowerCase()) {
-          db.ref('usuarios/' + child.key).update({ naSala: false });
-        }
-      });
-      window.location.href = 'ser_v1.4.html';
-    });
-  }
-  
 /* ========================================= */
 /* BUSCAR DADOS */
 /* ========================================= */
@@ -436,6 +420,18 @@ async function fetchData(){
         alert("Erro ao carregar dados.");
     }
 }
+
+function voltarParaInicio() {
+    db.ref('usuarios').once('value', (snapshot) => {
+      snapshot.forEach(child => {
+        const u = child.val();
+        if (u && u.nome && u.nome.trim().toLowerCase() === usuarioAtual.trim().toLowerCase()) {
+          db.ref('usuarios/' + child.key).update({ naSala: false });
+        }
+      });
+      window.location.href = 'ser.html';
+    });
+  }
 
 /* ========================================= */
 /* HEATMAP */
