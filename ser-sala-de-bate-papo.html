@@ -6,10 +6,23 @@
   <title>Sala de Bate-Papo - Projeto S.E.R.</title>
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { display: flex; background-color: #f0f2f5; margin: 0; padding: 20px; gap: 20px; }
+    
+    body { 
+      display: flex; 
+      background-color: #f0f2f5; 
+      margin: 0; 
+      padding: 20px; 
+      gap: 20px; 
+    }
     
     /* Sidebar */
-    .sidebar { width: 280px; display: flex; flex-direction: column; gap: 20px; }
+    .sidebar { 
+      width: 280px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 20px; 
+      flex-shrink: 0;
+    }
     .section-box { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     .section-title { font-weight: bold; margin-bottom: 12px; font-size: 1.1rem; border-bottom: 2px solid #eee; padding-bottom: 5px; color: #1e293b; }
     
@@ -20,7 +33,16 @@
     .btn-invite:hover { background: #218838; }
 
     /* Chat Area */
-    .chat-area { flex: 1; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; flex-direction: column; height: 85vh; }
+    .chat-area { 
+      flex: 1; 
+      background: #fff; 
+      border-radius: 8px; 
+      padding: 20px; 
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+      display: flex; 
+      flex-direction: column; 
+      height: 85vh; 
+    }
     .chat-header { background: #1e293b; color: white; padding: 15px; font-size: 1.3rem; border-radius: 4px; font-weight: bold; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     .btn-voltar-home { background: #334155; color: white; border: none; padding: 8px 14px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: background 0.2s; }
     .btn-voltar-home:hover { background: #475569; }
@@ -29,15 +51,46 @@
     .chat-input-group { display: flex; gap: 10px; }
     .chat-input-group input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
     .chat-input-group button { background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+    /* ========================================== */
+    /* RESPONSIVIDADE PARA CELULARES E TABLETS    */
+    /* ========================================== */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column; /* Empilha a sidebar e o chat */
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .sidebar {
+        width: 100%; /* Ocupa toda a largura da tela */
+      }
+
+      .chat-area {
+        height: 75vh; /* Ajusta a altura no mobile para evitar overflow */
+        padding: 12px;
+      }
+
+      .chat-header {
+        font-size: 1.1rem;
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .btn-voltar-home {
+        width: 100%;
+        justify-content: center;
+      }
+    }
   </style>
 
-  <!-- SDKs do Firebase (Compat Version) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <!-- Sidebar com Usuários -->
   <div class="sidebar">
     <div class="section-box">
       <div class="section-title">Na Sala de Bate-Papo</div>
@@ -50,7 +103,6 @@
     </div>
   </div>
 
-  <!-- Área do Chat -->
   <div class="chat-area">
     <div class="chat-header">
       <span>Sala de Bate-Papo</span>
@@ -226,7 +278,7 @@
           db.ref('usuarios/' + child.key).update({ naSala: false });
         }
       });
-      window.location.href = 'ser.html';
+      window.location.href = 'ser_v1.4.html';
     });
   }
 </script>
