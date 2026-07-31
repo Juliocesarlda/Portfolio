@@ -137,6 +137,10 @@ footer{
     color:rgba(255,255,255,0.3);
 }
 
+.btn-voltar-home {
+        width: 100%;
+        justify-content: center;
+}
 /* ===================================== */
 /* RESPONSIVO MOBILE */
 /* ===================================== */
@@ -245,6 +249,9 @@ footer{
     <button class="btn-refresh" onclick="location.reload()">
         🔄 ATUALIZAR DADOS
     </button>
+
+    <button class="btn-voltar-home" onclick="voltarParaInicio()">← Voltar para o Início</button>
+
 </div>
 
 <div class="dashboard-grid">
@@ -302,11 +309,23 @@ footer{
 </div>
 
 <footer>
-    © 2026 - Sistema de Monitoramento de Segurança
+    © 2026 - S.M.S. (Sistema de Monitoramento de Segurança com I.A.)
 </footer>
 
 <script>
 
+function voltarParaInicio() {
+    db.ref('usuarios').once('value', (snapshot) => {
+      snapshot.forEach(child => {
+        const u = child.val();
+        if (u && u.nome && u.nome.trim().toLowerCase() === usuarioAtual.trim().toLowerCase()) {
+          db.ref('usuarios/' + child.key).update({ naSala: false });
+        }
+      });
+      window.location.href = 'ser_v1.4.html';
+    });
+  }
+  
 /* ========================================= */
 /* BUSCAR DADOS */
 /* ========================================= */
