@@ -105,6 +105,60 @@ header h2{ margin: 0; font-size: 22px; }
 .post img.feed-img{ width: 100%; border-radius: 8px; margin-top: 8px; border: 1px solid var(--borda); }
 .vazio{ text-align: center; color: #777; padding: 20px; }
 
+/* COMENTÁRIOS NO POST */
+.secao-comentarios {
+  margin-top: 15px;
+  border-top: 1px solid var(--borda);
+  padding-top: 12px;
+}
+.lista-comentarios {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.comentario-item {
+  background: var(--azul-claro);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.comentario-topo {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+.comentario-autor {
+  font-weight: bold;
+  color: var(--azul-orkut);
+}
+.comentario-hora {
+  color: #777;
+}
+.comentario-texto {
+  color: var(--texto);
+  word-break: break-word;
+}
+.form-comentario {
+  display: flex;
+  gap: 8px;
+}
+.form-comentario input {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.btn-enviar-comentario {
+  background: var(--azul-orkut);
+  color: white;
+  padding: 8px 14px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.btn-enviar-comentario:hover {
+  background: #2c426a;
+}
+
 /* COLUNA DIREITA */
 .btn-chat{
   width: 100%; padding: 14px; font-size: 18px;
@@ -418,7 +472,6 @@ document.getElementById('btn-cadastrar').onclick = () => {
 };
 
 // ===== LOGIN COM NOME E SENHA =====
-// ===== LOGIN COM NOME E SENHA =====
 document.getElementById('btn-entrar').onclick = () => {
   const nomeDigitado = document.getElementById('login-nome').value.trim();
   const senhaDigitada = document.getElementById('login-senha').value.trim();
@@ -444,7 +497,6 @@ document.getElementById('btn-entrar').onclick = () => {
       return;
     }
 
-    // 💡 AJUSTE AQUI: Converter usuarioEncontrado.senha para String()
     if (String(usuarioEncontrado.senha) !== senhaDigitada) {
       alert('Senha incorreta! Verifique a senha digitada.');
       return;
@@ -605,7 +657,6 @@ function entrarApp(nome, re){
 function definirStatusOnline(reUsuario, nomeUsuario) {
   const reLimpo = reUsuario.replace(/\s+/g, '').replace(/[^a-zA-Z0-9]/g, '');
   
-  // Atualiza status no nó de usuários do sistema para ser visto pelo chat
   const userRef = db.ref('usuarios/' + reLimpo);
   userRef.update({
     nome: nomeUsuario,
@@ -703,6 +754,34 @@ function alternarMenuReacoes(postId) {
   }
 }
 
+// ===== SISTEMA DE COMENTÁRIOS =====
+function adicionarComentario(postId, event) {
+  if (event) event.preventDefault();
+  const input = document.getElementById(`input-comentario-${postId}`);
+  const textoComentario = input.value.trim();
+  if (!textoComentario) return;
+
+  const comentarioRef = db.ref(`feed/${postId}/comentarios`).push();
+  comentarioRef.set({
+    autor: usuarioAtual,
+    texto: textoComentario,
+    hora: new Date().toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})
+  }).then(() => {
+    input.value = '';
+  }).catch((err) => {
+    alert("Erro ao enviar comentário: " + err.message);
+  });
+}
+
+function excluirComentario(postId, comentarioId, autorComentario) {
+  if (usuarioAtual !== autorComentario) {
+    return alert('Você só pode excluir os seus próprios comentários!');
+  }
+  if (confirm('Deseja excluir este comentário?')) {
+    db.ref(`feed/${postId}/comentarios/${comentarioId}`).remove();
+  }
+}
+
 function renderFeed(){
   const div = document.getElementById('feed-mural');
   if(feed.length === 0){
@@ -715,6 +794,9 @@ function renderFeed(){
     const reacoes = p.reacoes || {};
     const contagem = {'🚀': 0, '🤝': 0, '👏': 0, '👍': 0, '👎': 0};
     Object.values(reacoes).forEach(r => { if(contagem.hasOwnProperty(r)) contagem[r]++; });
+
+    const comentariosObj = p.comentarios || {};
+    const listaComentariosArray = Object.entries(comentariosObj).map(([cKey, cVal]) => ({ ...cVal, key: cKey }));
 
     const btnExcluir = p.autor === usuarioAtual 
       ? `<button onclick="excluirPost('${p.key}', '${p.autor}')" style="background:#d9534f; color:white; padding:2px 8px; font-size:12px; margin-left:10px;">Excluir</button>` 
@@ -742,6 +824,31 @@ function renderFeed(){
         <div style="margin-top:10px; font-size: 14px;">
           ${Object.keys(contagem).map(e => `<span>${e} ${contagem[e]}</span>`).join(' ')}
         </div>
+      </div>
+
+      <!-- SEÇÃO DE COMENTÁRIOS -->
+      <div class="secao-comentarios">
+        <div class="lista-comentarios" id="lista-comentarios-${p.key}">
+          ${listaComentariosArray.map(c => {
+            const btnExcluirC = c.autor === usuarioAtual 
+              ? `<button onclick="excluirComentario('${p.key}', '${c.key}', '${c.autor}')" style="background:none; border:none; color:#dc2626; cursor:pointer; font-size:11px; font-weight:bold; margin-left:8px;">Excluir</button>` 
+              : '';
+            return `
+              <div class="comentario-item">
+                <div class="comentario-topo">
+                  <span class="comentario-autor">${c.autor}</span>
+                  <span><span class="comentario-hora">${c.hora}</span>${btnExcluirC}</span>
+                </div>
+                <div class="comentario-texto">${c.texto}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <form class="form-comentario" onsubmit="adicionarComentario('${p.key}', event)">
+          <input type="text" id="input-comentario-${p.key}" placeholder="Escreva um comentário..." maxlength="200" autocomplete="off">
+          <button type="submit" class="btn-enviar-comentario">Comentar</button>
+        </form>
       </div>`;
     
     div.appendChild(postCard);
