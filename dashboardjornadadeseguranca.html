@@ -422,16 +422,8 @@ async function fetchData(){
 }
 
 function voltarParaInicio() {
-    db.ref('usuarios').once('value', (snapshot) => {
-      snapshot.forEach(child => {
-        const u = child.val();
-        if (u && u.nome && u.nome.trim().toLowerCase() === usuarioAtual.trim().toLowerCase()) {
-          db.ref('usuarios/' + child.key).update({ naSala: false });
-        }
-      });
-      window.location.href = 'ser.html';
-    });
-  }
+    window.location.href = 'ser.html';
+}
 
 /* ========================================= */
 /* HEATMAP */
